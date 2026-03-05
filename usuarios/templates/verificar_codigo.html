@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Verificar código</title></head>
+<body>
+  <h1>Verificar código</h1>
+  {% if messages %}{% for m in messages %}<p>{{ m }}</p>{% endfor %}{% endif %}
+  <form method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Continuar</button>
+  </form>
+  <p><a href="{% url 'password_reset_request' %}">Volver</a></p>
+</body>
+</html>
+

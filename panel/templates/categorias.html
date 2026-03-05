@@ -1,0 +1,1709 @@
+{% extends 'panel/base_panel.html' %}
+{% block title %}Categorías{% endblock %}
+
+{% block content %}
+<style>
+  .card-soft{ border:0; border-radius:16px; box-shadow: 0 2px 10px rgba(0,0,0,.05) }
+  .btn-ghost{ --bs-btn-color:#334155; --bs-btn-hover-bg:#f1f5f9; --bs-btn-border-color:transparent; --bs-btn-hover-border-color:transparent }
+  .btn-ghost:focus{ box-shadow:0 0 0 .25rem rgba(13,110,253,.15) }
+  .title-chip{ font-size:.85rem; padding:.25rem .5rem; border-radius:999px; background:#f8fafc; color:#475569 }
+  .list-group-item{ padding:.65rem .75rem }
+  .name{ font-weight:600 }
+  .badge-order{ background:#eef2ff; color:#4338ca; font-weight:600 }
+  .icon-btn{ width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px }
+</style>
+
+
+<div class="d-flex align-items-center mb-3">
+  <h2 class="me-auto">Categorías & Subcategorías</h2>
+
+  <!-- Abrir formulario de creación (con imagen) -->
+  <a class="btn btn-primary" href="{% url 'panel_categoria_create' %}">
+    <i class="fa fa-plus me-2"></i> Nueva categoría
+  </a>
+</div>
+
+<div class="row g-3">
+  {% for seccion in secciones %}
+  <div class="col-lg-6">
+    <div class="card card-soft h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="up" title="Subir">
+            <i class="fa fa-arrow-up"></i>
+          </button>
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="down" title="Bajar">
+            <i class="fa fa-arrow-down"></i>
+          </button>
+          <span class="name">{{ seccion.nombre }}</span>
+          <span class="title-chip">Orden: {{ seccion.orden }}</span>
+        </div>
+
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+            <i class="fa fa-ellipsis"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <!-- EDITAR: lleva al formulario donde se cambia nombre e imagen (sincroniza con principal) -->
+              <a class="dropdown-item" href="{% url 'panel_categoria_edit' seccion.id %}">
+                <i class="fa fa-pen me-2"></i> Editar
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item act-renombrar-seccion" href="#" data-id="{{ seccion.id }}" data-nombre="{{ seccion.nombre }}">
+                <i class="fa fa-i-cursor me-2"></i> Renombrar rápido
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger btn-del-seccion" href="#" data-id="{{ seccion.id }}" data-count="{{ seccion.subcategorias.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <ul class="list-group list-group-flush">
+        {% for sc in seccion.subcategorias.all|dictsort:"orden" %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="up" title="Subir">
+              <i class="fa fa-arrow-up"></i>
+            </button>
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="down" title="Bajar">
+              <i class="fa fa-arrow-down"></i>
+            </button>
+            <span class="name">{{ sc.nombre }}</span>
+            <span class="badge badge-order">Orden {{ sc.orden }}</span>
+          </div>
+
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+              <i class="fa fa-ellipsis"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item act-renombrar-sub" href="#" data-id="{{ sc.id }}" data-nombre="{{ sc.nombre }}"><i class="fa fa-pen me-2"></i> Renombrar</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger btn-del-sub" href="#" data-id="{{ sc.id }}" data-count="{{ sc.productos.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+            </ul>
+          </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">Sin subcategorías</li>
+        {% endfor %}
+      </ul>
+
+      <div class="card-footer text-end">
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalSubcatNueva" data-seccion="{{ seccion.id }}">
+          Añadir subcategoría
+        </button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Modal: nueva subcategoría -->
+<div class="modal fade" id="modalSubcatNueva" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formSubcatNueva">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title">Nueva subcategoría</h5></div>
+      <div class="modal-body">
+        <input type="hidden" name="seccion" id="sub_seccion">
+        <input name="nombre" class="form-control" placeholder="Nombre de la subcategoría" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Crear</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: renombrar (compartido) -->
+<div class="modal fade" id="modalRename" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formRename">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title" id="renameTitle">Renombrar</h5></div>
+      <div class="modal-body">
+        <input type="hidden" id="renameType"><!-- 'seccion' | 'sub' -->
+        <input type="hidden" id="renameId">
+        <input id="renameInput" class="form-control" placeholder="Nuevo nombre" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal borrar: contraseña + aceptación -->
+<div class="modal fade" id="modalDelConfirm" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formDelConfirm">
+      <div class="modal-header">
+        <h5 class="modal-title" id="delConfirmTitle">Borrar <span id="delType"></span></h5>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <i class="fa fa-triangle-exclamation me-1"></i>
+          <span id="delConfirmMessage">Esta acción no podrá ser restaurada.</span>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="ackDelete">
+          <label class="form-check-label" for="ackDelete">
+            Acepto las consecuencias y asumo totalmente mi responsabilidad.
+          </label>
+        </div>
+        <label class="form-label">Contraseña de superusuario</label>
+        <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
+        <input type="hidden" name="id">
+        <input type="hidden" name="type"><!-- 'seccion' | 'sub' -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="btnConfirmDelete" disabled>Eliminar definitivamente</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<style>
+  .card-soft{ border:0; border-radius:16px; box-shadow: 0 2px 10px rgba(0,0,0,.05) }
+  .btn-ghost{ --bs-btn-color:#334155; --bs-btn-hover-bg:#f1f5f9; --bs-btn-border-color:transparent; --bs-btn-hover-border-color:transparent }
+  .btn-ghost:focus{ box-shadow:0 0 0 .25rem rgba(13,110,253,.15) }
+  .title-chip{ font-size:.85rem; padding:.25rem .5rem; border-radius:999px; background:#f8fafc; color:#475569 }
+  .list-group-item{ padding:.65rem .75rem }
+  .name{ font-weight:600 }
+  .badge-order{ background:#eef2ff; color:#4338ca; font-weight:600 }
+  .icon-btn{ width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px }
+</style>
+
+<div class="d-flex align-items-center mb-3">
+  <h2 class="me-auto">Categorías & Subcategorías</h2>
+
+  <!-- Abrir formulario de creación (con imagen) -->
+  <a class="btn btn-primary" href="{% url 'panel_categoria_create' %}">
+    <i class="fa fa-plus me-2"></i> Nueva categoría
+  </a>
+</div>
+
+<div class="row g-3">
+  {% for seccion in secciones %}
+  <div class="col-lg-6">
+    <div class="card card-soft h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="up" title="Subir">
+            <i class="fa fa-arrow-up"></i>
+          </button>
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="down" title="Bajar">
+            <i class="fa fa-arrow-down"></i>
+          </button>
+          <span class="name">{{ seccion.nombre }}</span>
+          <span class="title-chip">Orden: {{ seccion.orden }}</span>
+        </div>
+
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+            <i class="fa fa-ellipsis"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <!-- EDITAR: lleva al formulario donde se cambia nombre e imagen (sincroniza con principal) -->
+              <a class="dropdown-item" href="{% url 'panel_categoria_edit' seccion.id %}">
+                <i class="fa fa-pen me-2"></i> Editar
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item act-renombrar-seccion" href="#" data-id="{{ seccion.id }}" data-nombre="{{ seccion.nombre }}">
+                <i class="fa fa-i-cursor me-2"></i> Renombrar rápido
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger btn-del-seccion" href="#" data-id="{{ seccion.id }}" data-count="{{ seccion.subcategorias.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <ul class="list-group list-group-flush">
+        {% for sc in seccion.subcategorias.all|dictsort:"orden" %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="up" title="Subir">
+              <i class="fa fa-arrow-up"></i>
+            </button>
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="down" title="Bajar">
+              <i class="fa fa-arrow-down"></i>
+            </button>
+            <span class="name">{{ sc.nombre }}</span>
+            <span class="badge badge-order">Orden {{ sc.orden }}</span>
+          </div>
+
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+              <i class="fa fa-ellipsis"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item act-renombrar-sub" href="#" data-id="{{ sc.id }}" data-nombre="{{ sc.nombre }}"><i class="fa fa-pen me-2"></i> Renombrar</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger btn-del-sub" href="#" data-id="{{ sc.id }}" data-count="{{ sc.productos.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+            </ul>
+          </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">Sin subcategorías</li>
+        {% endfor %}
+      </ul>
+
+      <div class="card-footer text-end">
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalSubcatNueva" data-seccion="{{ seccion.id }}">
+          Añadir subcategoría
+        </button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Modal: nueva subcategoría -->
+<div class="modal fade" id="modalSubcatNueva" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formSubcatNueva">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title">Nueva subcategoría</h5></div>
+      <div class="modal-body">
+        <input type="hidden" name="seccion" id="sub_seccion">
+        <input name="nombre" class="form-control" placeholder="Nombre de la subcategoría" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Crear</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: renombrar (compartido) -->
+<div class="modal fade" id="modalRename" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formRename">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title" id="renameTitle">Renombrar</h5></div>
+      <div class="modal-body">
+        <input type="hidden" id="renameType"><!-- 'seccion' | 'sub' -->
+        <input type="hidden" id="renameId">
+        <input id="renameInput" class="form-control" placeholder="Nuevo nombre" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal borrar: contraseña + aceptación -->
+<div class="modal fade" id="modalDelConfirm" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formDelConfirm">
+      <div class="modal-header">
+        <h5 class="modal-title" id="delConfirmTitle">Borrar <span id="delType"></span></h5>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <i class="fa fa-triangle-exclamation me-1"></i>
+          <span id="delConfirmMessage">Esta acción no podrá ser restaurada.</span>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="ackDelete">
+          <label class="form-check-label" for="ackDelete">
+            Acepto las consecuencias y asumo totalmente mi responsabilidad.
+          </label>
+        </div>
+        <label class="form-label">Contraseña de superusuario</label>
+        <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
+        <input type="hidden" name="id">
+        <input type="hidden" name="type"><!-- 'seccion' | 'sub' -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="btnConfirmDelete" disabled>Eliminar definitivamente</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<style>
+  .card-soft{ border:0; border-radius:16px; box-shadow: 0 2px 10px rgba(0,0,0,.05) }
+  .btn-ghost{ --bs-btn-color:#334155; --bs-btn-hover-bg:#f1f5f9; --bs-btn-border-color:transparent; --bs-btn-hover-border-color:transparent }
+  .btn-ghost:focus{ box-shadow:0 0 0 .25rem rgba(13,110,253,.15) }
+  .title-chip{ font-size:.85rem; padding:.25rem .5rem; border-radius:999px; background:#f8fafc; color:#475569 }
+  .list-group-item{ padding:.65rem .75rem }
+  .name{ font-weight:600 }
+  .badge-order{ background:#eef2ff; color:#4338ca; font-weight:600 }
+  .icon-btn{ width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px }
+</style>
+
+<div class="d-flex align-items-center mb-3">
+  <h2 class="me-auto">Categorías & Subcategorías</h2>
+
+  <!-- Abrir formulario de creación (con imagen) -->
+  <a class="btn btn-primary" href="{% url 'panel_categoria_create' %}">
+    <i class="fa fa-plus me-2"></i> Nueva categoría
+  </a>
+</div>
+
+<div class="row g-3">
+  {% for seccion in secciones %}
+  <div class="col-lg-6">
+    <div class="card card-soft h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="up" title="Subir">
+            <i class="fa fa-arrow-up"></i>
+          </button>
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="down" title="Bajar">
+            <i class="fa fa-arrow-down"></i>
+          </button>
+          <span class="name">{{ seccion.nombre }}</span>
+          <span class="title-chip">Orden: {{ seccion.orden }}</span>
+        </div>
+
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+            <i class="fa fa-ellipsis"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <!-- EDITAR: lleva al formulario donde se cambia nombre e imagen (sincroniza con principal) -->
+              <a class="dropdown-item" href="{% url 'panel_categoria_edit' seccion.id %}">
+                <i class="fa fa-pen me-2"></i> Editar
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item act-renombrar-seccion" href="#" data-id="{{ seccion.id }}" data-nombre="{{ seccion.nombre }}">
+                <i class="fa fa-i-cursor me-2"></i> Renombrar rápido
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger btn-del-seccion" href="#" data-id="{{ seccion.id }}" data-count="{{ seccion.subcategorias.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <ul class="list-group list-group-flush">
+        {% for sc in seccion.subcategorias.all|dictsort:"orden" %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="up" title="Subir">
+              <i class="fa fa-arrow-up"></i>
+            </button>
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="down" title="Bajar">
+              <i class="fa fa-arrow-down"></i>
+            </button>
+            <span class="name">{{ sc.nombre }}</span>
+            <span class="badge badge-order">Orden {{ sc.orden }}</span>
+          </div>
+
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+              <i class="fa fa-ellipsis"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item act-renombrar-sub" href="#" data-id="{{ sc.id }}" data-nombre="{{ sc.nombre }}"><i class="fa fa-pen me-2"></i> Renombrar</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger btn-del-sub" href="#" data-id="{{ sc.id }}" data-count="{{ sc.productos.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+            </ul>
+          </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">Sin subcategorías</li>
+        {% endfor %}
+      </ul>
+
+      <div class="card-footer text-end">
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalSubcatNueva" data-seccion="{{ seccion.id }}">
+          Añadir subcategoría
+        </button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Modal: nueva subcategoría -->
+<div class="modal fade" id="modalSubcatNueva" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formSubcatNueva">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title">Nueva subcategoría</h5></div>
+      <div class="modal-body">
+        <input type="hidden" name="seccion" id="sub_seccion">
+        <input name="nombre" class="form-control" placeholder="Nombre de la subcategoría" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Crear</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: renombrar (compartido) -->
+<div class="modal fade" id="modalRename" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formRename">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title" id="renameTitle">Renombrar</h5></div>
+      <div class="modal-body">
+        <input type="hidden" id="renameType"><!-- 'seccion' | 'sub' -->
+        <input type="hidden" id="renameId">
+        <input id="renameInput" class="form-control" placeholder="Nuevo nombre" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal borrar: contraseña + aceptación -->
+<div class="modal fade" id="modalDelConfirm" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formDelConfirm">
+      <div class="modal-header">
+        <h5 class="modal-title" id="delConfirmTitle">Borrar <span id="delType"></span></h5>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <i class="fa fa-triangle-exclamation me-1"></i>
+          <span id="delConfirmMessage">Esta acción no podrá ser restaurada.</span>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="ackDelete">
+          <label class="form-check-label" for="ackDelete">
+            Acepto las consecuencias y asumo totalmente mi responsabilidad.
+          </label>
+        </div>
+        <label class="form-label">Contraseña de superusuario</label>
+        <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
+        <input type="hidden" name="id">
+        <input type="hidden" name="type"><!-- 'seccion' | 'sub' -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="btnConfirmDelete" disabled>Eliminar definitivamente</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<style>
+  .card-soft{ border:0; border-radius:16px; box-shadow: 0 2px 10px rgba(0,0,0,.05) }
+  .btn-ghost{ --bs-btn-color:#334155; --bs-btn-hover-bg:#f1f5f9; --bs-btn-border-color:transparent; --bs-btn-hover-border-color:transparent }
+  .btn-ghost:focus{ box-shadow:0 0 0 .25rem rgba(13,110,253,.15) }
+  .title-chip{ font-size:.85rem; padding:.25rem .5rem; border-radius:999px; background:#f8fafc; color:#475569 }
+  .list-group-item{ padding:.65rem .75rem }
+  .name{ font-weight:600 }
+  .badge-order{ background:#eef2ff; color:#4338ca; font-weight:600 }
+  .icon-btn{ width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px }
+</style>
+
+<div class="d-flex align-items-center mb-3">
+  <h2 class="me-auto">Categorías & Subcategorías</h2>
+
+  <!-- Abrir formulario de creación (con imagen) -->
+  <a class="btn btn-primary" href="{% url 'panel_categoria_create' %}">
+    <i class="fa fa-plus me-2"></i> Nueva categoría
+  </a>
+</div>
+
+<div class="row g-3">
+  {% for seccion in secciones %}
+  <div class="col-lg-6">
+    <div class="card card-soft h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="up" title="Subir">
+            <i class="fa fa-arrow-up"></i>
+          </button>
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="down" title="Bajar">
+            <i class="fa fa-arrow-down"></i>
+          </button>
+          <span class="name">{{ seccion.nombre }}</span>
+          <span class="title-chip">Orden: {{ seccion.orden }}</span>
+        </div>
+
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+            <i class="fa fa-ellipsis"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <!-- EDITAR: lleva al formulario donde se cambia nombre e imagen (sincroniza con principal) -->
+              <a class="dropdown-item" href="{% url 'panel_categoria_edit' seccion.id %}">
+                <i class="fa fa-pen me-2"></i> Editar
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item act-renombrar-seccion" href="#" data-id="{{ seccion.id }}" data-nombre="{{ seccion.nombre }}">
+                <i class="fa fa-i-cursor me-2"></i> Renombrar rápido
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger btn-del-seccion" href="#" data-id="{{ seccion.id }}" data-count="{{ seccion.subcategorias.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <ul class="list-group list-group-flush">
+        {% for sc in seccion.subcategorias.all|dictsort:"orden" %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="up" title="Subir">
+              <i class="fa fa-arrow-up"></i>
+            </button>
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="down" title="Bajar">
+              <i class="fa fa-arrow-down"></i>
+            </button>
+            <span class="name">{{ sc.nombre }}</span>
+            <span class="badge badge-order">Orden {{ sc.orden }}</span>
+          </div>
+
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+              <i class="fa fa-ellipsis"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item act-renombrar-sub" href="#" data-id="{{ sc.id }}" data-nombre="{{ sc.nombre }}"><i class="fa fa-pen me-2"></i> Renombrar</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger btn-del-sub" href="#" data-id="{{ sc.id }}" data-count="{{ sc.productos.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+            </ul>
+          </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">Sin subcategorías</li>
+        {% endfor %}
+      </ul>
+
+      <div class="card-footer text-end">
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalSubcatNueva" data-seccion="{{ seccion.id }}">
+          Añadir subcategoría
+        </button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Modal: nueva subcategoría -->
+<div class="modal fade" id="modalSubcatNueva" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formSubcatNueva">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title">Nueva subcategoría</h5></div>
+      <div class="modal-body">
+        <input type="hidden" name="seccion" id="sub_seccion">
+        <input name="nombre" class="form-control" placeholder="Nombre de la subcategoría" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Crear</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: renombrar (compartido) -->
+<div class="modal fade" id="modalRename" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formRename">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title" id="renameTitle">Renombrar</h5></div>
+      <div class="modal-body">
+        <input type="hidden" id="renameType"><!-- 'seccion' | 'sub' -->
+        <input type="hidden" id="renameId">
+        <input id="renameInput" class="form-control" placeholder="Nuevo nombre" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal borrar: contraseña + aceptación -->
+<div class="modal fade" id="modalDelConfirm" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formDelConfirm">
+      <div class="modal-header">
+        <h5 class="modal-title" id="delConfirmTitle">Borrar <span id="delType"></span></h5>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <i class="fa fa-triangle-exclamation me-1"></i>
+          <span id="delConfirmMessage">Esta acción no podrá ser restaurada.</span>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="ackDelete">
+          <label class="form-check-label" for="ackDelete">
+            Acepto las consecuencias y asumo totalmente mi responsabilidad.
+          </label>
+        </div>
+        <label class="form-label">Contraseña de superusuario</label>
+        <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
+        <input type="hidden" name="id">
+        <input type="hidden" name="type"><!-- 'seccion' | 'sub' -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="btnConfirmDelete" disabled>Eliminar definitivamente</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const csrf = document.cookie.split('; ').find(r=>r.startsWith('csrftoken='))?.split('=')[1] || '{{ csrf_token }}';
+
+// ===== Subcategoría: crear =====
+document.getElementById('modalSubcatNueva').addEventListener('show.bs.modal', (ev)=>{
+  document.getElementById('sub_seccion').value = ev.relatedTarget?.dataset?.seccion || '';
+});
+
+document.getElementById('formSubcatNueva').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const r = await fetch("{% url 'panel_api_subcategoria_crear' %}", {
+    method:'POST', headers:{'X-CSRFToken': csrf}, body: fd
+  });
+  const j = await r.json();
+  if (j.ok) location.reload(); else alert(j.error || 'No se pudo crear');
+});
+
+// ===== Mover secciones / subcategorías =====
+function mover(urlName, id, dir){
+  const fd = new FormData(); fd.append('dir', dir);
+  return fetch(urlName.replace('/0/','/'+id+'/'), { method:'POST', headers:{'X-CSRFToken': csrf}, body: fd });
+}
+
+document.querySelectorAll('.btn-mover-seccion').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const r = await mover("{% url 'panel_api_seccion_mover' 0 %}", btn.dataset.id, btn.dataset.dir);
+    const j = await r.json(); if(j.ok) location.reload(); else alert(j.error || 'No se pudo mover');
+  });
+});
+
+document.querySelectorAll('.btn-mover-sub').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const r = await mover("{% url 'panel_api_subcategoria_mover' 0 %}", btn.dataset.id, btn.dataset.dir);
+    const j = await r.json(); if(j.ok) location.reload(); else alert(j.error || 'No se pudo mover');
+  });
+});
+
+// ===== Renombrar rápido (compartido) =====
+const modalRename = new bootstrap.Modal('#modalRename');
+const renameTitle = document.getElementById('renameTitle');
+const renameType  = document.getElementById('renameType');
+const renameId    = document.getElementById('renameId');
+const renameInput = document.getElementById('renameInput');
+
+document.querySelectorAll('.act-renombrar-seccion').forEach(a=>{
+  a.addEventListener('click', (e)=>{
+    e.preventDefault();
+    renameTitle.textContent = 'Renombrar categoría';
+    renameType.value = 'seccion';
+    renameId.value   = a.dataset.id;
+    renameInput.value = a.dataset.nombre || '';
+    setTimeout(()=>renameInput.focus(), 150);
+    modalRename.show();
+  });
+});
+
+document.querySelectorAll('.act-renombrar-sub').forEach(a=>{
+  a.addEventListener('click', (e)=>{
+    e.preventDefault();
+    renameTitle.textContent = 'Renombrar subcategoría';
+    renameType.value = 'sub';
+    renameId.value   = a.dataset.id;
+    renameInput.value = a.dataset.nombre || '';
+    setTimeout(()=>renameInput.focus(), 150);
+    modalRename.show();
+  });
+});
+
+document.getElementById('formRename').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const nombre = renameInput.value.trim();
+  if(!nombre) return;
+  const fd = new FormData(); fd.append('nombre', nombre);
+  let url = (renameType.value === 'seccion')
+            ? "{% url 'panel_api_seccion_renombrar' 0 %}"
+            : "{% url 'panel_api_subcategoria_renombrar' 0 %}";
+  const r = await fetch(url.replace('/0/','/'+renameId.value+'/'), {
+    method:'POST', headers:{'X-CSRFToken': csrf}, body: fd
+  });
+  const j = await r.json();
+  if (j.ok) location.reload(); else alert(j.error || 'No se pudo renombrar');
+});
+
+// ===== Borrar con confirmación (soporta force+password) =====
+const modalDelConfirm   = new bootstrap.Modal('#modalDelConfirm');
+const formDelConfirm    = document.getElementById('formDelConfirm');
+const delConfirmTitle   = document.getElementById('delConfirmTitle');
+const delType           = document.getElementById('delType');
+const delConfirmMessage = document.getElementById('delConfirmMessage');
+const ackDelete         = document.getElementById('ackDelete');
+const btnConfirmDelete  = document.getElementById('btnConfirmDelete');
+
+let currentDelete = { id: null, type: null, count: 0 };
+
+ackDelete.addEventListener('change', ()=> {
+  btnConfirmDelete.disabled = !ackDelete.checked;
+});
+
+document.querySelectorAll('.btn-del-seccion').forEach(a=>{
+  a.addEventListener('click', (e)=>{
+    e.preventDefault();
+    const count = parseInt(a.dataset.count || '0', 10) || 0;
+
+    currentDelete = { id: a.dataset.id, type: 'seccion', count };
+
+    formDelConfirm.reset();
+    btnConfirmDelete.disabled = true;
+    delType.textContent = 'categoría';
+
+    if (count > 0) {
+      delConfirmMessage.innerHTML = `
+        Esta categoría tiene <strong>${count} subcategorías</strong>.<br>
+        Al borrarla, también se eliminarán todas sus subcategorías (y se compactará el orden).<br>
+        <strong>Esta acción no podrá ser restaurada.</strong>
+      `;
+    } else {
+      delConfirmMessage.textContent = 'Esta acción no podrá ser restaurada.';
+    }
+
+    modalDelConfirm.show();
+  });
+});
+
+document.querySelectorAll('.btn-del-sub').forEach(a=>{
+  a.addEventListener('click', (e)=>{
+    e.preventDefault();
+    const count = parseInt(a.dataset.count || '0', 10) || 0;
+
+    currentDelete = { id: a.dataset.id, type: 'sub', count };
+
+    formDelConfirm.reset();
+    btnConfirmDelete.disabled = true;
+    delType.textContent = 'subcategoría';
+
+    if (count > 0) {
+      delConfirmMessage.innerHTML = `
+        Esta subcategoría tiene <strong>${count} productos</strong> asociados.<br>
+        Al borrarla, estos productos quedarán sin subcategoría.<br>
+        <strong>Esta acción no podrá ser restaurada.</strong>
+      `;
+    } else {
+      delConfirmMessage.textContent = 'Esta acción no podrá ser restaurada.';
+    }
+
+    modalDelConfirm.show();
+  });
+});
+
+formDelConfirm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if (btnConfirmDelete.disabled) return;
+
+  const password = e.target.elements['password'].value.trim();
+  if (!password) return;
+
+  const fd = new FormData();
+  fd.append('password', password);
+
+  // 🔴 CLAVE: si hay hijos/productos, mandar force=1
+  if (currentDelete.count > 0) {
+    fd.append('force', '1');
+  }
+
+  let url = (currentDelete.type === 'seccion')
+            ? "{% url 'panel_api_seccion_borrar' 0 %}"
+            : "{% url 'panel_api_subcategoria_borrar' 0 %}";
+
+  const r = await fetch(url.replace('/0/','/'+currentDelete.id+'/'), {
+    method: 'POST',
+    headers: {'X-CSRFToken': csrf},
+    body: fd
+  });
+
+  const j = await r.json();
+  if (j.ok) {
+    location.reload();
+  } else {
+    if (r.status === 403 || j.code === 'auth') {
+      alert('Contraseña incorrecta.');
+    } else if (j.needs_confirm) {
+      // Por si el backend pide confirmación explícita (fallback)
+      alert('Se requieren permisos adicionales para eliminar. Marca la casilla y confirma.');
+    } else {
+      alert(j.error || 'No se pudo borrar');
+    }
+  }
+});
+</script>
+{% endblock %}
+{% extends 'panel/base_panel.html' %}
+{% block title %}Categorías{% endblock %}
+
+{% block content %}
+<style>
+  .card-soft{ border:0; border-radius:16px; box-shadow: 0 2px 10px rgba(0,0,0,.05) }
+  .btn-ghost{ --bs-btn-color:#334155; --bs-btn-hover-bg:#f1f5f9; --bs-btn-border-color:transparent; --bs-btn-hover-border-color:transparent }
+  .btn-ghost:focus{ box-shadow:0 0 0 .25rem rgba(13,110,253,.15) }
+  .title-chip{ font-size:.85rem; padding:.25rem .5rem; border-radius:999px; background:#f8fafc; color:#475569 }
+  .list-group-item{ padding:.65rem .75rem }
+  .name{ font-weight:600 }
+  .badge-order{ background:#eef2ff; color:#4338ca; font-weight:600 }
+  .icon-btn{ width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px }
+</style>
+
+<div class="d-flex align-items-center mb-3">
+  <h2 class="me-auto">Categorías & Subcategorías</h2>
+
+  <!-- Abrir formulario de creación (con imagen) -->
+  <a class="btn btn-primary" href="{% url 'panel_categoria_create' %}">
+    <i class="fa fa-plus me-2"></i> Nueva categoría
+  </a>
+</div>
+
+<div class="row g-3">
+  {% for seccion in secciones %}
+  <div class="col-lg-6">
+    <div class="card card-soft h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="up" title="Subir">
+            <i class="fa fa-arrow-up"></i>
+          </button>
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="down" title="Bajar">
+            <i class="fa fa-arrow-down"></i>
+          </button>
+          <span class="name">{{ seccion.nombre }}</span>
+          <span class="title-chip">Orden: {{ seccion.orden }}</span>
+        </div>
+
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+            <i class="fa fa-ellipsis"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <!-- EDITAR: lleva al formulario donde se cambia nombre e imagen (sincroniza con principal) -->
+              <a class="dropdown-item" href="{% url 'panel_categoria_edit' seccion.id %}">
+                <i class="fa fa-pen me-2"></i> Editar
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item act-renombrar-seccion" href="#" data-id="{{ seccion.id }}" data-nombre="{{ seccion.nombre }}">
+                <i class="fa fa-i-cursor me-2"></i> Renombrar rápido
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger btn-del-seccion" href="#" data-id="{{ seccion.id }}" data-count="{{ seccion.subcategorias.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <ul class="list-group list-group-flush">
+        {% for sc in seccion.subcategorias.all|dictsort:"orden" %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="up" title="Subir">
+              <i class="fa fa-arrow-up"></i>
+            </button>
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="down" title="Bajar">
+              <i class="fa fa-arrow-down"></i>
+            </button>
+            <span class="name">{{ sc.nombre }}</span>
+            <span class="badge badge-order">Orden {{ sc.orden }}</span>
+          </div>
+
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+              <i class="fa fa-ellipsis"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item act-renombrar-sub" href="#" data-id="{{ sc.id }}" data-nombre="{{ sc.nombre }}"><i class="fa fa-pen me-2"></i> Renombrar</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger btn-del-sub" href="#" data-id="{{ sc.id }}" data-count="{{ sc.productos.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+            </ul>
+          </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">Sin subcategorías</li>
+        {% endfor %}
+      </ul>
+
+      <div class="card-footer text-end">
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalSubcatNueva" data-seccion="{{ seccion.id }}">
+          Añadir subcategoría
+        </button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Modal: nueva subcategoría -->
+<div class="modal fade" id="modalSubcatNueva" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formSubcatNueva">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title">Nueva subcategoría</h5></div>
+      <div class="modal-body">
+        <input type="hidden" name="seccion" id="sub_seccion">
+        <input name="nombre" class="form-control" placeholder="Nombre de la subcategoría" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Crear</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: renombrar (compartido) -->
+<div class="modal fade" id="modalRename" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formRename">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title" id="renameTitle">Renombrar</h5></div>
+      <div class="modal-body">
+        <input type="hidden" id="renameType"><!-- 'seccion' | 'sub' -->
+        <input type="hidden" id="renameId">
+        <input id="renameInput" class="form-control" placeholder="Nuevo nombre" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal borrar: contraseña + aceptación -->
+<div class="modal fade" id="modalDelConfirm" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formDelConfirm">
+      <div class="modal-header">
+        <h5 class="modal-title" id="delConfirmTitle">Borrar <span id="delType"></span></h5>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <i class="fa fa-triangle-exclamation me-1"></i>
+          <span id="delConfirmMessage">Esta acción no podrá ser restaurada.</span>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="ackDelete">
+          <label class="form-check-label" for="ackDelete">
+            Acepto las consecuencias y asumo totalmente mi responsabilidad.
+          </label>
+        </div>
+        <label class="form-label">Contraseña de superusuario</label>
+        <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
+        <input type="hidden" name="id">
+        <input type="hidden" name="type"><!-- 'seccion' | 'sub' -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="btnConfirmDelete" disabled>Eliminar definitivamente</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<style>
+  .card-soft{ border:0; border-radius:16px; box-shadow: 0 2px 10px rgba(0,0,0,.05) }
+  .btn-ghost{ --bs-btn-color:#334155; --bs-btn-hover-bg:#f1f5f9; --bs-btn-border-color:transparent; --bs-btn-hover-border-color:transparent }
+  .btn-ghost:focus{ box-shadow:0 0 0 .25rem rgba(13,110,253,.15) }
+  .title-chip{ font-size:.85rem; padding:.25rem .5rem; border-radius:999px; background:#f8fafc; color:#475569 }
+  .list-group-item{ padding:.65rem .75rem }
+  .name{ font-weight:600 }
+  .badge-order{ background:#eef2ff; color:#4338ca; font-weight:600 }
+  .icon-btn{ width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px }
+</style>
+
+<div class="d-flex align-items-center mb-3">
+  <h2 class="me-auto">Categorías & Subcategorías</h2>
+
+  <!-- Abrir formulario de creación (con imagen) -->
+  <a class="btn btn-primary" href="{% url 'panel_categoria_create' %}">
+    <i class="fa fa-plus me-2"></i> Nueva categoría
+  </a>
+</div>
+
+<div class="row g-3">
+  {% for seccion in secciones %}
+  <div class="col-lg-6">
+    <div class="card card-soft h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="up" title="Subir">
+            <i class="fa fa-arrow-up"></i>
+          </button>
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="down" title="Bajar">
+            <i class="fa fa-arrow-down"></i>
+          </button>
+          <span class="name">{{ seccion.nombre }}</span>
+          <span class="title-chip">Orden: {{ seccion.orden }}</span>
+        </div>
+
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+            <i class="fa fa-ellipsis"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <!-- EDITAR: lleva al formulario donde se cambia nombre e imagen (sincroniza con principal) -->
+              <a class="dropdown-item" href="{% url 'panel_categoria_edit' seccion.id %}">
+                <i class="fa fa-pen me-2"></i> Editar
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item act-renombrar-seccion" href="#" data-id="{{ seccion.id }}" data-nombre="{{ seccion.nombre }}">
+                <i class="fa fa-i-cursor me-2"></i> Renombrar rápido
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger btn-del-seccion" href="#" data-id="{{ seccion.id }}" data-count="{{ seccion.subcategorias.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <ul class="list-group list-group-flush">
+        {% for sc in seccion.subcategorias.all|dictsort:"orden" %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="up" title="Subir">
+              <i class="fa fa-arrow-up"></i>
+            </button>
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="down" title="Bajar">
+              <i class="fa fa-arrow-down"></i>
+            </button>
+            <span class="name">{{ sc.nombre }}</span>
+            <span class="badge badge-order">Orden {{ sc.orden }}</span>
+          </div>
+
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+              <i class="fa fa-ellipsis"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item act-renombrar-sub" href="#" data-id="{{ sc.id }}" data-nombre="{{ sc.nombre }}"><i class="fa fa-pen me-2"></i> Renombrar</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger btn-del-sub" href="#" data-id="{{ sc.id }}" data-count="{{ sc.productos.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+            </ul>
+          </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">Sin subcategorías</li>
+        {% endfor %}
+      </ul>
+
+      <div class="card-footer text-end">
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalSubcatNueva" data-seccion="{{ seccion.id }}">
+          Añadir subcategoría
+        </button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Modal: nueva subcategoría -->
+<div class="modal fade" id="modalSubcatNueva" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formSubcatNueva">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title">Nueva subcategoría</h5></div>
+      <div class="modal-body">
+        <input type="hidden" name="seccion" id="sub_seccion">
+        <input name="nombre" class="form-control" placeholder="Nombre de la subcategoría" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Crear</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: renombrar (compartido) -->
+<div class="modal fade" id="modalRename" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formRename">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title" id="renameTitle">Renombrar</h5></div>
+      <div class="modal-body">
+        <input type="hidden" id="renameType"><!-- 'seccion' | 'sub' -->
+        <input type="hidden" id="renameId">
+        <input id="renameInput" class="form-control" placeholder="Nuevo nombre" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal borrar: contraseña + aceptación -->
+<div class="modal fade" id="modalDelConfirm" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formDelConfirm">
+      <div class="modal-header">
+        <h5 class="modal-title" id="delConfirmTitle">Borrar <span id="delType"></span></h5>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <i class="fa fa-triangle-exclamation me-1"></i>
+          <span id="delConfirmMessage">Esta acción no podrá ser restaurada.</span>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="ackDelete">
+          <label class="form-check-label" for="ackDelete">
+            Acepto las consecuencias y asumo totalmente mi responsabilidad.
+          </label>
+        </div>
+        <label class="form-label">Contraseña de superusuario</label>
+        <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
+        <input type="hidden" name="id">
+        <input type="hidden" name="type"><!-- 'seccion' | 'sub' -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="btnConfirmDelete" disabled>Eliminar definitivamente</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<style>
+  .card-soft{ border:0; border-radius:16px; box-shadow: 0 2px 10px rgba(0,0,0,.05) }
+  .btn-ghost{ --bs-btn-color:#334155; --bs-btn-hover-bg:#f1f5f9; --bs-btn-border-color:transparent; --bs-btn-hover-border-color:transparent }
+  .btn-ghost:focus{ box-shadow:0 0 0 .25rem rgba(13,110,253,.15) }
+  .title-chip{ font-size:.85rem; padding:.25rem .5rem; border-radius:999px; background:#f8fafc; color:#475569 }
+  .list-group-item{ padding:.65rem .75rem }
+  .name{ font-weight:600 }
+  .badge-order{ background:#eef2ff; color:#4338ca; font-weight:600 }
+  .icon-btn{ width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px }
+</style>
+
+<div class="d-flex align-items-center mb-3">
+  <h2 class="me-auto">Categorías & Subcategorías</h2>
+
+  <!-- Abrir formulario de creación (con imagen) -->
+  <a class="btn btn-primary" href="{% url 'panel_categoria_create' %}">
+    <i class="fa fa-plus me-2"></i> Nueva categoría
+  </a>
+</div>
+
+<div class="row g-3">
+  {% for seccion in secciones %}
+  <div class="col-lg-6">
+    <div class="card card-soft h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="up" title="Subir">
+            <i class="fa fa-arrow-up"></i>
+          </button>
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="down" title="Bajar">
+            <i class="fa fa-arrow-down"></i>
+          </button>
+          <span class="name">{{ seccion.nombre }}</span>
+          <span class="title-chip">Orden: {{ seccion.orden }}</span>
+        </div>
+
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+            <i class="fa fa-ellipsis"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <!-- EDITAR: lleva al formulario donde se cambia nombre e imagen (sincroniza con principal) -->
+              <a class="dropdown-item" href="{% url 'panel_categoria_edit' seccion.id %}">
+                <i class="fa fa-pen me-2"></i> Editar
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item act-renombrar-seccion" href="#" data-id="{{ seccion.id }}" data-nombre="{{ seccion.nombre }}">
+                <i class="fa fa-i-cursor me-2"></i> Renombrar rápido
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger btn-del-seccion" href="#" data-id="{{ seccion.id }}" data-count="{{ seccion.subcategorias.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <ul class="list-group list-group-flush">
+        {% for sc in seccion.subcategorias.all|dictsort:"orden" %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="up" title="Subir">
+              <i class="fa fa-arrow-up"></i>
+            </button>
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="down" title="Bajar">
+              <i class="fa fa-arrow-down"></i>
+            </button>
+            <span class="name">{{ sc.nombre }}</span>
+            <span class="badge badge-order">Orden {{ sc.orden }}</span>
+          </div>
+
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+              <i class="fa fa-ellipsis"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item act-renombrar-sub" href="#" data-id="{{ sc.id }}" data-nombre="{{ sc.nombre }}"><i class="fa fa-pen me-2"></i> Renombrar</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger btn-del-sub" href="#" data-id="{{ sc.id }}" data-count="{{ sc.productos.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+            </ul>
+          </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">Sin subcategorías</li>
+        {% endfor %}
+      </ul>
+
+      <div class="card-footer text-end">
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalSubcatNueva" data-seccion="{{ seccion.id }}">
+          Añadir subcategoría
+        </button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Modal: nueva subcategoría -->
+<div class="modal fade" id="modalSubcatNueva" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formSubcatNueva">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title">Nueva subcategoría</h5></div>
+      <div class="modal-body">
+        <input type="hidden" name="seccion" id="sub_seccion">
+        <input name="nombre" class="form-control" placeholder="Nombre de la subcategoría" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Crear</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: renombrar (compartido) -->
+<div class="modal fade" id="modalRename" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formRename">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title" id="renameTitle">Renombrar</h5></div>
+      <div class="modal-body">
+        <input type="hidden" id="renameType"><!-- 'seccion' | 'sub' -->
+        <input type="hidden" id="renameId">
+        <input id="renameInput" class="form-control" placeholder="Nuevo nombre" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal borrar: contraseña + aceptación -->
+<div class="modal fade" id="modalDelConfirm" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formDelConfirm">
+      <div class="modal-header">
+        <h5 class="modal-title" id="delConfirmTitle">Borrar <span id="delType"></span></h5>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <i class="fa fa-triangle-exclamation me-1"></i>
+          <span id="delConfirmMessage">Esta acción no podrá ser restaurada.</span>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="ackDelete">
+          <label class="form-check-label" for="ackDelete">
+            Acepto las consecuencias y asumo totalmente mi responsabilidad.
+          </label>
+        </div>
+        <label class="form-label">Contraseña de superusuario</label>
+        <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
+        <input type="hidden" name="id">
+        <input type="hidden" name="type"><!-- 'seccion' | 'sub' -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="btnConfirmDelete" disabled>Eliminar definitivamente</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+<style>
+  .card-soft{ border:0; border-radius:16px; box-shadow: 0 2px 10px rgba(0,0,0,.05) }
+  .btn-ghost{ --bs-btn-color:#334155; --bs-btn-hover-bg:#f1f5f9; --bs-btn-border-color:transparent; --bs-btn-hover-border-color:transparent }
+  .btn-ghost:focus{ box-shadow:0 0 0 .25rem rgba(13,110,253,.15) }
+  .title-chip{ font-size:.85rem; padding:.25rem .5rem; border-radius:999px; background:#f8fafc; color:#475569 }
+  .list-group-item{ padding:.65rem .75rem }
+  .name{ font-weight:600 }
+  .badge-order{ background:#eef2ff; color:#4338ca; font-weight:600 }
+  .icon-btn{ width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px }
+</style>
+
+<div class="d-flex align-items-center mb-3">
+  <h2 class="me-auto">Categorías & Subcategorías</h2>
+
+  <!-- Abrir formulario de creación (con imagen) -->
+  <a class="btn btn-primary" href="{% url 'panel_categoria_create' %}">
+    <i class="fa fa-plus me-2"></i> Nueva categoría
+  </a>
+</div>
+
+<div class="row g-3">
+  {% for seccion in secciones %}
+  <div class="col-lg-6">
+    <div class="card card-soft h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="up" title="Subir">
+            <i class="fa fa-arrow-up"></i>
+          </button>
+          <button class="btn btn-sm btn-ghost icon-btn btn-mover-seccion" data-id="{{ seccion.id }}" data-dir="down" title="Bajar">
+            <i class="fa fa-arrow-down"></i>
+          </button>
+          <span class="name">{{ seccion.nombre }}</span>
+          <span class="title-chip">Orden: {{ seccion.orden }}</span>
+        </div>
+
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+            <i class="fa fa-ellipsis"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <!-- EDITAR: lleva al formulario donde se cambia nombre e imagen (sincroniza con principal) -->
+              <a class="dropdown-item" href="{% url 'panel_categoria_edit' seccion.id %}">
+                <i class="fa fa-pen me-2"></i> Editar
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item act-renombrar-seccion" href="#" data-id="{{ seccion.id }}" data-nombre="{{ seccion.nombre }}">
+                <i class="fa fa-i-cursor me-2"></i> Renombrar rápido
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger btn-del-seccion" href="#" data-id="{{ seccion.id }}" data-count="{{ seccion.subcategorias.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <ul class="list-group list-group-flush">
+        {% for sc in seccion.subcategorias.all|dictsort:"orden" %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="up" title="Subir">
+              <i class="fa fa-arrow-up"></i>
+            </button>
+            <button class="btn btn-sm btn-ghost icon-btn btn-mover-sub" data-id="{{ sc.id }}" data-dir="down" title="Bajar">
+              <i class="fa fa-arrow-down"></i>
+            </button>
+            <span class="name">{{ sc.nombre }}</span>
+            <span class="badge badge-order">Orden {{ sc.orden }}</span>
+          </div>
+
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary icon-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Acciones">
+              <i class="fa fa-ellipsis"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item act-renombrar-sub" href="#" data-id="{{ sc.id }}" data-nombre="{{ sc.nombre }}"><i class="fa fa-pen me-2"></i> Renombrar</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger btn-del-sub" href="#" data-id="{{ sc.id }}" data-count="{{ sc.productos.count }}"><i class="fa fa-trash me-2"></i> Borrar</a></li>
+            </ul>
+          </div>
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">Sin subcategorías</li>
+        {% endfor %}
+      </ul>
+
+      <div class="card-footer text-end">
+        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalSubcatNueva" data-seccion="{{ seccion.id }}">
+          Añadir subcategoría
+        </button>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Modal: nueva subcategoría -->
+<div class="modal fade" id="modalSubcatNueva" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formSubcatNueva">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title">Nueva subcategoría</h5></div>
+      <div class="modal-body">
+        <input type="hidden" name="seccion" id="sub_seccion">
+        <input name="nombre" class="form-control" placeholder="Nombre de la subcategoría" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Crear</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: renombrar (compartido) -->
+<div class="modal fade" id="modalRename" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formRename">
+      {% csrf_token %}
+      <div class="modal-header"><h5 class="modal-title" id="renameTitle">Renombrar</h5></div>
+      <div class="modal-body">
+        <input type="hidden" id="renameType"><!-- 'seccion' | 'sub' -->
+        <input type="hidden" id="renameId">
+        <input id="renameInput" class="form-control" placeholder="Nuevo nombre" required>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal" type="button">Cancelar</button>
+        <button class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal borrar: contraseña + aceptación -->
+<div class="modal fade" id="modalDelConfirm" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formDelConfirm">
+      <div class="modal-header">
+        <h5 class="modal-title" id="delConfirmTitle">Borrar <span id="delType"></span></h5>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <i class="fa fa-triangle-exclamation me-1"></i>
+          <span id="delConfirmMessage">Esta acción no podrá ser restaurada.</span>
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="ackDelete">
+          <label class="form-check-label" for="ackDelete">
+            Acepto las consecuencias y asumo totalmente mi responsabilidad.
+          </label>
+        </div>
+        <label class="form-label">Contraseña de superusuario</label>
+        <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
+        <input type="hidden" name="id">
+        <input type="hidden" name="type"><!-- 'seccion' | 'sub' -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="btnConfirmDelete" disabled>Eliminar definitivamente</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ===== Subcategoría: crear =====
+document.getElementById('modalSubcatNueva').addEventListener('show.bs.modal', (ev)=>{
+  document.getElementById('sub_seccion').value = ev.relatedTarget?.dataset?.seccion || '';
+});
+
+document.getElementById('formSubcatNueva').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const r = await fetch("{% url 'panel_api_subcategoria_crear' %}", {
+    method:'POST', headers:{'X-CSRFToken': csrf}, body: fd
+  });
+  const j = await r.json();
+  if (j.ok) location.reload(); else alert(j.error || 'No se pudo crear');
+});
+
+// ===== Mover secciones / subcategorías =====
+function mover(urlName, id, dir){
+  const fd = new FormData(); fd.append('dir', dir);
+  return fetch(urlName.replace('/0/','/'+id+'/'), { method:'POST', headers:{'X-CSRFToken': csrf}, body: fd });
+}
+
+document.querySelectorAll('.btn-mover-seccion').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const r = await mover("{% url 'panel_api_seccion_mover' 0 %}", btn.dataset.id, btn.dataset.dir);
+    const j = await r.json(); if(j.ok) location.reload(); else alert(j.error || 'No se pudo mover');
+  });
+});
+
+document.querySelectorAll('.btn-mover-sub').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    const r = await mover("{% url 'panel_api_subcategoria_mover' 0 %}", btn.dataset.id, btn.dataset.dir);
+    const j = await r.json(); if(j.ok) location.reload(); else alert(j.error || 'No se pudo mover');
+  });
+});
+
+// ===== Renombrar rápido (compartido) =====
+document.querySelectorAll('.act-renombrar-seccion').forEach(a=>{
+  a.addEventListener('click', (e)=>{
+    e.preventDefault();
+    renameTitle.textContent = 'Renombrar categoría';
+    renameType.value = 'seccion';
+    renameId.value   = a.dataset.id;
+    renameInput.value = a.dataset.nombre || '';
+    setTimeout(()=>renameInput.focus(), 150);
+    modalRename.show();
+  });
+});
+
+document.querySelectorAll('.act-renombrar-sub').forEach(a=>{
+  a.addEventListener('click', (e)=>{
+    e.preventDefault();
+    renameTitle.textContent = 'Renombrar subcategoría';
+    renameType.value = 'sub';
+    renameId.value   = a.dataset.id;
+    renameInput.value = a.dataset.nombre || '';
+    setTimeout(()=>renameInput.focus(), 150);
+    modalRename.show();
+  });
+});
+
+document.getElementById('formRename').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const nombre = renameInput.value.trim();
+  if(!nombre) return;
+  const fd = new FormData(); fd.append('nombre', nombre);
+  let url = (renameType.value === 'seccion')
+            ? "{% url 'panel_api_seccion_renombrar' 0 %}"
+            : "{% url 'panel_api_subcategoria_renombrar' 0 %}";
+  const r = await fetch(url.replace('/0/','/'+renameId.value+'/'), {
+    method:'POST', headers:{'X-CSRFToken': csrf}, body: fd
+  });
+  const j = await r.json();
+  if (j.ok) location.reload(); else alert(j.error || 'No se pudo renombrar');
+});
+
+
+ackDelete.addEventListener('change', ()=> {
+  btnConfirmDelete.disabled = !ackDelete.checked;
+});
+
+document.querySelectorAll('.btn-del-seccion').forEach(a=>{
+  a.addEventListener('click', (e)=>{
+    e.preventDefault();
+    const count = parseInt(a.dataset.count || '0', 10) || 0;
+
+    currentDelete = { id: a.dataset.id, type: 'seccion', count };
+
+    formDelConfirm.reset();
+    btnConfirmDelete.disabled = true;
+    delType.textContent = 'categoría';
+
+    if (count > 0) {
+      delConfirmMessage.innerHTML = `
+        Esta categoría tiene <strong>${count} subcategorías</strong>.<br>
+        Al borrarla, también se eliminarán todas sus subcategorías (y se compactará el orden).<br>
+        <strong>Esta acción no podrá ser restaurada.</strong>
+      `;
+    } else {
+      delConfirmMessage.textContent = 'Esta acción no podrá ser restaurada.';
+    }
+
+    modalDelConfirm.show();
+  });
+});
+
+document.querySelectorAll('.btn-del-sub').forEach(a=>{
+  a.addEventListener('click', (e)=>{
+    e.preventDefault();
+    const count = parseInt(a.dataset.count || '0', 10) || 0;
+
+    currentDelete = { id: a.dataset.id, type: 'sub', count };
+
+    formDelConfirm.reset();
+    btnConfirmDelete.disabled = true;
+    delType.textContent = 'subcategoría';
+
+    if (count > 0) {
+      delConfirmMessage.innerHTML = `
+        Esta subcategoría tiene <strong>${count} productos</strong> asociados.<br>
+        Al borrarla, estos productos quedarán sin subcategoría.<br>
+        <strong>Esta acción no podrá ser restaurada.</strong>
+      `;
+    } else {
+      delConfirmMessage.textContent = 'Esta acción no podrá ser restaurada.';
+    }
+
+    modalDelConfirm.show();
+  });
+});
+
+formDelConfirm.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if (btnConfirmDelete.disabled) return;
+
+  const password = e.target.elements['password'].value.trim();
+  if (!password) return;
+
+  const fd = new FormData();
+  fd.append('password', password);
+
+  // 🔴 CLAVE: si hay hijos/productos, mandar force=1
+  if (currentDelete.count > 0) {
+    fd.append('force', '1');
+  }
+
+  let url = (currentDelete.type === 'seccion')
+            ? "{% url 'panel_api_seccion_borrar' 0 %}"
+            : "{% url 'panel_api_subcategoria_borrar' 0 %}";
+
+  const r = await fetch(url.replace('/0/','/'+currentDelete.id+'/'), {
+    method: 'POST',
+    headers: {'X-CSRFToken': csrf},
+    body: fd
+  });
+
+  const j = await r.json();
+  if (j.ok) {
+    location.reload();
+  } else {
+    if (r.status === 403 || j.code === 'auth') {
+      alert('Contraseña incorrecta.');
+    } else if (j.needs_confirm) {
+      // Por si el backend pide confirmación explícita (fallback)
+      alert('Se requieren permisos adicionales para eliminar. Marca la casilla y confirma.');
+    } else {
+      alert(j.error || 'No se pudo borrar');
+    }
+  }
+});
+</script>
+{% endblock %}

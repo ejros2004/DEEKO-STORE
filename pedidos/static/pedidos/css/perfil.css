@@ -1,0 +1,691 @@
+/* ========== VARIABLES ========== */
+:root {
+  --primary-color: #1E3A8A;
+  --secondary-color: #3B82F6;
+  --light-color: #F8F9FA;
+  --gray-color: #A0AEC0;
+  --dark-color: #2D3748;
+  --danger-color: #EF4444;
+  --success-color: #10B981;
+}
+
+/* ========== NAVBAR ========== */
+.navbar {
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  padding: 15px 0;
+  position: relative;
+  z-index: 100;
+}
+
+.navbar-brand img {
+  max-height: 80px;
+  transition: transform 0.3s;
+}
+
+.navbar-brand:hover img {
+  transform: scale(1.05);
+}
+
+.nav-link {
+  font-weight: 600;
+  color: var(--dark-color) !important;
+  padding: 8px 15px !important;
+  transition: all 0.3s;
+}
+
+.nav-link:hover {
+  color: var(--primary-color) !important;
+}
+
+
+.cart-icon:hover {
+  color: var(--primary-color) !important;
+  background-color: rgba(30, 58, 138, 0.05);
+}
+
+.cart-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: var(--secondary-color);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* ========== CART STYLES ========== */
+#cartOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 10000;
+  display: none;
+}
+
+
+.cart-items {
+  padding: 15px;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+/* CAMBIOS PRINCIPALES (SOLO PARA EL CARRITO) */
+.cart-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.cart-item > div {
+  display: flex;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+.cart-item-img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-right: 15px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.cart-item-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.cart-item-title {
+  font-weight: 600;
+  margin-bottom: 5px;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* FIN DE CAMBIOS PRINCIPALES */
+
+.quantity-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-checkout {
+  width: 100%;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s;
+}
+
+.btn-checkout:hover {
+  background-color: #5a52e0;
+  transform: translateY(-2px);
+}
+
+/* ========== TOAST NOTIFICATION ========== */
+.cart-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  z-index: 1100;
+  transform: translateX(150%);
+  transition: transform 0.3s ease;
+  max-width: 350px;
+}
+
+
+.cart-toast-view:hover {
+  text-decoration: underline;
+  color: var(--secondary-color);
+}
+
+.cart-toast-close {
+  background: none;
+  border: none;
+  color: var(--gray-color);
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: color 0.2s;
+}
+
+.cart-toast-close:hover {
+  color: var(--danger-color);
+}
+
+/* Estilos para la tarjeta de perfil */
+.profile-card {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  background-color: #1E3A8A;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.profile-avatar i {
+  color: white;
+  font-size: 2rem;
+}
+
+/* Estilos para la tabla de pedidos recientes */
+.recent-orders-table {
+  margin-bottom: 1.5rem;
+}
+
+/* Estilos para la sección de configuración de cuenta */
+.account-setting-item {
+  padding: 1rem 0;
+}
+
+.account-setting-item:not(:last-child) {
+  border-bottom: 1px solid #eee;
+}
+
+.account-setting-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.account-setting-description {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+/* Estilos para los badges */
+.badge {
+  font-weight: 500;
+  padding: 0.5em 0.8em;
+}
+
+
+/* ===== Footer centrado ===== */
+.footer {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  padding: 2.5rem 0;
+  margin-top: 4rem;
+  text-align: center;
+}
+
+.footer .row {
+  align-items: center; /* Centra verticalmente las columnas */
+}
+
+.footer .col-md-4 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.footer h5 {
+  font-weight: 700;
+}
+
+
+.footer .social-icons a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transition: all 0.3s;
+}
+
+.footer .social-icons a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+}
+
+.footer ul {
+  padding-left: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.footer hr.bg-light {
+  opacity: .25;
+}
+
+.legal-links a {
+  font-weight: 600;
+}
+
+/* ===== Modales (pop-ups) ===== */
+.footer-modal {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 0;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+.footer-modal .modal-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: #fff;
+  border-bottom: 0;
+}
+.footer-modal .btn-close.btn-close-white {
+  filter: invert(1) brightness(2);
+}
+/* Solo dentro de modales: texto justificado */
+.footer-modal .modal-body {
+  background: #fff;
+  text-align: justify;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+.footer-modal .modal-body p,
+.footer-modal .modal-body li {
+  margin-bottom: 0.75rem;
+}
+.footer-modal .modal-body ol,
+.footer-modal .modal-body ul {
+  padding-left: 1.2rem;
+}
+.footer-modal .modal-footer {
+  background: #f8f9fa;
+  border-top: 0;
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-info {
+    text-align: center;
+  }
+  
+  .account-settings {
+    margin-top: 2rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .d-flex.justify-content-between.align-items-center {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .btn-outline-secondary {
+    width: 100%;
+  }
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  #cartSidebar {
+    width: 85% !important;
+    max-width: none !important;
+  }
+  
+  .cart-toast {
+    max-width: calc(100% - 40px);
+  }
+  
+  .hero-section {
+    padding: 3rem 0;
+  }
+  
+  .hero-section .display-5 {
+    font-size: 2rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  #cartSidebar {
+    width: 100% !important;
+  }
+  
+  .hero-section {
+    padding: 2.5rem 0;
+  }
+}
+
+/* Mensaje de carrito vacío en rojo */
+.empty-cart-message {
+    animation: fadeIn 0.5s ease;
+    padding: 2rem;
+    border-radius: 8px;
+    background-color: rgba(239, 68, 68, 0.05);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.empty-cart-message i {
+    color: var(--danger-color);
+    margin-bottom: 1rem;
+}
+
+.empty-cart-message h5 {
+    font-weight: 600;
+    color: var(--danger-color);
+}
+
+.empty-cart-message p {
+    color: var(--danger-color);
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Animación para eliminar productos */
+.cart-item {
+    transition: all 0.5s ease;
+}
+
+/* Estilo para el botón de pago deshabilitado */
+.btn-checkout.btn-disabled {
+    background-color: var(--danger-color) !important;
+    color: white !important;
+    cursor: not-allowed;
+    transform: none !important;
+    border: 1px solid var(--danger-color);
+    opacity: 0.7;
+}
+
+.btn-checkout.btn-disabled:hover {
+    background-color: var(--danger-color) !important;
+    transform: none !important;
+}
+
+.btn-checkout.btn-disabled i {
+    color: white !important;
+}
+
+/* Table styles */
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--dark-color);
+    border-top: none;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Button styles */
+.btn-outline-primary {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Alert styles */
+.alert {
+    border-radius: 8px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ========== ESTILOS MEJORADOS PARA EDITOR DE PERFIL ========== */
+
+/* Contenedor principal */
+.card.shadow-sm {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    background: #ffffff;
+}
+
+/* Encabezado de la tarjeta */
+.card-header {
+    background: linear-gradient(135deg, #4F46E5, #6366F1);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-bottom: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header h4 {
+    font-weight: 700;
+    font-size: 1.6rem;
+    margin: 0;
+}
+
+.card-header .btn-outline-secondary {
+    border-color: rgba(255, 255, 255, 0.4);
+    color: white;
+    background-color: rgba(255, 255, 255, 0.15);
+    transition: 0.3s ease;
+}
+
+.card-header .btn-outline-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-color: white;
+}
+
+/* Cuerpo del formulario */
+.card-body {
+    padding: 2.5rem;
+    background-color: #F3F4F6;
+}
+
+/* Secciones del formulario */
+.form-section {
+    background: white;
+    padding: 1.75rem 2rem;
+    margin-bottom: 2rem;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    transition: box-shadow 0.3s;
+}
+
+.form-section:hover {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
+}
+
+.form-section h5 {
+    font-size: 1.25rem;
+    color: #4338CA;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding-left: 14px;
+}
+
+.form-section h5::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 6px;
+    height: 20px;
+    background-color: #6366F1;
+    border-radius: 3px;
+}
+
+/* Campos del formulario */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    font-size: 0.95rem;
+    color: #374151;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control {
+    background-color: #F9FAFB;
+    border: 1px solid #D1D5DB;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.form-control:focus {
+    border-color: #6366F1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+    background-color: white;
+}
+
+/* Campo solo lectura */
+.email-display {
+    background-color: #E5E7EB;
+    color: #111827;
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    font-weight: 500;
+}
+
+/* Botones de acción */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2.5rem;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #4F46E5, #6366F1);
+    color: white;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+}
+
+.btn-cancel {
+    background-color: white;
+    color: #4B5563;
+    border: 1px solid #D1D5DB;
+    padding: 0.75rem 2rem;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.btn-cancel:hover {
+    background-color: #F3F4F6;
+}
+
+/* Inputs de fecha */
+input[type="date"] {
+    padding-right: 1.5rem;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 12px;
+    opacity: 0.6;
+    cursor: pointer;
+}
+
+/* Textarea */
+textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .form-section {
+        padding: 1.25rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .btn-save,
+    .btn-cancel {
+        width: 100%;
+    }
+}

@@ -1,0 +1,65 @@
+:root {
+  --primary-color: #1E3A8A;
+  --secondary-color: #3B82F6;
+  --light-color: #F8F9FA;
+  --gray-color: #A0AEC0;
+  --dark-color: #2D3748;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--light-color);
+  color: var(--dark-color);
+}
+
+.cart-item-summary img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+
+footer {
+  background: var(--primary-color);
+  color: white;
+  padding: 2.5rem 0;
+  margin-top: 4rem;
+}
+
+.section-title {
+  font-weight: 700;
+  font-size: 1.8rem;
+  margin-bottom: 2rem;
+}
+
+.is-invalid {
+  border-color: #dc3545 !important;
+}
+
+
+#termsConditions {
+  border-left: 3px solid var(--primary-color);
+}
+
+#termsConditions ol {
+  padding-left: 1.5rem;
+}
+
+#termsConditions li {
+  padding-left: 0.5rem;
+}
+
+#termsConditions .card-body {
+  padding: 1.5rem;
+  background-color: rgba(248, 249, 250, 0.5);
+}
+
+input[type="checkbox"]:invalid ~ .error-message {
+  display: block;
+}
+
+input[type="checkbox"]:invalid {
+  border-color: #dc3545 !important;
+}

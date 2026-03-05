@@ -1,0 +1,184 @@
+[
+  {
+    "model": "productos.Producto",
+    "pk": 1,
+    "fields": {
+      "subcategoria": 1,
+      "nombre": "Manzanas Orgánicas",
+      "descripcion": "Cultivadas sin pesticidas, frescas del campo a tu mesa.",
+      "precio": "95.00",
+      "imagen": "manzanas_organicas.jpg",
+      "badge": "nuevo",
+      "stock": 50,
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 2,
+    "fields": {
+      "subcategoria": 1,
+      "nombre": "Plátanos Maduros",
+      "descripcion": "Dulces y naturales, perfectos para cualquier momento.",
+      "precio": "25.00",
+      "imagen": "platanos_maduros.jpg",
+      "badge": "popular",
+      "stock": 80,
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 3,
+    "fields": {
+      "subcategoria": 1,
+      "nombre": "Fresas Frescas",
+      "descripcion": "Recogidas en su punto óptimo de maduración.",
+      "precio": "120.00",
+      "imagen": "fresas_frescas.jpg",
+      "badge": "oferta",
+      "stock": 30,
+      "orden": 3
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 4,
+    "fields": {
+      "subcategoria": 1,
+      "nombre": "Zanahorias Baby",
+      "descripcion": "Dulces y crujientes, ideales para snacks saludables.",
+      "precio": "45.00",
+      "imagen": "zanahorias_baby.jpg",
+      "badge": "ninguno",
+      "stock": 60,
+      "orden": 4
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 5,
+    "fields": {
+      "subcategoria": 2,
+      "nombre": "Leche Entera",
+      "descripcion": "100% natural, sin conservantes ni aditivos.",
+      "precio": "35.00",
+      "imagen": "leche_entera.jpg",
+      "badge": "popular",
+      "stock": 100,
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 6,
+    "fields": {
+      "subcategoria": 2,
+      "nombre": "Yogurt Natural",
+      "descripcion": "Sin azúcares añadidos, conservantes ni colorantes.",
+      "precio": "45.00",
+      "imagen": "yogurt_natural.jpg",
+      "badge": "nuevo",
+      "stock": 70,
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 7,
+    "fields": {
+      "subcategoria": 2,
+      "nombre": "Queso Fresco",
+      "descripcion": "Elaborado artesanalmente con leche pasteurizada.",
+      "precio": "85.00",
+      "imagen": "queso_fresco.jpg",
+      "badge": "ninguno",
+      "stock": 40,
+      "orden": 3
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 8,
+    "fields": {
+      "subcategoria": 3,
+      "nombre": "Pan Integral",
+      "descripcion": "Elaborado con harinas 100% naturales y granos seleccionados.",
+      "precio": "60.00",
+      "imagen": "pan_integral.jpg",
+      "badge": "popular",
+      "stock": 45,
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 9,
+    "fields": {
+      "subcategoria": 3,
+      "nombre": "Baguette Artesanal",
+      "descripcion": "Corteza crujiente y miga esponjosa, horneado tradicionalmente.",
+      "precio": "50.00",
+      "imagen": "productos/baguette_artesanal.jpg",
+      "badge": "ninguno",
+      "stock": 30,
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 10,
+    "fields": {
+      "subcategoria": 3,
+      "nombre": "Croissants de Mantequilla",
+      "descripcion": "Hojaldrados y dorados, perfectos para el desayuno.",
+      "precio": "25.00",
+      "imagen": "productos/croissants_mantequilla.jpg",
+      "badge": "nuevo",
+      "stock": 55,
+      "orden": 3
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 11,
+    "fields": {
+      "subcategoria": 4,
+      "nombre": "Arroz Integral",
+      "descripcion": "Granos enteros ricos en fibra y nutrientes.",
+      "precio": "75.00",
+      "imagen": "arroz_integral.jpg",
+      "badge": "ninguno",
+      "stock": 65,
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 12,
+    "fields": {
+      "subcategoria": 4,
+      "nombre": "Avena Tradicional",
+      "descripcion": "Sin químicos ni conservantes, 100% natural.",
+      "precio": "55.00",
+      "imagen": "avena_tradicional.jpg",
+      "badge": "popular",
+      "stock": 50,
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 13,
+    "fields": {
+      "subcategoria": 4,
+      "nombre": "Quinoa Orgánica",
+      "descripcion": "Superalimento rico en proteínas y aminoácidos esenciales.",
+      "precio": "120.00",
+      "imagen": "quinoa_organica.jpg",
+      "badge": "oferta",
+      "stock": 35,
+      "orden": 3
+    }
+  }
+]

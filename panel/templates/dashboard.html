@@ -1,0 +1,1940 @@
+{% extends 'panel/base_panel.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<style>
+  .kpi-card { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:1rem; margin-bottom:1rem; }
+  .kpi-label { color:#6b7280; font-size:.85rem; margin-bottom:.5rem; }
+  .kpi-value { font-size:1.5rem; font-weight:800; color:#1f2937; }
+  .card-soft { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:1rem; }
+  .card-header { background:transparent; padding:1rem; border-bottom:1px solid #f3f4f6; }
+  .list-media img { width:40px; height:40px; object-fit:cover; border-radius:8px; margin-right:.6rem; }
+  .placeholder-thumb { width:40px; height:40px; border-radius:8px; margin-right:.6rem; display:flex; align-items:center; justify-content:center; background:#f1f5f9; color:#64748b; font-weight:700; font-size:.9rem; }
+  .pill { border-radius:999px; padding:.2rem .55rem; font-weight:700; font-size:.75rem; white-space:nowrap; display:inline-block; }
+  .pill-pendiente { background:#fff7ed; color:#9a3412; }
+  .pill-proceso { background:#ecfeff; color:#0e7490; }
+  .pill-enviado { background:#eff6ff; color:#1d4ed8; }
+  .pill-entregado { background:#ecfdf5; color:#047857; }
+  .pill-cancelado { background:#fef2f2; color:#b91c1c; }
+  .card-title { font-weight:600; color:#1f2937; font-size:1.1rem; }
+  .section-title { font-size:1.1rem; font-weight:600; margin:1rem 0; color:#1f2937; }
+  .list-group-item { padding:.75rem; border-color:#f3f4f6; }
+  .progress-soft { height:6px; background:#f1f5f9; border-radius:999px; overflow:hidden; margin-top:.5rem; }
+  .progress-soft .bar { height:100%; background:rgba(79,70,229,1); width:0; }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .kpi-value { font-size:1.3rem; }
+    .card-header { padding:.75rem; }
+    .list-group-item { padding:.5rem; }
+    .section-title { font-size:1rem; }
+  }
+</style>
+
+<style>
+  .kpi-card { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:1rem; margin-bottom:1rem; }
+  .kpi-label { color:#6b7280; font-size:.85rem; margin-bottom:.5rem; }
+  .kpi-value { font-size:1.5rem; font-weight:800; color:#1f2937; }
+  .card-soft { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:1rem; }
+  .card-header { background:transparent; padding:1rem; border-bottom:1px solid #f3f4f6; }
+  .list-media img { width:40px; height:40px; object-fit:cover; border-radius:8px; margin-right:.6rem; }
+  .placeholder-thumb { width:40px; height:40px; border-radius:8px; margin-right:.6rem; display:flex; align-items:center; justify-content:center; background:#f1f5f9; color:#64748b; font-weight:700; font-size:.9rem; }
+  .pill { border-radius:999px; padding:.2rem .55rem; font-weight:700; font-size:.75rem; white-space:nowrap; display:inline-block; }
+  .pill-pendiente { background:#fff7ed; color:#9a3412; }
+  .pill-proceso { background:#ecfeff; color:#0e7490; }
+  .pill-enviado { background:#eff6ff; color:#1d4ed8; }
+  .pill-entregado { background:#ecfdf5; color:#047857; }
+  .pill-cancelado { background:#fef2f2; color:#b91c1c; }
+  .card-title { font-weight:600; color:#1f2937; font-size:1.1rem; }
+  .section-title { font-size:1.1rem; font-weight:600; margin:1rem 0; color:#1f2937; }
+  .list-group-item { padding:.75rem; border-color:#f3f4f6; }
+  .progress-soft { height:6px; background:#f1f5f9; border-radius:999px; overflow:hidden; margin-top:.5rem; }
+  .progress-soft .bar { height:100%; background:rgba(79,70,229,1); width:0; }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .kpi-value { font-size:1.3rem; }
+    .card-header { padding:.75rem; }
+    .list-group-item { padding:.5rem; }
+    .section-title { font-size:1rem; }
+  }
+</style><style>
+  .kpi-card { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:1rem; margin-bottom:1rem; }
+  .kpi-label { color:#6b7280; font-size:.85rem; margin-bottom:.5rem; }
+  .kpi-value { font-size:1.5rem; font-weight:800; color:#1f2937; }
+  .card-soft { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:1rem; }
+  .card-header { background:transparent; padding:1rem; border-bottom:1px solid #f3f4f6; }
+  .list-media img { width:40px; height:40px; object-fit:cover; border-radius:8px; margin-right:.6rem; }
+  .placeholder-thumb { width:40px; height:40px; border-radius:8px; margin-right:.6rem; display:flex; align-items:center; justify-content:center; background:#f1f5f9; color:#64748b; font-weight:700; font-size:.9rem; }
+  .pill { border-radius:999px; padding:.2rem .55rem; font-weight:700; font-size:.75rem; white-space:nowrap; display:inline-block; }
+  .pill-pendiente { background:#fff7ed; color:#9a3412; }
+  .pill-proceso { background:#ecfeff; color:#0e7490; }
+  .pill-enviado { background:#eff6ff; color:#1d4ed8; }
+  .pill-entregado { background:#ecfdf5; color:#047857; }
+  .pill-cancelado { background:#fef2f2; color:#b91c1c; }
+  .card-title { font-weight:600; color:#1f2937; font-size:1.1rem; }
+  .section-title { font-size:1.1rem; font-weight:600; margin:1rem 0; color:#1f2937; }
+  .list-group-item { padding:.75rem; border-color:#f3f4f6; }
+  .progress-soft { height:6px; background:#f1f5f9; border-radius:999px; overflow:hidden; margin-top:.5rem; }
+  .progress-soft .bar { height:100%; background:rgba(79,70,229,1); width:0; }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .kpi-value { font-size:1.3rem; }
+    .card-header { padding:.75rem; }
+    .list-group-item { padding:.5rem; }
+    .section-title { font-size:1rem; }
+  }
+</style><style>
+  .kpi-card { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:1rem; margin-bottom:1rem; }
+  .kpi-label { color:#6b7280; font-size:.85rem; margin-bottom:.5rem; }
+  .kpi-value { font-size:1.5rem; font-weight:800; color:#1f2937; }
+  .card-soft { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:1rem; }
+  .card-header { background:transparent; padding:1rem; border-bottom:1px solid #f3f4f6; }
+  .list-media img { width:40px; height:40px; object-fit:cover; border-radius:8px; margin-right:.6rem; }
+  .placeholder-thumb { width:40px; height:40px; border-radius:8px; margin-right:.6rem; display:flex; align-items:center; justify-content:center; background:#f1f5f9; color:#64748b; font-weight:700; font-size:.9rem; }
+  .pill { border-radius:999px; padding:.2rem .55rem; font-weight:700; font-size:.75rem; white-space:nowrap; display:inline-block; }
+  .pill-pendiente { background:#fff7ed; color:#9a3412; }
+  .pill-proceso { background:#ecfeff; color:#0e7490; }
+  .pill-enviado { background:#eff6ff; color:#1d4ed8; }
+  .pill-entregado { background:#ecfdf5; color:#047857; }
+  .pill-cancelado { background:#fef2f2; color:#b91c1c; }
+  .card-title { font-weight:600; color:#1f2937; font-size:1.1rem; }
+  .section-title { font-size:1.1rem; font-weight:600; margin:1rem 0; color:#1f2937; }
+  .list-group-item { padding:.75rem; border-color:#f3f4f6; }
+  .progress-soft { height:6px; background:#f1f5f9; border-radius:999px; overflow:hidden; margin-top:.5rem; }
+  .progress-soft .bar { height:100%; background:rgba(79,70,229,1); width:0; }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .kpi-value { font-size:1.3rem; }
+    .card-header { padding:.75rem; }
+    .list-group-item { padding:.5rem; }
+    .section-title { font-size:1rem; }
+  }
+</style>
+</style>
+<div class="container-fluid px-0">
+  <h2 class="mb-3 px-3">Dashboard</h2>
+
+  <!-- KPIs -->
+  <div class="row g-2 mx-0">
+    <div class="col-6">
+      <div class="kpi-card">
+        <div class="kpi-label">Ventas totales</div>
+        <div class="kpi-value">L. {{ total_ventas }}</div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="kpi-card">
+        <div class="kpi-label">Pedidos totales</div>
+        <div class="kpi-value">{{ total_pedidos }}</div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="kpi-card">
+        <div class="kpi-label">Ventas hoy</div>
+        <div class="kpi-value">L. {{ hoy_ventas }}</div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="kpi-card">
+        <div class="kpi-label">Ticket promedio</div>
+        <div class="kpi-value">L. {{ aov_hoy|floatformat:2 }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cliente top -->
+  <div class="card-soft mt-2">
+    <div class="kpi-label">Cliente con más pedidos</div>
+    {% if top_cliente %}
+      <div class="kpi-value" style="font-size:1.2rem">{{ top_cliente.nombre }}</div>
+      <div class="text-muted small">Pedidos: <strong>{{ top_cliente.pedidos }}</strong>{% if top_cliente.email %} · {{ top_cliente.email }}{% endif %}</div>
+    {% else %}
+      <div class="text-muted small">Sin datos</div>
+    {% endif %}
+  </div>
+
+  <!-- Resumen de ventas -->
+  <div class="section-title px-3">Resumen de ventas</div>
+  <div class="card-soft">
+    <div class="card-header"><strong class="card-title">Ventas últimos 30 días</strong></div>
+    <div class="card-body p-2"><canvas id="ventasChart" height="200"></canvas></div>
+  </div>
+
+  <!-- Productos más vendidos -->
+  <div class="card-soft mt-2">
+    <div class="card-header"><strong class="card-title">Productos más vendidos</strong></div>
+    <ul class="list-group list-group-flush list-media">
+      {% for r in mas_vendidos %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            {% if r.thumb %}<img src="{{ r.thumb }}" alt="">{% else %}<div class="placeholder-thumb">P</div>{% endif %}
+            <div>
+              <div class="fw-semibold">{{ r.nombre|truncatechars:20 }}</div>
+              {% if r.codigo %}<div class="small text-muted">{{ r.codigo }}</div>{% endif %}
+            </div>
+          </div>
+          <span class="fw-semibold">{{ r.cant }}</span>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">Sin datos</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Estados y secciones -->
+  <div class="section-title px-3">Estados y categorías</div>
+  <div class="card-soft">
+    <div class="card-header"><strong class="card-title">Pedidos por estado (30 días)</strong></div>
+    <div class="card-body p-2"><canvas id="estadosChart" height="200"></canvas></div>
+  </div>
+
+  <!-- Top secciones -->
+  <div class="card-soft mt-2">
+    <div class="card-header"><strong class="card-title">Top secciones</strong></div>
+    <ul class="list-group list-group-flush" id="seccionesTop">
+      {% for s in secciones_top %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <div class="fw-semibold">{{ s.seccion|truncatechars:20 }}</div>
+            <div class="small text-muted" data-unidades="{{ s.unidades }}">{{ s.unidades }} uds</div>
+          </div>
+          <div class="progress-soft"><div class="bar" data-val="{{ s.unidades }}"></div></div>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">Sin datos</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Alertas -->
+  <div class="section-title px-3">Alertas y pendientes</div>
+  <div class="card-soft">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <strong class="card-title">Pedidos pendientes</strong>
+      <span class="badge bg-light text-dark">{{ pendientes }}</span>
+    </div>
+    <ul class="list-group list-group-flush">
+      {% for p in pendientes_list %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <a href="{% url 'panel_pedido_detalle' p.codigo %}" class="fw-semibold">#{{ p.codigo }}</a>
+            <span class="fw-semibold">L. {{ p.total }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="small text-muted">{{ p.usuario.email|truncatechars:15 }} · {{ p.fecha_creacion|date:"d/m H:i" }}</div>
+            {% with e=p.estado.nombre|lower %}
+              <span class="pill
+                {% if 'entregado' in e %}pill-entregado{% elif 'proceso' in e %}pill-proceso
+                {% elif 'enviado' in e %}pill-enviado{% elif 'cancel' in e %}pill-cancelado
+                {% else %}pill-pendiente{% endif %}">
+                {{ p.estado.nombre|slice:":3" }}.
+              </span>
+            {% endwith %}
+          </div>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">No hay pedidos pendientes</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Stock bajo -->
+  <div class="card-soft mt-2 mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <strong class="card-title">Stock bajo</strong>
+      <span class="badge bg-light text-dark">{{ stock_bajo }}</span>
+    </div>
+    <ul class="list-group list-group-flush list-media">
+      {% for p in bajo_stock %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <img src="{{ p.image_url }}" alt="" style="width:36px;height:36px;">
+            <div>
+              <div class="fw-semibold">{{ p.nombre|truncatechars:20 }}</div>
+              <div class="small text-muted">{{ p.codigo }}</div>
+            </div>
+          </div>
+          <span class="badge bg-warning text-dark rounded-pill">{{ p.stock }}</span>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">Todo con stock saludable</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% extends 'panel/base_panel.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<style>
+  .kpi-card { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:1rem; margin-bottom:1rem; }
+  .kpi-label { color:#6b7280; font-size:.85rem; margin-bottom:.5rem; }
+  .kpi-value { font-size:1.5rem; font-weight:800; color:#1f2937; }
+  .card-soft { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:1rem; }
+  .card-header { background:transparent; padding:1rem; border-bottom:1px solid #f3f4f6; }
+  .list-media img { width:40px; height:40px; object-fit:cover; border-radius:8px; margin-right:.6rem; }
+  .placeholder-thumb { width:40px; height:40px; border-radius:8px; margin-right:.6rem; display:flex; align-items:center; justify-content:center; background:#f1f5f9; color:#64748b; font-weight:700; font-size:.9rem; }
+  .pill { border-radius:999px; padding:.2rem .55rem; font-weight:700; font-size:.75rem; white-space:nowrap; display:inline-block; }
+  .pill-pendiente { background:#fff7ed; color:#9a3412; }
+  .pill-proceso { background:#ecfeff; color:#0e7490; }
+  .pill-enviado { background:#eff6ff; color:#1d4ed8; }
+  .pill-entregado { background:#ecfdf5; color:#047857; }
+  .pill-cancelado { background:#fef2f2; color:#b91c1c; }
+  .card-title { font-weight:600; color:#1f2937; font-size:1.1rem; }
+  .section-title { font-size:1.1rem; font-weight:600; margin:1rem 0; color:#1f2937; }
+  .list-group-item { padding:.75rem; border-color:#f3f4f6; }
+  .progress-soft { height:6px; background:#f1f5f9; border-radius:999px; overflow:hidden; margin-top:.5rem; }
+  .progress-soft .bar { height:100%; background:rgba(79,70,229,1); width:0; }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .kpi-value { font-size:1.3rem; }
+    .card-header { padding:.75rem; }
+    .list-group-item { padding:.5rem; }
+    .section-title { font-size:1rem; }
+  }
+</style>
+<style>
+  .kpi-card { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:1rem; margin-bottom:1rem; }
+  .kpi-label { color:#6b7280; font-size:.85rem; margin-bottom:.5rem; }
+  .kpi-value { font-size:1.5rem; font-weight:800; color:#1f2937; }
+  .card-soft { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:1rem; }
+  .card-header { background:transparent; padding:1rem; border-bottom:1px solid #f3f4f6; }
+  .list-media img { width:40px; height:40px; object-fit:cover; border-radius:8px; margin-right:.6rem; }
+  .placeholder-thumb { width:40px; height:40px; border-radius:8px; margin-right:.6rem; display:flex; align-items:center; justify-content:center; background:#f1f5f9; color:#64748b; font-weight:700; font-size:.9rem; }
+  .pill { border-radius:999px; padding:.2rem .55rem; font-weight:700; font-size:.75rem; white-space:nowrap; display:inline-block; }
+  .pill-pendiente { background:#fff7ed; color:#9a3412; }
+  .pill-proceso { background:#ecfeff; color:#0e7490; }
+  .pill-enviado { background:#eff6ff; color:#1d4ed8; }
+  .pill-entregado { background:#ecfdf5; color:#047857; }
+  .pill-cancelado { background:#fef2f2; color:#b91c1c; }
+  .card-title { font-weight:600; color:#1f2937; font-size:1.1rem; }
+  .section-title { font-size:1.1rem; font-weight:600; margin:1rem 0; color:#1f2937; }
+  .list-group-item { padding:.75rem; border-color:#f3f4f6; }
+  .progress-soft { height:6px; background:#f1f5f9; border-radius:999px; overflow:hidden; margin-top:.5rem; }
+  .progress-soft .bar { height:100%; background:rgba(79,70,229,1); width:0; }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .kpi-value { font-size:1.3rem; }
+    .card-header { padding:.75rem; }
+    .list-group-item { padding:.5rem; }
+    .section-title { font-size:1rem; }
+  }
+</style><style>
+  .kpi-card { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:1rem; margin-bottom:1rem; }
+  .kpi-label { color:#6b7280; font-size:.85rem; margin-bottom:.5rem; }
+  .kpi-value { font-size:1.5rem; font-weight:800; color:#1f2937; }
+  .card-soft { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:1rem; }
+  .card-header { background:transparent; padding:1rem; border-bottom:1px solid #f3f4f6; }
+  .list-media img { width:40px; height:40px; object-fit:cover; border-radius:8px; margin-right:.6rem; }
+  .placeholder-thumb { width:40px; height:40px; border-radius:8px; margin-right:.6rem; display:flex; align-items:center; justify-content:center; background:#f1f5f9; color:#64748b; font-weight:700; font-size:.9rem; }
+  .pill { border-radius:999px; padding:.2rem .55rem; font-weight:700; font-size:.75rem; white-space:nowrap; display:inline-block; }
+  .pill-pendiente { background:#fff7ed; color:#9a3412; }
+  .pill-proceso { background:#ecfeff; color:#0e7490; }
+  .pill-enviado { background:#eff6ff; color:#1d4ed8; }
+  .pill-entregado { background:#ecfdf5; color:#047857; }
+  .pill-cancelado { background:#fef2f2; color:#b91c1c; }
+  .card-title { font-weight:600; color:#1f2937; font-size:1.1rem; }
+  .section-title { font-size:1.1rem; font-weight:600; margin:1rem 0; color:#1f2937; }
+  .list-group-item { padding:.75rem; border-color:#f3f4f6; }
+  .progress-soft { height:6px; background:#f1f5f9; border-radius:999px; overflow:hidden; margin-top:.5rem; }
+  .progress-soft .bar { height:100%; background:rgba(79,70,229,1); width:0; }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .kpi-value { font-size:1.3rem; }
+    .card-header { padding:.75rem; }
+    .list-group-item { padding:.5rem; }
+    .section-title { font-size:1rem; }
+  }
+</style><style>
+  .kpi-card { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:1rem; margin-bottom:1rem; }
+  .kpi-label { color:#6b7280; font-size:.85rem; margin-bottom:.5rem; }
+  .kpi-value { font-size:1.5rem; font-weight:800; color:#1f2937; }
+  .card-soft { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:1rem; }
+  .card-header { background:transparent; padding:1rem; border-bottom:1px solid #f3f4f6; }
+  .list-media img { width:40px; height:40px; object-fit:cover; border-radius:8px; margin-right:.6rem; }
+  .placeholder-thumb { width:40px; height:40px; border-radius:8px; margin-right:.6rem; display:flex; align-items:center; justify-content:center; background:#f1f5f9; color:#64748b; font-weight:700; font-size:.9rem; }
+  .pill { border-radius:999px; padding:.2rem .55rem; font-weight:700; font-size:.75rem; white-space:nowrap; display:inline-block; }
+  .pill-pendiente { background:#fff7ed; color:#9a3412; }
+  .pill-proceso { background:#ecfeff; color:#0e7490; }
+  .pill-enviado { background:#eff6ff; color:#1d4ed8; }
+  .pill-entregado { background:#ecfdf5; color:#047857; }
+  .pill-cancelado { background:#fef2f2; color:#b91c1c; }
+  .card-title { font-weight:600; color:#1f2937; font-size:1.1rem; }
+  .section-title { font-size:1.1rem; font-weight:600; margin:1rem 0; color:#1f2937; }
+  .list-group-item { padding:.75rem; border-color:#f3f4f6; }
+  .progress-soft { height:6px; background:#f1f5f9; border-radius:999px; overflow:hidden; margin-top:.5rem; }
+  .progress-soft .bar { height:100%; background:rgba(79,70,229,1); width:0; }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .kpi-value { font-size:1.3rem; }
+    .card-header { padding:.75rem; }
+    .list-group-item { padding:.5rem; }
+    .section-title { font-size:1rem; }
+  }
+</style>
+</style>
+<div class="container-fluid px-0">
+  <h2 class="mb-3 px-3">Dashboard</h2>
+
+  <!-- KPIs -->
+  <div class="row g-2 mx-0">
+    <div class="col-6">
+      <div class="kpi-card">
+        <div class="kpi-label">Ventas totales</div>
+        <div class="kpi-value">L. {{ total_ventas }}</div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="kpi-card">
+        <div class="kpi-label">Pedidos totales</div>
+        <div class="kpi-value">{{ total_pedidos }}</div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="kpi-card">
+        <div class="kpi-label">Ventas hoy</div>
+        <div class="kpi-value">L. {{ hoy_ventas }}</div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="kpi-card">
+        <div class="kpi-label">Ticket promedio</div>
+        <div class="kpi-value">L. {{ aov_hoy|floatformat:2 }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cliente top -->
+  <div class="card-soft mt-2">
+    <div class="kpi-label">Cliente con más pedidos</div>
+    {% if top_cliente %}
+      <div class="kpi-value" style="font-size:1.2rem">{{ top_cliente.nombre }}</div>
+      <div class="text-muted small">Pedidos: <strong>{{ top_cliente.pedidos }}</strong>{% if top_cliente.email %} · {{ top_cliente.email }}{% endif %}</div>
+    {% else %}
+      <div class="text-muted small">Sin datos</div>
+    {% endif %}
+  </div>
+
+  <!-- Resumen de ventas -->
+  <div class="section-title px-3">Resumen de ventas</div>
+  <div class="card-soft">
+    <div class="card-header"><strong class="card-title">Ventas últimos 30 días</strong></div>
+    <div class="card-body p-2"><canvas id="ventasChart" height="200"></canvas></div>
+  </div>
+
+  <!-- Productos más vendidos -->
+  <div class="card-soft mt-2">
+    <div class="card-header"><strong class="card-title">Productos más vendidos</strong></div>
+    <ul class="list-group list-group-flush list-media">
+      {% for r in mas_vendidos %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            {% if r.thumb %}<img src="{{ r.thumb }}" alt="">{% else %}<div class="placeholder-thumb">P</div>{% endif %}
+            <div>
+              <div class="fw-semibold">{{ r.nombre|truncatechars:20 }}</div>
+              {% if r.codigo %}<div class="small text-muted">{{ r.codigo }}</div>{% endif %}
+            </div>
+          </div>
+          <span class="fw-semibold">{{ r.cant }}</span>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">Sin datos</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Estados y secciones -->
+  <div class="section-title px-3">Estados y categorías</div>
+  <div class="card-soft">
+    <div class="card-header"><strong class="card-title">Pedidos por estado (30 días)</strong></div>
+    <div class="card-body p-2"><canvas id="estadosChart" height="200"></canvas></div>
+  </div>
+
+  <!-- Top secciones -->
+  <div class="card-soft mt-2">
+    <div class="card-header"><strong class="card-title">Top secciones</strong></div>
+    <ul class="list-group list-group-flush" id="seccionesTop">
+      {% for s in secciones_top %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <div class="fw-semibold">{{ s.seccion|truncatechars:20 }}</div>
+            <div class="small text-muted" data-unidades="{{ s.unidades }}">{{ s.unidades }} uds</div>
+          </div>
+          <div class="progress-soft"><div class="bar" data-val="{{ s.unidades }}"></div></div>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">Sin datos</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Alertas -->
+  <div class="section-title px-3">Alertas y pendientes</div>
+  <div class="card-soft">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <strong class="card-title">Pedidos pendientes</strong>
+      <span class="badge bg-light text-dark">{{ pendientes }}</span>
+    </div>
+    <ul class="list-group list-group-flush">
+      {% for p in pendientes_list %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <a href="{% url 'panel_pedido_detalle' p.codigo %}" class="fw-semibold">#{{ p.codigo }}</a>
+            <span class="fw-semibold">L. {{ p.total }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="small text-muted">{{ p.usuario.email|truncatechars:15 }} · {{ p.fecha_creacion|date:"d/m H:i" }}</div>
+            {% with e=p.estado.nombre|lower %}
+              <span class="pill
+                {% if 'entregado' in e %}pill-entregado{% elif 'proceso' in e %}pill-proceso
+                {% elif 'enviado' in e %}pill-enviado{% elif 'cancel' in e %}pill-cancelado
+                {% else %}pill-pendiente{% endif %}">
+                {{ p.estado.nombre|slice:":3" }}.
+              </span>
+            {% endwith %}
+          </div>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">No hay pedidos pendientes</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Stock bajo -->
+  <div class="card-soft mt-2 mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <strong class="card-title">Stock bajo</strong>
+      <span class="badge bg-light text-dark">{{ stock_bajo }}</span>
+    </div>
+    <ul class="list-group list-group-flush list-media">
+      {% for p in bajo_stock %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <img src="{{ p.image_url }}" alt="" style="width:36px;height:36px;">
+            <div>
+              <div class="fw-semibold">{{ p.nombre|truncatechars:20 }}</div>
+              <div class="small text-muted">{{ p.codigo }}</div>
+            </div>
+          </div>
+          <span class="badge bg-warning text-dark rounded-pill">{{ p.stock }}</span>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">Todo con stock saludable</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% extends 'panel/base_panel.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<style>
+  .kpi-card { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:1rem; margin-bottom:1rem; }
+  .kpi-label { color:#6b7280; font-size:.85rem; margin-bottom:.5rem; }
+  .kpi-value { font-size:1.5rem; font-weight:800; color:#1f2937; }
+  .card-soft { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:1rem; }
+  .card-header { background:transparent; padding:1rem; border-bottom:1px solid #f3f4f6; }
+  .list-media img { width:40px; height:40px; object-fit:cover; border-radius:8px; margin-right:.6rem; }
+  .placeholder-thumb { width:40px; height:40px; border-radius:8px; margin-right:.6rem; display:flex; align-items:center; justify-content:center; background:#f1f5f9; color:#64748b; font-weight:700; font-size:.9rem; }
+  .pill { border-radius:999px; padding:.2rem .55rem; font-weight:700; font-size:.75rem; white-space:nowrap; display:inline-block; }
+  .pill-pendiente { background:#fff7ed; color:#9a3412; }
+  .pill-proceso { background:#ecfeff; color:#0e7490; }
+  .pill-enviado { background:#eff6ff; color:#1d4ed8; }
+  .pill-entregado { background:#ecfdf5; color:#047857; }
+  .pill-cancelado { background:#fef2f2; color:#b91c1c; }
+  .card-title { font-weight:600; color:#1f2937; font-size:1.1rem; }
+  .section-title { font-size:1.1rem; font-weight:600; margin:1rem 0; color:#1f2937; }
+  .list-group-item { padding:.75rem; border-color:#f3f4f6; }
+  .progress-soft { height:6px; background:#f1f5f9; border-radius:999px; overflow:hidden; margin-top:.5rem; }
+  .progress-soft .bar { height:100%; background:rgba(79,70,229,1); width:0; }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .kpi-value { font-size:1.3rem; }
+    .card-header { padding:.75rem; }
+    .list-group-item { padding:.5rem; }
+    .section-title { font-size:1rem; }
+  }
+</style>
+<style>
+  .kpi-card { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:1rem; margin-bottom:1rem; }
+  .kpi-label { color:#6b7280; font-size:.85rem; margin-bottom:.5rem; }
+  .kpi-value { font-size:1.5rem; font-weight:800; color:#1f2937; }
+  .card-soft { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:1rem; }
+  .card-header { background:transparent; padding:1rem; border-bottom:1px solid #f3f4f6; }
+  .list-media img { width:40px; height:40px; object-fit:cover; border-radius:8px; margin-right:.6rem; }
+  .placeholder-thumb { width:40px; height:40px; border-radius:8px; margin-right:.6rem; display:flex; align-items:center; justify-content:center; background:#f1f5f9; color:#64748b; font-weight:700; font-size:.9rem; }
+  .pill { border-radius:999px; padding:.2rem .55rem; font-weight:700; font-size:.75rem; white-space:nowrap; display:inline-block; }
+  .pill-pendiente { background:#fff7ed; color:#9a3412; }
+  .pill-proceso { background:#ecfeff; color:#0e7490; }
+  .pill-enviado { background:#eff6ff; color:#1d4ed8; }
+  .pill-entregado { background:#ecfdf5; color:#047857; }
+  .pill-cancelado { background:#fef2f2; color:#b91c1c; }
+  .card-title { font-weight:600; color:#1f2937; font-size:1.1rem; }
+  .section-title { font-size:1.1rem; font-weight:600; margin:1rem 0; color:#1f2937; }
+  .list-group-item { padding:.75rem; border-color:#f3f4f6; }
+  .progress-soft { height:6px; background:#f1f5f9; border-radius:999px; overflow:hidden; margin-top:.5rem; }
+  .progress-soft .bar { height:100%; background:rgba(79,70,229,1); width:0; }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .kpi-value { font-size:1.3rem; }
+    .card-header { padding:.75rem; }
+    .list-group-item { padding:.5rem; }
+    .section-title { font-size:1rem; }
+  }
+</style><style>
+  .kpi-card { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:1rem; margin-bottom:1rem; }
+  .kpi-label { color:#6b7280; font-size:.85rem; margin-bottom:.5rem; }
+  .kpi-value { font-size:1.5rem; font-weight:800; color:#1f2937; }
+  .card-soft { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:1rem; }
+  .card-header { background:transparent; padding:1rem; border-bottom:1px solid #f3f4f6; }
+  .list-media img { width:40px; height:40px; object-fit:cover; border-radius:8px; margin-right:.6rem; }
+  .placeholder-thumb { width:40px; height:40px; border-radius:8px; margin-right:.6rem; display:flex; align-items:center; justify-content:center; background:#f1f5f9; color:#64748b; font-weight:700; font-size:.9rem; }
+  .pill { border-radius:999px; padding:.2rem .55rem; font-weight:700; font-size:.75rem; white-space:nowrap; display:inline-block; }
+  .pill-pendiente { background:#fff7ed; color:#9a3412; }
+  .pill-proceso { background:#ecfeff; color:#0e7490; }
+  .pill-enviado { background:#eff6ff; color:#1d4ed8; }
+  .pill-entregado { background:#ecfdf5; color:#047857; }
+  .pill-cancelado { background:#fef2f2; color:#b91c1c; }
+  .card-title { font-weight:600; color:#1f2937; font-size:1.1rem; }
+  .section-title { font-size:1.1rem; font-weight:600; margin:1rem 0; color:#1f2937; }
+  .list-group-item { padding:.75rem; border-color:#f3f4f6; }
+  .progress-soft { height:6px; background:#f1f5f9; border-radius:999px; overflow:hidden; margin-top:.5rem; }
+  .progress-soft .bar { height:100%; background:rgba(79,70,229,1); width:0; }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .kpi-value { font-size:1.3rem; }
+    .card-header { padding:.75rem; }
+    .list-group-item { padding:.5rem; }
+    .section-title { font-size:1rem; }
+  }
+</style><style>
+  .kpi-card { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:1rem; margin-bottom:1rem; }
+  .kpi-label { color:#6b7280; font-size:.85rem; margin-bottom:.5rem; }
+  .kpi-value { font-size:1.5rem; font-weight:800; color:#1f2937; }
+  .card-soft { border:0; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:1rem; }
+  .card-header { background:transparent; padding:1rem; border-bottom:1px solid #f3f4f6; }
+  .list-media img { width:40px; height:40px; object-fit:cover; border-radius:8px; margin-right:.6rem; }
+  .placeholder-thumb { width:40px; height:40px; border-radius:8px; margin-right:.6rem; display:flex; align-items:center; justify-content:center; background:#f1f5f9; color:#64748b; font-weight:700; font-size:.9rem; }
+  .pill { border-radius:999px; padding:.2rem .55rem; font-weight:700; font-size:.75rem; white-space:nowrap; display:inline-block; }
+  .pill-pendiente { background:#fff7ed; color:#9a3412; }
+  .pill-proceso { background:#ecfeff; color:#0e7490; }
+  .pill-enviado { background:#eff6ff; color:#1d4ed8; }
+  .pill-entregado { background:#ecfdf5; color:#047857; }
+  .pill-cancelado { background:#fef2f2; color:#b91c1c; }
+  .card-title { font-weight:600; color:#1f2937; font-size:1.1rem; }
+  .section-title { font-size:1.1rem; font-weight:600; margin:1rem 0; color:#1f2937; }
+  .list-group-item { padding:.75rem; border-color:#f3f4f6; }
+  .progress-soft { height:6px; background:#f1f5f9; border-radius:999px; overflow:hidden; margin-top:.5rem; }
+  .progress-soft .bar { height:100%; background:rgba(79,70,229,1); width:0; }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .kpi-value { font-size:1.3rem; }
+    .card-header { padding:.75rem; }
+    .list-group-item { padding:.5rem; }
+    .section-title { font-size:1rem; }
+  }
+</style>
+</style>
+<div class="container-fluid px-0">
+  <h2 class="mb-3 px-3">Dashboard</h2>
+
+  <!-- KPIs -->
+  <div class="row g-2 mx-0">
+    <div class="col-6">
+      <div class="kpi-card">
+        <div class="kpi-label">Ventas totales</div>
+        <div class="kpi-value">L. {{ total_ventas }}</div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="kpi-card">
+        <div class="kpi-label">Pedidos totales</div>
+        <div class="kpi-value">{{ total_pedidos }}</div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="kpi-card">
+        <div class="kpi-label">Ventas hoy</div>
+        <div class="kpi-value">L. {{ hoy_ventas }}</div>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="kpi-card">
+        <div class="kpi-label">Ticket promedio</div>
+        <div class="kpi-value">L. {{ aov_hoy|floatformat:2 }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cliente top -->
+  <div class="card-soft mt-2">
+    <div class="kpi-label">Cliente con más pedidos</div>
+    {% if top_cliente %}
+      <div class="kpi-value" style="font-size:1.2rem">{{ top_cliente.nombre }}</div>
+      <div class="text-muted small">Pedidos: <strong>{{ top_cliente.pedidos }}</strong>{% if top_cliente.email %} · {{ top_cliente.email }}{% endif %}</div>
+    {% else %}
+      <div class="text-muted small">Sin datos</div>
+    {% endif %}
+  </div>
+
+  <!-- Resumen de ventas -->
+  <div class="section-title px-3">Resumen de ventas</div>
+  <div class="card-soft">
+    <div class="card-header"><strong class="card-title">Ventas últimos 30 días</strong></div>
+    <div class="card-body p-2"><canvas id="ventasChart" height="200"></canvas></div>
+  </div>
+
+  <!-- Productos más vendidos -->
+  <div class="card-soft mt-2">
+    <div class="card-header"><strong class="card-title">Productos más vendidos</strong></div>
+    <ul class="list-group list-group-flush list-media">
+      {% for r in mas_vendidos %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            {% if r.thumb %}<img src="{{ r.thumb }}" alt="">{% else %}<div class="placeholder-thumb">P</div>{% endif %}
+            <div>
+              <div class="fw-semibold">{{ r.nombre|truncatechars:20 }}</div>
+              {% if r.codigo %}<div class="small text-muted">{{ r.codigo }}</div>{% endif %}
+            </div>
+          </div>
+          <span class="fw-semibold">{{ r.cant }}</span>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">Sin datos</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Estados y secciones -->
+  <div class="section-title px-3">Estados y categorías</div>
+  <div class="card-soft">
+    <div class="card-header"><strong class="card-title">Pedidos por estado (30 días)</strong></div>
+    <div class="card-body p-2"><canvas id="estadosChart" height="200"></canvas></div>
+  </div>
+
+  <!-- Top secciones -->
+  <div class="card-soft mt-2">
+    <div class="card-header"><strong class="card-title">Top secciones</strong></div>
+    <ul class="list-group list-group-flush" id="seccionesTop">
+      {% for s in secciones_top %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <div class="fw-semibold">{{ s.seccion|truncatechars:20 }}</div>
+            <div class="small text-muted" data-unidades="{{ s.unidades }}">{{ s.unidades }} uds</div>
+          </div>
+          <div class="progress-soft"><div class="bar" data-val="{{ s.unidades }}"></div></div>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">Sin datos</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Alertas -->
+  <div class="section-title px-3">Alertas y pendientes</div>
+  <div class="card-soft">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <strong class="card-title">Pedidos pendientes</strong>
+      <span class="badge bg-light text-dark">{{ pendientes }}</span>
+    </div>
+    <ul class="list-group list-group-flush">
+      {% for p in pendientes_list %}
+        <li class="list-group-item">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <a href="{% url 'panel_pedido_detalle' p.codigo %}" class="fw-semibold">#{{ p.codigo }}</a>
+            <span class="fw-semibold">L. {{ p.total }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="small text-muted">{{ p.usuario.email|truncatechars:15 }} · {{ p.fecha_creacion|date:"d/m H:i" }}</div>
+            {% with e=p.estado.nombre|lower %}
+              <span class="pill
+                {% if 'entregado' in e %}pill-entregado{% elif 'proceso' in e %}pill-proceso
+                {% elif 'enviado' in e %}pill-enviado{% elif 'cancel' in e %}pill-cancelado
+                {% else %}pill-pendiente{% endif %}">
+                {{ p.estado.nombre|slice:":3" }}.
+              </span>
+            {% endwith %}
+          </div>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">No hay pedidos pendientes</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- Stock bajo -->
+  <div class="card-soft mt-2 mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <strong class="card-title">Stock bajo</strong>
+      <span class="badge bg-light text-dark">{{ stock_bajo }}</span>
+    </div>
+    <ul class="list-group list-group-flush list-media">
+      {% for p in bajo_stock %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <img src="{{ p.image_url }}" alt="" style="width:36px;height:36px;">
+            <div>
+              <div class="fw-semibold">{{ p.nombre|truncatechars:20 }}</div>
+              <div class="small text-muted">{{ p.codigo }}</div>
+            </div>
+          </div>
+          <span class="badge bg-warning text-dark rounded-pill">{{ p.stock }}</span>
+        </li>
+      {% empty %}
+        <li class="list-group-item text-muted">Todo con stock saludable</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{{ serie_ventas|json_script:"serie-ventas-data" }}
+{{ estados_data|json_script:"estados-data" }}
+
+<script>
+(() => {
+  // Ventas 30 días
+  const elSerie = document.getElementById('serie-ventas-data');
+  const serie = elSerie ? JSON.parse(elSerie.textContent || '[]') : [];
+  const labels = serie.map(p => p.d);
+  const data   = serie.map(p => Number(p.s));
+  new Chart(document.getElementById('ventasChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Ventas (L.)', data, tension: .35, fill: true,
+      backgroundColor: 'rgba(79, 70, 229, 0.05)', borderColor: 'rgba(79, 70, 229, 1)',
+      borderWidth: 2, pointBackgroundColor: 'rgba(79, 70, 229, 1)'}]},
+    options: { 
+      plugins: { legend: { display: false } }, 
+      scales: { y: { beginAtZero: true } }, 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Pedidos por estado
+  const elEstados = document.getElementById('estados-data');
+  const estados = elEstados ? JSON.parse(elEstados.textContent || '[]') : [];
+  const eLabels = estados.map(e => e.estado);
+  const eData   = estados.map(e => Number(e.c));
+  new Chart(document.getElementById('estadosChart'), {
+    type: 'doughnut',
+    data: { labels: eLabels, datasets: [{ data: eData }] },
+    options: { 
+      plugins: { legend: { position: 'bottom' } }, 
+      cutout: '60%', 
+      maintainAspectRatio: false,
+      responsive: true
+    }
+  });
+
+  // Barras para secciones
+  const bars = Array.from(document.querySelectorAll('#seccionesTop .bar'));
+  if (bars.length){
+    const vals = bars.map(b => Number(b.dataset.val) || 0);
+    const max  = Math.max(...vals, 0);
+    bars.forEach(b => {
+      const v = Number(b.dataset.val) || 0;
+      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
+      b.style.width = pct + '%';
+    });
+  }
+})();
+</script>
+{% endblock %}

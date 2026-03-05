@@ -1,0 +1,77 @@
+#Requisitos
+Python 3.11 o superior
+Mysql 8.0 o superior
+
+configurar settings.py de 'proyecto' segun tu usuario, contra y la base de datos que uses, no creo que haga falta decir,
+pero debes configurar la contraseña de root, y crear una base de datos, una vez creada debes configurar esto en settings.py
+en mi caso lo configura asi:
+
+# Database
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'tienda', #(nombre de base de datos)
+        'USER': 'root',   #(nombre de usuario si deseas crear otro que tenga privilegios de admin, yo lo dejaria default)  
+        'PASSWORD': 'Emilioejro2004', #(tu contraseña)
+        'HOST': 'localhost', #(como es una base local usaremos localhost)
+        'PORT': '3306', #(puerto de mysql)
+    }
+}
+
+
+#crear entorno visual
+python -m venv venv
+
+#usar entorno
+venv\Scripts\activate
+
+o 
+
+.venv\Scripts\activate
+
+
+#instalar dependencias
+pip install -r requirements.txt
+
+pip list (verificar si todo se instalo correctamente)
+
+#migrar
+python manage.py makemigrations
+python manage.py migrate  
+
+    
+#si no deja migrar
+    # limpiar bytecode
+    Get-ChildItem -Recurse -Filter __pycache__ | Remove-Item -Recurse -Force
+    Get-ChildItem -Recurse -Filter *.pyc | Remove-Item -Force
+
+#Cargar base de datos de informacion
+python manage.py seed_estados
+
+# crear las migraciones en orden lógico
+python manage.py makemigrations usuarios
+python manage.py makemigrations productos pedidos principal panel
+python manage.py migrate
+
+#usar playwright
+python -m playwright install chromium
+
+#para que todo cargue bien por si acaso extraer "images.rar" en static/images
+
+#crear superusuario
+python manage.py createsuperuser  
+
+#Pegar en powershell para cargar los datos iniciales
+
+python manage.py loaddata initial_categorias.json
+
+python manage.py load_all_data
+
+python manage.py create_users
+
+python manage.py loaddata pedidos_detalles.json
+
+
+#ejecutar servidor
+
+python manage.py runserver

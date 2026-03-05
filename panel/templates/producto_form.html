@@ -1,0 +1,2023 @@
+{% extends 'panel/base_panel.html' %}
+{% load static %}
+{% load l10n %}
+{% block title %}{{ obj|default_if_none:"Nuevo producto" }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card shadow-sm border-0" style="max-width: 900px; margin: 0 auto;">
+    <div class="card-body p-4">
+      <h2 class="mb-3 d-flex align-items-center gap-2">
+        <i class="fas fa-box"></i>
+        {{ obj|default_if_none:"Nuevo producto" }}
+      </h2>
+      <p class="text-muted mb-4">Completa la información para crear o actualizar un producto.</p>
+
+      {# Solo errores/advertencias; ocultamos success/info en formularios #}
+      {% if messages %}
+        <div class="mb-3">
+          {% for message in messages %}
+            {% if 'error' in message.tags or 'warning' in message.tags %}
+              <div class="alert {% if 'warning' in message.tags %}alert-warning{% else %}alert-danger{% endif %} mb-2">
+                {{ message }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {# Resumen de errores del servidor (muestra todos) #}
+      {% if form.errors or form.non_field_errors %}
+        <div class="alert alert-danger">
+          <ul class="mb-0">
+            {% for field, errs in form.errors.items %}
+              {% for err in errs %}<li>{{ err }}</li>{% endfor %}
+            {% endfor %}
+            {% for err in form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      {# Resumen de errores del cliente (JS) #}
+      <div id="formErrorsSummary" class="alert alert-danger d-none">
+        <ul class="mb-0" id="formErrorsList"></ul>
+      </div>
+
+      <form method="post" enctype="multipart/form-data"
+            id="productoForm"
+            data-has-image="{% if obj and obj.imagen %}1{% else %}0{% endif %}"
+            novalidate>
+        {% csrf_token %}
+
+        <!-- CATEGORÍA -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Categoría</label>
+          <select id="catSelect" class="form-select" required></select>
+          <div class="invalid-feedback">Selecciona una categoría</div>
+          <div class="form-text text-muted">Elige primero una categoría para filtrar subcategorías.</div>
+        </div>
+
+        <!-- SUBCATEGORÍA -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Subcategoría</label>
+          <select id="subSelect" class="form-select" required></select>
+          <div class="invalid-feedback">Selecciona una subcategoría</div>
+
+          <!-- Contenedor oculto, se mostrará solo si no hay subcategorías -->
+          <div id="noSubsWrapper" class="mt-2 d-none">
+            <a id="btnCrearSub" href="#" target="_blank" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-plus"></i> Crear subcategoría
+            </a>
+            <div class="form-text">Se abrirá en una nueva pestaña para añadir una subcategoría a esta categoría.</div>
+          </div>
+        </div>
+
+        <!-- Campo oculto original de Django -->
+        <div id="original-sub-wrapper" class="d-none">
+          {{ form.subcategoria }}
+        </div>
+
+
+        <!-- NOMBRE -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.nombre.id_for_label }}">Nombre</label>
+          {{ form.nombre }}
+          <div class="invalid-feedback">Ingresa un nombre</div>
+        </div>
+
+        <!-- DESCRIPCIÓN -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.descripcion.id_for_label }}">Descripción</label>
+          {{ form.descripcion }}
+          <div class="invalid-feedback">Ingresa una descripción</div>
+        </div>
+
+        <!-- PRECIO -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.precio.id_for_label }}">Precio</label>
+          <div class="input-group">
+            <span class="input-group-text">L.</span>
+            {{ form.precio }}
+          </div>
+          <div class="invalid-feedback">Ingresa un precio</div>
+        </div>
+
+        <!-- IMAGEN -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Imagen (obligatoria)</label>
+
+          {% if obj and obj.imagen %}
+            <div class="ratio ratio-16x9 rounded-3 overflow-hidden border mb-2">
+              <img src="{{ obj.image_url }}" class="w-100 h-100" style="object-fit: cover;" alt="Imagen actual">
+            </div>
+            <div class="form-check mt-2">
+              <input type="checkbox" name="imagen-clear" id="imagen-clear" class="form-check-input">
+              <label for="imagen-clear" class="form-check-label text-danger">Eliminar imagen actual</label>
+            </div>
+          {% endif %}
+
+          <div class="alert alert-warning py-2 small mb-2">
+            Las imágenes no se sobrescriben. Si subes un archivo con el mismo nombre, se usará el que ya existe.
+          </div>
+
+                    <!-- Dropzone -->
+          <label for="imagenInput" id="dropzone" class="w-100 p-4 text-center border rounded-3"
+                style="border-style:dashed; cursor:pointer;">
+            <div class="small text-muted">Haz clic o arrastra una imagen aquí</div>
+            <div class="mt-2"><i class="fas fa-image"></i></div>
+          </label>
+
+          <!-- IMPORTANTE: capture="environment" -->
+          <input type="file" name="imagen" id="imagenInput" class="form-control d-none"
+                accept="image/*" capture="environment">
+
+          <!-- Botones cámara / galería -->
+          <div class="d-flex gap-2 mt-2">
+            <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenCameraProd">
+              <i class="fas fa-camera me-1"></i> Tomar foto
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPickFileProd">
+              <i class="fas fa-image me-1"></i> Galería
+            </button>
+          </div>
+
+          <!-- Previsualización (solo si hay archivo) -->
+          <div class="mt-3 d-none" id="previewNuevaWrapper">
+            <div class="ratio ratio-16x9 rounded-3 overflow-hidden border">
+              <img id="imgPreview" class="w-100 h-100" style="object-fit: cover;" alt="Previsualización">
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="btnResetImagen">
+              Limpiar selección
+            </button>
+            <div class="invalid-feedback d-block d-none" id="imgError">Selecciona una imagen</div>
+          </div>
+        </div>
+
+        <!-- BADGE -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.badge.id_for_label }}">Etiqueta (medalla)</label>
+          <div id="original-badge-wrapper" class="d-none">
+            {{ form.badge }}
+          </div>
+          <div id="badgeSegmented" class="segmented" role="group"></div>
+        </div>
+
+        <!-- STOCK -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.stock.id_for_label }}">Stock</label>
+          {{ form.stock }}
+          <div class="invalid-feedback">Ingresa el stock</div>
+        </div>
+
+        <!-- BOTONES -->
+        <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-4">
+          <a href="{% url 'panel_productos' %}" class="btn btn-outline-secondary">Cancelar</a>
+          <button class="btn btn-primary">Guardar</button>
+        </div>
+
+        <p class="mt-3 text-muted small text-center">
+          El código se generará automáticamente al guardar.
+        </p>
+      </form>
+      {{ cats|json_script:"catsData" }}
+      {{ subs|json_script:"subsData" }}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // ====== Estilos base y required ======
+  document.querySelectorAll('#productoForm input, #productoForm textarea, #productoForm select')
+    .forEach(el => { if (!el.classList.contains('form-check-input')) el.classList.add('form-control'); });
+
+  ['id_nombre','id_descripcion','id_precio','id_stock'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('required','required');
+  });
+
+  // ====== Refs generales ======
+  const form     = document.getElementById('productoForm');
+  const hasExistingImage = form.dataset.hasImage === '1';
+  const clearCb  = document.getElementById('imagen-clear');
+  const dz       = document.getElementById('dropzone');
+
+  const inputImg = document.getElementById('imagenInput');
+  const prevWrap = document.getElementById('previewNuevaWrapper');
+  const prevImg  = document.getElementById('imgPreview');
+  const btnReset = document.getElementById('btnResetImagen');
+  const imgError = document.getElementById('imgError');
+
+  const errorsBox  = document.getElementById('formErrorsSummary');
+  const errorsList = document.getElementById('formErrorsList');
+
+  // Campo real de Django (oculto) y selects visibles
+  const originalSub = document.querySelector('#original-sub-wrapper select');
+  const catSel = document.getElementById('catSelect');
+  const subSel = document.getElementById('subSelect');
+
+  // Controles para "crear subcategoría"
+  const noSubsWrapper = document.getElementById('noSubsWrapper');
+  const btnCrearSub   = document.getElementById('btnCrearSub');
+
+  let blobURL = null;
+
+  // ====== Imagen: previsualización ======
+  if (inputImg) {
+    inputImg.addEventListener('click', () => { inputImg.value = ''; });
+    inputImg.addEventListener('change', () => {
+      const f = inputImg.files && inputImg.files[0];
+      if (!f) {
+        prevWrap?.classList.add('d-none');
+        imgError?.classList.add('d-none');
+        dz?.classList.remove('border-danger');
+        if (prevImg) prevImg.src = '';
+        if (blobURL) { URL.revokeObjectURL(blobURL); blobURL = null; }
+        return;
+      }
+      if (blobURL) { URL.revokeObjectURL(blobURL); blobURL = null; }
+      blobURL = URL.createObjectURL(f);
+      if (prevImg)  prevImg.src = blobURL;
+      prevWrap?.classList.remove('d-none');
+      imgError?.classList.add('d-none');
+      dz?.classList.remove('border-danger');
+    });
+  }
+
+  btnReset?.addEventListener('click', () => {
+    if (blobURL) { URL.revokeObjectURL(blobURL); blobURL = null; }
+    if (inputImg) inputImg.value = '';
+    if (prevImg)  prevImg.src = '';
+    prevWrap?.classList.add('d-none');
+  });
+
+  // ====== Datos de categorías/subcategorías desde el servidor ======
+  const cats = JSON.parse(document.getElementById('catsData')?.textContent || '[]');
+  const subs = JSON.parse(document.getElementById('subsData')?.textContent || '[]');
+
+  // Mapa seccion_id -> lista de subcategorías
+  const subsByCat = {};
+  subs.forEach(s => { (subsByCat[s.seccion_id] ||= []).push({ value: String(s.id), label: s.nombre }); });
+  Object.values(subsByCat).forEach(arr => arr.sort((a,b)=>a.label.localeCompare(b.label,'es')));
+
+  // Función para construir URL de "crear subcategoría" (AJUSTA si tu ruta es distinta)
+  function createSubcatURL(catId) {
+    // Ejemplos posibles:
+    // return `/panel-admin/categorias/${catId}/subcategoria/nueva/`;
+    // o llevar a la pantalla de categorías con ancla:
+    return `/panel-admin/categorias/#cat-${catId}`;
+  }
+
+  // Poblar categorías (siempre, aunque no tengan subcategorías)
+  if (catSel) {
+    catSel.innerHTML = '';
+    cats.forEach(c => {
+      const opt = new Option(c.nombre, String(c.id));
+      catSel.add(opt);
+    });
+  }
+
+  // Render de subcategorías según categoría seleccionada
+  function renderSubs(catId) {
+    if (!subSel) return;
+    subSel.innerHTML = '';
+
+    const list = subsByCat[Number(catId)] || [];
+
+    if (!list.length) {
+      const opt = new Option('— Esta categoría no tiene subcategorías —', '');
+      opt.disabled = true; opt.selected = true;
+      subSel.add(opt);
+      subSel.setAttribute('disabled','disabled');
+      if (originalSub) originalSub.value = '';
+
+      // Mostrar botón para crear subcategoría con la URL adecuada
+      if (noSubsWrapper) {
+        noSubsWrapper.classList.remove('d-none');
+        if (btnCrearSub) btnCrearSub.href = createSubcatURL(catId);
+      }
+    } else {
+      subSel.removeAttribute('disabled');
+      list.forEach(s => subSel.add(new Option(s.label, s.value)));
+      // sincroniza con field real
+      if (originalSub) originalSub.value = subSel.value;
+
+      // Ocultar botón si hay subcategorías
+      if (noSubsWrapper) noSubsWrapper.classList.add('d-none');
+    }
+  }
+
+  // Preselección:
+  //  - Si estamos editando y existe un valor de subcategoría, deducimos la categoría
+  //  - Si es nuevo, seleccionamos la primera categoría; si no tiene subs, se muestra el aviso y el botón
+  (function initCatSub(){
+    if (!catSel || !subSel) return;
+
+    const currentSubId = originalSub?.value || '';
+    if (currentSubId) {
+      // Buscar la sub en 'subs' y tomar su seccion_id
+      const found = subs.find(s => String(s.id) === String(currentSubId));
+      if (found) {
+        catSel.value = String(found.seccion_id);
+        renderSubs(found.seccion_id);
+        // seleccionar la sub actual
+        subSel.value = String(currentSubId);
+        if (originalSub) originalSub.value = subSel.value;
+        return;
+      }
+    }
+
+    // Si no hay sub actual (nuevo producto)
+    if (cats.length) {
+      catSel.value = String(cats[0].id);
+      renderSubs(cats[0].id);
+      // Si hay opciones en sub, tomar la primera
+      if (subSel.options.length && subSel.options[0].value) {
+        subSel.selectedIndex = 0;
+        if (originalSub) originalSub.value = subSel.value;
+      }
+    }
+  })();
+
+  catSel?.addEventListener('change', () => {
+    renderSubs(catSel.value);
+  });
+
+  subSel?.addEventListener('change', () => {
+    if (originalSub) originalSub.value = subSel.value;
+  });
+
+  // ====== Validación de formulario ======
+  function markInvalid(el){ el?.classList.add('is-invalid'); }
+  function markValid(el){ el?.classList.remove('is-invalid'); }
+  function needImageNow(){
+    if (!hasExistingImage) return true;                 // crear
+    if (clearCb && clearCb.checked) return true;        // editar y eliminar
+    return false;
+  }
+
+  form?.addEventListener('submit', function(e){
+    let ok = true;
+    const clientErrors = [];
+
+    const nombre = document.getElementById('id_nombre');
+    const desc   = document.getElementById('id_descripcion');
+    const precio = document.getElementById('id_precio');
+    const stock  = document.getElementById('id_stock');
+
+    if (!nombre?.value.trim()) { markInvalid(nombre); clientErrors.push('Ingresa un nombre.'); ok=false; } else { markValid(nombre); }
+    if (!desc?.value.trim())   { markInvalid(desc);   clientErrors.push('Ingresa una descripción.'); ok=false; } else { markValid(desc); }
+    if (!precio?.value)        { markInvalid(precio); clientErrors.push('Ingresa un precio.'); ok=false; } else { markValid(precio); }
+    if (!stock?.value)         { markInvalid(stock);  clientErrors.push('Ingresa el stock.'); ok=false; } else { markValid(stock); }
+
+    // Validación de subcategoría: debe existir opción seleccionable
+    if (!subSel || subSel.disabled || !subSel.value) {
+      markInvalid(subSel);
+      clientErrors.push('Selecciona una subcategoría (la categoría elegida no tiene subcategorías).');
+      ok = false;
+    } else {
+      markValid(subSel);
+    }
+
+    // Imagen obligatoria en creación o al limpiar en edición
+    if (needImageNow() && (!inputImg || !inputImg.files || !inputImg.files.length)) {
+      imgError?.classList.remove('d-none');
+      dz?.classList.add('border-danger');
+      clientErrors.push('Selecciona una imagen.');
+      ok = false;
+    } else {
+      imgError?.classList.add('d-none');
+      dz?.classList.remove('border-danger');
+    }
+
+    if (!ok) {
+      if (errorsList) errorsList.innerHTML = clientErrors.map(t=>`<li>${t}</li>`).join('');
+      errorsBox?.classList.remove('d-none');
+      e.preventDefault(); e.stopPropagation();
+    } else {
+      errorsBox?.classList.add('d-none');
+    }
+  });
+
+  // ====== Badge segmentado ======
+  const wrapBadge = document.getElementById('original-badge-wrapper');
+  const originalBadge = wrapBadge?.querySelector('select');
+  if (originalBadge) {
+    const seg = document.getElementById('badgeSegmented');
+    const name = 'badgeChoice';
+    [...originalBadge.options].forEach((o, i) => {
+      const id = `badge_${i}`;
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.className = 'btn-check';
+      input.name = name;
+      input.id = id;
+      input.value = o.value;
+      if (originalBadge.value === o.value) input.checked = true;
+
+      const label = document.createElement('label');
+      label.className = 'btn btn-outline-primary';
+      label.htmlFor = id;
+      label.textContent = o.textContent;
+
+      input.addEventListener('change', () => { if (input.checked) originalBadge.value = input.value; });
+      seg.append(input, label);
+    });
+  }
+
+  // ====== Cámara ======
+  (function(){
+    const input = document.getElementById('imagenInput');
+    const btnCam = document.getElementById('btnOpenCameraProd');
+    const btnGal = document.getElementById('btnPickFileProd');
+
+    function openCameraOverlay(onPhoto){
+      let stream = null;
+      const modal = document.createElement('div');
+      Object.assign(modal.style, {
+        position:'fixed', inset:'0', background:'rgba(0,0,0,0.85)', zIndex:'9999',
+        display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'16px'
+      });
+
+      const video = document.createElement('video');
+      Object.assign(video.style, {maxWidth:'92%', maxHeight:'70%', borderRadius:'8px'});
+      video.autoplay = true; video.playsInline = true;
+
+      const row = document.createElement('div');
+      row.className = 'mt-3 d-flex gap-2';
+
+      const btnCap = document.createElement('button');
+      btnCap.className = 'btn btn-primary';
+      btnCap.innerHTML = '<i class="fas fa-camera me-2"></i>Capturar';
+
+      const btnCancel = document.createElement('button');
+      btnCancel.className = 'btn btn-outline-light';
+      btnCancel.textContent = 'Cancelar';
+
+      row.append(btnCap, btnCancel);
+      modal.append(video, row);
+      document.body.appendChild(modal);
+
+      navigator.mediaDevices.getUserMedia({ video: true }).then(s=>{
+        stream = s; video.srcObject = s;
+      }).catch(err=>{
+        alert('No se pudo acceder a la cámara: ' + err.message);
+        cleanup(); if (input) input.click();
+      });
+
+      function cleanup(){
+        if (stream) stream.getTracks().forEach(t=>t.stop());
+        modal.remove();
+      }
+
+      btnCancel.addEventListener('click', cleanup);
+
+      btnCap.addEventListener('click', ()=>{
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 1280;
+        canvas.height = video.videoHeight || 720;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob=>{
+          const ts = new Date().toISOString().replace(/[:.]/g,'-');
+          const file = new File([blob], `foto-producto-${ts}.jpg`, {type:'image/jpeg'});
+          onPhoto(file);
+          cleanup();
+        }, 'image/jpeg', 0.9);
+      });
+    }
+
+    btnCam?.addEventListener('click', ()=>{
+      openCameraOverlay((file)=>{
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change'));
+      });
+    });
+
+    btnGal?.addEventListener('click', ()=> input?.click());
+  })();
+});
+</script>
+{% endblock %}
+{% extends 'panel/base_panel.html' %}
+{% load static %}
+{% load l10n %}
+{% block title %}{{ obj|default_if_none:"Nuevo producto" }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card shadow-sm border-0" style="max-width: 900px; margin: 0 auto;">
+    <div class="card-body p-4">
+      <h2 class="mb-3 d-flex align-items-center gap-2">
+        <i class="fas fa-box"></i>
+        {{ obj|default_if_none:"Nuevo producto" }}
+      </h2>
+      <p class="text-muted mb-4">Completa la información para crear o actualizar un producto.</p>
+
+      {# Solo errores/advertencias; ocultamos success/info en formularios #}
+      {% if messages %}
+        <div class="mb-3">
+          {% for message in messages %}
+            {% if 'error' in message.tags or 'warning' in message.tags %}
+              <div class="alert {% if 'warning' in message.tags %}alert-warning{% else %}alert-danger{% endif %} mb-2">
+                {{ message }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+
+      {# Resumen de errores del servidor (muestra todos) #}
+      {% if form.errors or form.non_field_errors %}
+        <div class="alert alert-danger">
+          <ul class="mb-0">
+            {% for field, errs in form.errors.items %}
+              {% for err in errs %}<li>{{ err }}</li>{% endfor %}
+            {% endfor %}
+            {% for err in form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      {# Resumen de errores del cliente (JS) #}
+      <div id="formErrorsSummary" class="alert alert-danger d-none">
+        <ul class="mb-0" id="formErrorsList"></ul>
+      </div>
+
+      <form method="post" enctype="multipart/form-data"
+            id="productoForm"
+            data-has-image="{% if obj and obj.imagen %}1{% else %}0{% endif %}"
+            novalidate>
+        {% csrf_token %}
+
+        <!-- CATEGORÍA -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Categoría</label>
+          <select id="catSelect" class="form-select" required></select>
+          <div class="invalid-feedback">Selecciona una categoría</div>
+          <div class="form-text text-muted">Elige primero una categoría para filtrar subcategorías.</div>
+        </div>
+
+        <!-- SUBCATEGORÍA -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Subcategoría</label>
+          <select id="subSelect" class="form-select" required></select>
+          <div class="invalid-feedback">Selecciona una subcategoría</div>
+
+          <!-- Contenedor oculto, se mostrará solo si no hay subcategorías -->
+          <div id="noSubsWrapper" class="mt-2 d-none">
+            <a id="btnCrearSub" href="#" target="_blank" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-plus"></i> Crear subcategoría
+            </a>
+            <div class="form-text">Se abrirá en una nueva pestaña para añadir una subcategoría a esta categoría.</div>
+          </div>
+        </div>
+
+        <!-- Campo oculto original de Django -->
+        <div id="original-sub-wrapper" class="d-none">
+          {{ form.subcategoria }}
+        </div>
+
+
+        <!-- NOMBRE -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.nombre.id_for_label }}">Nombre</label>
+          {{ form.nombre }}
+          <div class="invalid-feedback">Ingresa un nombre</div>
+        </div>
+
+        <!-- DESCRIPCIÓN -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.descripcion.id_for_label }}">Descripción</label>
+          {{ form.descripcion }}
+          <div class="invalid-feedback">Ingresa una descripción</div>
+        </div>
+
+        <!-- PRECIO -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.precio.id_for_label }}">Precio</label>
+          <div class="input-group">
+            <span class="input-group-text">L.</span>
+            {{ form.precio }}
+          </div>
+          <div class="invalid-feedback">Ingresa un precio</div>
+        </div>
+
+        <!-- IMAGEN -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Imagen (obligatoria)</label>
+
+          {% if obj and obj.imagen %}
+            <div class="ratio ratio-16x9 rounded-3 overflow-hidden border mb-2">
+              <img src="{{ obj.image_url }}" class="w-100 h-100" style="object-fit: cover;" alt="Imagen actual">
+            </div>
+            <div class="form-check mt-2">
+              <input type="checkbox" name="imagen-clear" id="imagen-clear" class="form-check-input">
+              <label for="imagen-clear" class="form-check-label text-danger">Eliminar imagen actual</label>
+            </div>
+          {% endif %}
+
+          <div class="alert alert-warning py-2 small mb-2">
+            Las imágenes no se sobrescriben. Si subes un archivo con el mismo nombre, se usará el que ya existe.
+          </div>
+
+                    <!-- Dropzone -->
+          <label for="imagenInput" id="dropzone" class="w-100 p-4 text-center border rounded-3"
+                style="border-style:dashed; cursor:pointer;">
+            <div class="small text-muted">Haz clic o arrastra una imagen aquí</div>
+            <div class="mt-2"><i class="fas fa-image"></i></div>
+          </label>
+
+          <!-- IMPORTANTE: capture="environment" -->
+          <input type="file" name="imagen" id="imagenInput" class="form-control d-none"
+                accept="image/*" capture="environment">
+
+          <!-- Botones cámara / galería -->
+          <div class="d-flex gap-2 mt-2">
+            <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenCameraProd">
+              <i class="fas fa-camera me-1"></i> Tomar foto
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPickFileProd">
+              <i class="fas fa-image me-1"></i> Galería
+            </button>
+          </div>
+
+          <!-- Previsualización (solo si hay archivo) -->
+          <div class="mt-3 d-none" id="previewNuevaWrapper">
+            <div class="ratio ratio-16x9 rounded-3 overflow-hidden border">
+              <img id="imgPreview" class="w-100 h-100" style="object-fit: cover;" alt="Previsualización">
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="btnResetImagen">
+              Limpiar selección
+            </button>
+            <div class="invalid-feedback d-block d-none" id="imgError">Selecciona una imagen</div>
+          </div>
+        </div>
+
+        <!-- BADGE -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.badge.id_for_label }}">Etiqueta (medalla)</label>
+          <div id="original-badge-wrapper" class="d-none">
+            {{ form.badge }}
+          </div>
+          <div id="badgeSegmented" class="segmented" role="group"></div>
+        </div>
+
+        <!-- STOCK -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.stock.id_for_label }}">Stock</label>
+          {{ form.stock }}
+          <div class="invalid-feedback">Ingresa el stock</div>
+        </div>
+
+        <!-- BOTONES -->
+        <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-4">
+          <a href="{% url 'panel_productos' %}" class="btn btn-outline-secondary">Cancelar</a>
+          <button class="btn btn-primary">Guardar</button>
+        </div>
+
+        <p class="mt-3 text-muted small text-center">
+          El código se generará automáticamente al guardar.
+        </p>
+      </form>
+      {{ cats|json_script:"catsData" }}
+      {{ subs|json_script:"subsData" }}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // ====== Estilos base y required ======
+  document.querySelectorAll('#productoForm input, #productoForm textarea, #productoForm select')
+    .forEach(el => { if (!el.classList.contains('form-check-input')) el.classList.add('form-control'); });
+
+  ['id_nombre','id_descripcion','id_precio','id_stock'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('required','required');
+  });
+
+  // ====== Refs generales ======
+  const form     = document.getElementById('productoForm');
+  const hasExistingImage = form.dataset.hasImage === '1';
+  const clearCb  = document.getElementById('imagen-clear');
+  const dz       = document.getElementById('dropzone');
+
+  const inputImg = document.getElementById('imagenInput');
+  const prevWrap = document.getElementById('previewNuevaWrapper');
+  const prevImg  = document.getElementById('imgPreview');
+  const btnReset = document.getElementById('btnResetImagen');
+  const imgError = document.getElementById('imgError');
+
+  const errorsBox  = document.getElementById('formErrorsSummary');
+  const errorsList = document.getElementById('formErrorsList');
+
+  // Campo real de Django (oculto) y selects visibles
+  const originalSub = document.querySelector('#original-sub-wrapper select');
+  const catSel = document.getElementById('catSelect');
+  const subSel = document.getElementById('subSelect');
+
+  // Controles para "crear subcategoría"
+  const noSubsWrapper = document.getElementById('noSubsWrapper');
+  const btnCrearSub   = document.getElementById('btnCrearSub');
+
+  let blobURL = null;
+
+  // ====== Imagen: previsualización ======
+  if (inputImg) {
+    inputImg.addEventListener('click', () => { inputImg.value = ''; });
+    inputImg.addEventListener('change', () => {
+      const f = inputImg.files && inputImg.files[0];
+      if (!f) {
+        prevWrap?.classList.add('d-none');
+        imgError?.classList.add('d-none');
+        dz?.classList.remove('border-danger');
+        if (prevImg) prevImg.src = '';
+        if (blobURL) { URL.revokeObjectURL(blobURL); blobURL = null; }
+        return;
+      }
+      if (blobURL) { URL.revokeObjectURL(blobURL); blobURL = null; }
+      blobURL = URL.createObjectURL(f);
+      if (prevImg)  prevImg.src = blobURL;
+      prevWrap?.classList.remove('d-none');
+      imgError?.classList.add('d-none');
+      dz?.classList.remove('border-danger');
+    });
+  }
+
+  btnReset?.addEventListener('click', () => {
+    if (blobURL) { URL.revokeObjectURL(blobURL); blobURL = null; }
+    if (inputImg) inputImg.value = '';
+    if (prevImg)  prevImg.src = '';
+    prevWrap?.classList.add('d-none');
+  });
+
+  // ====== Datos de categorías/subcategorías desde el servidor ======
+  const cats = JSON.parse(document.getElementById('catsData')?.textContent || '[]');
+  const subs = JSON.parse(document.getElementById('subsData')?.textContent || '[]');
+
+  // Mapa seccion_id -> lista de subcategorías
+  const subsByCat = {};
+  subs.forEach(s => { (subsByCat[s.seccion_id] ||= []).push({ value: String(s.id), label: s.nombre }); });
+  Object.values(subsByCat).forEach(arr => arr.sort((a,b)=>a.label.localeCompare(b.label,'es')));
+
+  // Función para construir URL de "crear subcategoría" (AJUSTA si tu ruta es distinta)
+  function createSubcatURL(catId) {
+    // Ejemplos posibles:
+    // return `/panel-admin/categorias/${catId}/subcategoria/nueva/`;
+    // o llevar a la pantalla de categorías con ancla:
+    return `/panel-admin/categorias/#cat-${catId}`;
+  }
+
+  // Poblar categorías (siempre, aunque no tengan subcategorías)
+  if (catSel) {
+    catSel.innerHTML = '';
+    cats.forEach(c => {
+      const opt = new Option(c.nombre, String(c.id));
+      catSel.add(opt);
+    });
+  }
+
+  // Render de subcategorías según categoría seleccionada
+  function renderSubs(catId) {
+    if (!subSel) return;
+    subSel.innerHTML = '';
+
+    const list = subsByCat[Number(catId)] || [];
+
+    if (!list.length) {
+      const opt = new Option('— Esta categoría no tiene subcategorías —', '');
+      opt.disabled = true; opt.selected = true;
+      subSel.add(opt);
+      subSel.setAttribute('disabled','disabled');
+      if (originalSub) originalSub.value = '';
+
+      // Mostrar botón para crear subcategoría con la URL adecuada
+      if (noSubsWrapper) {
+        noSubsWrapper.classList.remove('d-none');
+        if (btnCrearSub) btnCrearSub.href = createSubcatURL(catId);
+      }
+    } else {
+      subSel.removeAttribute('disabled');
+      list.forEach(s => subSel.add(new Option(s.label, s.value)));
+      // sincroniza con field real
+      if (originalSub) originalSub.value = subSel.value;
+
+      // Ocultar botón si hay subcategorías
+      if (noSubsWrapper) noSubsWrapper.classList.add('d-none');
+    }
+  }
+
+  // Preselección:
+  //  - Si estamos editando y existe un valor de subcategoría, deducimos la categoría
+  //  - Si es nuevo, seleccionamos la primera categoría; si no tiene subs, se muestra el aviso y el botón
+  (function initCatSub(){
+    if (!catSel || !subSel) return;
+
+    const currentSubId = originalSub?.value || '';
+    if (currentSubId) {
+      // Buscar la sub en 'subs' y tomar su seccion_id
+      const found = subs.find(s => String(s.id) === String(currentSubId));
+      if (found) {
+        catSel.value = String(found.seccion_id);
+        renderSubs(found.seccion_id);
+        // seleccionar la sub actual
+        subSel.value = String(currentSubId);
+        if (originalSub) originalSub.value = subSel.value;
+        return;
+      }
+    }
+
+    // Si no hay sub actual (nuevo producto)
+    if (cats.length) {
+      catSel.value = String(cats[0].id);
+      renderSubs(cats[0].id);
+      // Si hay opciones en sub, tomar la primera
+      if (subSel.options.length && subSel.options[0].value) {
+        subSel.selectedIndex = 0;
+        if (originalSub) originalSub.value = subSel.value;
+      }
+    }
+  })();
+
+  catSel?.addEventListener('change', () => {
+    renderSubs(catSel.value);
+  });
+
+  subSel?.addEventListener('change', () => {
+    if (originalSub) originalSub.value = subSel.value;
+  });
+
+  // ====== Validación de formulario ======
+  function markInvalid(el){ el?.classList.add('is-invalid'); }
+  function markValid(el){ el?.classList.remove('is-invalid'); }
+  function needImageNow(){
+    if (!hasExistingImage) return true;                 // crear
+    if (clearCb && clearCb.checked) return true;        // editar y eliminar
+    return false;
+  }
+
+  form?.addEventListener('submit', function(e){
+    let ok = true;
+    const clientErrors = [];
+
+    const nombre = document.getElementById('id_nombre');
+    const desc   = document.getElementById('id_descripcion');
+    const precio = document.getElementById('id_precio');
+    const stock  = document.getElementById('id_stock');
+
+    if (!nombre?.value.trim()) { markInvalid(nombre); clientErrors.push('Ingresa un nombre.'); ok=false; } else { markValid(nombre); }
+    if (!desc?.value.trim())   { markInvalid(desc);   clientErrors.push('Ingresa una descripción.'); ok=false; } else { markValid(desc); }
+    if (!precio?.value)        { markInvalid(precio); clientErrors.push('Ingresa un precio.'); ok=false; } else { markValid(precio); }
+    if (!stock?.value)         { markInvalid(stock);  clientErrors.push('Ingresa el stock.'); ok=false; } else { markValid(stock); }
+
+    // Validación de subcategoría: debe existir opción seleccionable
+    if (!subSel || subSel.disabled || !subSel.value) {
+      markInvalid(subSel);
+      clientErrors.push('Selecciona una subcategoría (la categoría elegida no tiene subcategorías).');
+      ok = false;
+    } else {
+      markValid(subSel);
+    }
+
+    // Imagen obligatoria en creación o al limpiar en edición
+    if (needImageNow() && (!inputImg || !inputImg.files || !inputImg.files.length)) {
+      imgError?.classList.remove('d-none');
+      dz?.classList.add('border-danger');
+      clientErrors.push('Selecciona una imagen.');
+      ok = false;
+    } else {
+      imgError?.classList.add('d-none');
+      dz?.classList.remove('border-danger');
+    }
+
+    if (!ok) {
+      if (errorsList) errorsList.innerHTML = clientErrors.map(t=>`<li>${t}</li>`).join('');
+      errorsBox?.classList.remove('d-none');
+      e.preventDefault(); e.stopPropagation();
+    } else {
+      errorsBox?.classList.add('d-none');
+    }
+  });
+
+  // ====== Badge segmentado ======
+  const wrapBadge = document.getElementById('original-badge-wrapper');
+  const originalBadge = wrapBadge?.querySelector('select');
+  if (originalBadge) {
+    const seg = document.getElementById('badgeSegmented');
+    const name = 'badgeChoice';
+    [...originalBadge.options].forEach((o, i) => {
+      const id = `badge_${i}`;
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.className = 'btn-check';
+      input.name = name;
+      input.id = id;
+      input.value = o.value;
+      if (originalBadge.value === o.value) input.checked = true;
+
+      const label = document.createElement('label');
+      label.className = 'btn btn-outline-primary';
+      label.htmlFor = id;
+      label.textContent = o.textContent;
+
+      input.addEventListener('change', () => { if (input.checked) originalBadge.value = input.value; });
+      seg.append(input, label);
+    });
+  }
+
+  // ====== Cámara ======
+  (function(){
+    const input = document.getElementById('imagenInput');
+    const btnCam = document.getElementById('btnOpenCameraProd');
+    const btnGal = document.getElementById('btnPickFileProd');
+
+    function openCameraOverlay(onPhoto){
+      let stream = null;
+      const modal = document.createElement('div');
+      Object.assign(modal.style, {
+        position:'fixed', inset:'0', background:'rgba(0,0,0,0.85)', zIndex:'9999',
+        display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'16px'
+      });
+
+      const video = document.createElement('video');
+      Object.assign(video.style, {maxWidth:'92%', maxHeight:'70%', borderRadius:'8px'});
+      video.autoplay = true; video.playsInline = true;
+
+      const row = document.createElement('div');
+      row.className = 'mt-3 d-flex gap-2';
+
+      const btnCap = document.createElement('button');
+      btnCap.className = 'btn btn-primary';
+      btnCap.innerHTML = '<i class="fas fa-camera me-2"></i>Capturar';
+
+      const btnCancel = document.createElement('button');
+      btnCancel.className = 'btn btn-outline-light';
+      btnCancel.textContent = 'Cancelar';
+
+      row.append(btnCap, btnCancel);
+      modal.append(video, row);
+      document.body.appendChild(modal);
+
+      navigator.mediaDevices.getUserMedia({ video: true }).then(s=>{
+        stream = s; video.srcObject = s;
+      }).catch(err=>{
+        alert('No se pudo acceder a la cámara: ' + err.message);
+        cleanup(); if (input) input.click();
+      });
+
+      function cleanup(){
+        if (stream) stream.getTracks().forEach(t=>t.stop());
+        modal.remove();
+      }
+
+      btnCancel.addEventListener('click', cleanup);
+
+      btnCap.addEventListener('click', ()=>{
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 1280;
+        canvas.height = video.videoHeight || 720;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob=>{
+          const ts = new Date().toISOString().replace(/[:.]/g,'-');
+          const file = new File([blob], `foto-producto-${ts}.jpg`, {type:'image/jpeg'});
+          onPhoto(file);
+          cleanup();
+        }, 'image/jpeg', 0.9);
+      });
+    }
+
+    btnCam?.addEventListener('click', ()=>{
+      openCameraOverlay((file)=>{
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change'));
+      });
+    });
+
+    btnGal?.addEventListener('click', ()=> input?.click());
+  })();
+});
+</script>
+{% endblock %}
+{% extends 'panel/base_panel.html' %}
+{% load static %}
+{% load l10n %}
+{% block title %}{{ obj|default_if_none:"Nuevo producto" }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card shadow-sm border-0" style="max-width: 900px; margin: 0 auto;">
+    <div class="card-body p-4">
+      <h2 class="mb-3 d-flex align-items-center gap-2">
+        <i class="fas fa-box"></i>
+        {{ obj|default_if_none:"Nuevo producto" }}
+      </h2>
+      <p class="text-muted mb-4">Completa la información para crear o actualizar un producto.</p>
+
+      {# Solo errores/advertencias; ocultamos success/info en formularios #}
+      {% if messages %}
+        <div class="mb-3">
+          {% for message in messages %}
+            {% if 'error' in message.tags or 'warning' in message.tags %}
+              <div class="alert {% if 'warning' in message.tags %}alert-warning{% else %}alert-danger{% endif %} mb-2">
+                {{ message }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+
+      {# Resumen de errores del servidor (muestra todos) #}
+      {% if form.errors or form.non_field_errors %}
+        <div class="alert alert-danger">
+          <ul class="mb-0">
+            {% for field, errs in form.errors.items %}
+              {% for err in errs %}<li>{{ err }}</li>{% endfor %}
+            {% endfor %}
+            {% for err in form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      {# Resumen de errores del cliente (JS) #}
+      <div id="formErrorsSummary" class="alert alert-danger d-none">
+        <ul class="mb-0" id="formErrorsList"></ul>
+      </div>
+
+      <form method="post" enctype="multipart/form-data"
+            id="productoForm"
+            data-has-image="{% if obj and obj.imagen %}1{% else %}0{% endif %}"
+            novalidate>
+        {% csrf_token %}
+
+        <!-- CATEGORÍA -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Categoría</label>
+          <select id="catSelect" class="form-select" required></select>
+          <div class="invalid-feedback">Selecciona una categoría</div>
+          <div class="form-text text-muted">Elige primero una categoría para filtrar subcategorías.</div>
+        </div>
+
+        <!-- SUBCATEGORÍA -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Subcategoría</label>
+          <select id="subSelect" class="form-select" required></select>
+          <div class="invalid-feedback">Selecciona una subcategoría</div>
+
+          <!-- Contenedor oculto, se mostrará solo si no hay subcategorías -->
+          <div id="noSubsWrapper" class="mt-2 d-none">
+            <a id="btnCrearSub" href="#" target="_blank" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-plus"></i> Crear subcategoría
+            </a>
+            <div class="form-text">Se abrirá en una nueva pestaña para añadir una subcategoría a esta categoría.</div>
+          </div>
+        </div>
+
+        <!-- Campo oculto original de Django -->
+        <div id="original-sub-wrapper" class="d-none">
+          {{ form.subcategoria }}
+        </div>
+
+
+        <!-- NOMBRE -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.nombre.id_for_label }}">Nombre</label>
+          {{ form.nombre }}
+          <div class="invalid-feedback">Ingresa un nombre</div>
+        </div>
+
+        <!-- DESCRIPCIÓN -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.descripcion.id_for_label }}">Descripción</label>
+          {{ form.descripcion }}
+          <div class="invalid-feedback">Ingresa una descripción</div>
+        </div>
+
+        <!-- PRECIO -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.precio.id_for_label }}">Precio</label>
+          <div class="input-group">
+            <span class="input-group-text">L.</span>
+            {{ form.precio }}
+          </div>
+          <div class="invalid-feedback">Ingresa un precio</div>
+        </div>
+
+        <!-- IMAGEN -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Imagen (obligatoria)</label>
+
+          {% if obj and obj.imagen %}
+            <div class="ratio ratio-16x9 rounded-3 overflow-hidden border mb-2">
+              <img src="{{ obj.image_url }}" class="w-100 h-100" style="object-fit: cover;" alt="Imagen actual">
+            </div>
+            <div class="form-check mt-2">
+              <input type="checkbox" name="imagen-clear" id="imagen-clear" class="form-check-input">
+              <label for="imagen-clear" class="form-check-label text-danger">Eliminar imagen actual</label>
+            </div>
+          {% endif %}
+
+          <div class="alert alert-warning py-2 small mb-2">
+            Las imágenes no se sobrescriben. Si subes un archivo con el mismo nombre, se usará el que ya existe.
+          </div>
+
+                    <!-- Dropzone -->
+          <label for="imagenInput" id="dropzone" class="w-100 p-4 text-center border rounded-3"
+                style="border-style:dashed; cursor:pointer;">
+            <div class="small text-muted">Haz clic o arrastra una imagen aquí</div>
+            <div class="mt-2"><i class="fas fa-image"></i></div>
+          </label>
+
+          <!-- IMPORTANTE: capture="environment" -->
+          <input type="file" name="imagen" id="imagenInput" class="form-control d-none"
+                accept="image/*" capture="environment">
+
+          <!-- Botones cámara / galería -->
+          <div class="d-flex gap-2 mt-2">
+            <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenCameraProd">
+              <i class="fas fa-camera me-1"></i> Tomar foto
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPickFileProd">
+              <i class="fas fa-image me-1"></i> Galería
+            </button>
+          </div>
+
+          <!-- Previsualización (solo si hay archivo) -->
+          <div class="mt-3 d-none" id="previewNuevaWrapper">
+            <div class="ratio ratio-16x9 rounded-3 overflow-hidden border">
+              <img id="imgPreview" class="w-100 h-100" style="object-fit: cover;" alt="Previsualización">
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="btnResetImagen">
+              Limpiar selección
+            </button>
+            <div class="invalid-feedback d-block d-none" id="imgError">Selecciona una imagen</div>
+          </div>
+        </div>
+
+        <!-- BADGE -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.badge.id_for_label }}">Etiqueta (medalla)</label>
+          <div id="original-badge-wrapper" class="d-none">
+            {{ form.badge }}
+          </div>
+          <div id="badgeSegmented" class="segmented" role="group"></div>
+        </div>
+
+        <!-- STOCK -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.stock.id_for_label }}">Stock</label>
+          {{ form.stock }}
+          <div class="invalid-feedback">Ingresa el stock</div>
+        </div>
+
+        <!-- BOTONES -->
+        <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-4">
+          <a href="{% url 'panel_productos' %}" class="btn btn-outline-secondary">Cancelar</a>
+          <button class="btn btn-primary">Guardar</button>
+        </div>
+
+        <p class="mt-3 text-muted small text-center">
+          El código se generará automáticamente al guardar.
+        </p>
+      </form>
+      {{ cats|json_script:"catsData" }}
+      {{ subs|json_script:"subsData" }}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // ====== Estilos base y required ======
+  document.querySelectorAll('#productoForm input, #productoForm textarea, #productoForm select')
+    .forEach(el => { if (!el.classList.contains('form-check-input')) el.classList.add('form-control'); });
+
+  ['id_nombre','id_descripcion','id_precio','id_stock'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('required','required');
+  });
+
+  // ====== Refs generales ======
+  const form     = document.getElementById('productoForm');
+  const hasExistingImage = form.dataset.hasImage === '1';
+  const clearCb  = document.getElementById('imagen-clear');
+  const dz       = document.getElementById('dropzone');
+
+  const inputImg = document.getElementById('imagenInput');
+  const prevWrap = document.getElementById('previewNuevaWrapper');
+  const prevImg  = document.getElementById('imgPreview');
+  const btnReset = document.getElementById('btnResetImagen');
+  const imgError = document.getElementById('imgError');
+
+  const errorsBox  = document.getElementById('formErrorsSummary');
+  const errorsList = document.getElementById('formErrorsList');
+
+  // Campo real de Django (oculto) y selects visibles
+  const originalSub = document.querySelector('#original-sub-wrapper select');
+  const catSel = document.getElementById('catSelect');
+  const subSel = document.getElementById('subSelect');
+
+  // Controles para "crear subcategoría"
+  const noSubsWrapper = document.getElementById('noSubsWrapper');
+  const btnCrearSub   = document.getElementById('btnCrearSub');
+
+  let blobURL = null;
+
+  // ====== Imagen: previsualización ======
+  if (inputImg) {
+    inputImg.addEventListener('click', () => { inputImg.value = ''; });
+    inputImg.addEventListener('change', () => {
+      const f = inputImg.files && inputImg.files[0];
+      if (!f) {
+        prevWrap?.classList.add('d-none');
+        imgError?.classList.add('d-none');
+        dz?.classList.remove('border-danger');
+        if (prevImg) prevImg.src = '';
+        if (blobURL) { URL.revokeObjectURL(blobURL); blobURL = null; }
+        return;
+      }
+      if (blobURL) { URL.revokeObjectURL(blobURL); blobURL = null; }
+      blobURL = URL.createObjectURL(f);
+      if (prevImg)  prevImg.src = blobURL;
+      prevWrap?.classList.remove('d-none');
+      imgError?.classList.add('d-none');
+      dz?.classList.remove('border-danger');
+    });
+  }
+
+  btnReset?.addEventListener('click', () => {
+    if (blobURL) { URL.revokeObjectURL(blobURL); blobURL = null; }
+    if (inputImg) inputImg.value = '';
+    if (prevImg)  prevImg.src = '';
+    prevWrap?.classList.add('d-none');
+  });
+
+  // ====== Datos de categorías/subcategorías desde el servidor ======
+  const cats = JSON.parse(document.getElementById('catsData')?.textContent || '[]');
+  const subs = JSON.parse(document.getElementById('subsData')?.textContent || '[]');
+
+  // Mapa seccion_id -> lista de subcategorías
+  const subsByCat = {};
+  subs.forEach(s => { (subsByCat[s.seccion_id] ||= []).push({ value: String(s.id), label: s.nombre }); });
+  Object.values(subsByCat).forEach(arr => arr.sort((a,b)=>a.label.localeCompare(b.label,'es')));
+
+  // Función para construir URL de "crear subcategoría" (AJUSTA si tu ruta es distinta)
+  function createSubcatURL(catId) {
+    // Ejemplos posibles:
+    // return `/panel-admin/categorias/${catId}/subcategoria/nueva/`;
+    // o llevar a la pantalla de categorías con ancla:
+    return `/panel-admin/categorias/#cat-${catId}`;
+  }
+
+  // Poblar categorías (siempre, aunque no tengan subcategorías)
+  if (catSel) {
+    catSel.innerHTML = '';
+    cats.forEach(c => {
+      const opt = new Option(c.nombre, String(c.id));
+      catSel.add(opt);
+    });
+  }
+
+  // Render de subcategorías según categoría seleccionada
+  function renderSubs(catId) {
+    if (!subSel) return;
+    subSel.innerHTML = '';
+
+    const list = subsByCat[Number(catId)] || [];
+
+    if (!list.length) {
+      const opt = new Option('— Esta categoría no tiene subcategorías —', '');
+      opt.disabled = true; opt.selected = true;
+      subSel.add(opt);
+      subSel.setAttribute('disabled','disabled');
+      if (originalSub) originalSub.value = '';
+
+      // Mostrar botón para crear subcategoría con la URL adecuada
+      if (noSubsWrapper) {
+        noSubsWrapper.classList.remove('d-none');
+        if (btnCrearSub) btnCrearSub.href = createSubcatURL(catId);
+      }
+    } else {
+      subSel.removeAttribute('disabled');
+      list.forEach(s => subSel.add(new Option(s.label, s.value)));
+      // sincroniza con field real
+      if (originalSub) originalSub.value = subSel.value;
+
+      // Ocultar botón si hay subcategorías
+      if (noSubsWrapper) noSubsWrapper.classList.add('d-none');
+    }
+  }
+
+  // Preselección:
+  //  - Si estamos editando y existe un valor de subcategoría, deducimos la categoría
+  //  - Si es nuevo, seleccionamos la primera categoría; si no tiene subs, se muestra el aviso y el botón
+  (function initCatSub(){
+    if (!catSel || !subSel) return;
+
+    const currentSubId = originalSub?.value || '';
+    if (currentSubId) {
+      // Buscar la sub en 'subs' y tomar su seccion_id
+      const found = subs.find(s => String(s.id) === String(currentSubId));
+      if (found) {
+        catSel.value = String(found.seccion_id);
+        renderSubs(found.seccion_id);
+        // seleccionar la sub actual
+        subSel.value = String(currentSubId);
+        if (originalSub) originalSub.value = subSel.value;
+        return;
+      }
+    }
+
+    // Si no hay sub actual (nuevo producto)
+    if (cats.length) {
+      catSel.value = String(cats[0].id);
+      renderSubs(cats[0].id);
+      // Si hay opciones en sub, tomar la primera
+      if (subSel.options.length && subSel.options[0].value) {
+        subSel.selectedIndex = 0;
+        if (originalSub) originalSub.value = subSel.value;
+      }
+    }
+  })();
+
+  catSel?.addEventListener('change', () => {
+    renderSubs(catSel.value);
+  });
+
+  subSel?.addEventListener('change', () => {
+    if (originalSub) originalSub.value = subSel.value;
+  });
+
+  // ====== Validación de formulario ======
+  function markInvalid(el){ el?.classList.add('is-invalid'); }
+  function markValid(el){ el?.classList.remove('is-invalid'); }
+  function needImageNow(){
+    if (!hasExistingImage) return true;                 // crear
+    if (clearCb && clearCb.checked) return true;        // editar y eliminar
+    return false;
+  }
+
+  form?.addEventListener('submit', function(e){
+    let ok = true;
+    const clientErrors = [];
+
+    const nombre = document.getElementById('id_nombre');
+    const desc   = document.getElementById('id_descripcion');
+    const precio = document.getElementById('id_precio');
+    const stock  = document.getElementById('id_stock');
+
+    if (!nombre?.value.trim()) { markInvalid(nombre); clientErrors.push('Ingresa un nombre.'); ok=false; } else { markValid(nombre); }
+    if (!desc?.value.trim())   { markInvalid(desc);   clientErrors.push('Ingresa una descripción.'); ok=false; } else { markValid(desc); }
+    if (!precio?.value)        { markInvalid(precio); clientErrors.push('Ingresa un precio.'); ok=false; } else { markValid(precio); }
+    if (!stock?.value)         { markInvalid(stock);  clientErrors.push('Ingresa el stock.'); ok=false; } else { markValid(stock); }
+
+    // Validación de subcategoría: debe existir opción seleccionable
+    if (!subSel || subSel.disabled || !subSel.value) {
+      markInvalid(subSel);
+      clientErrors.push('Selecciona una subcategoría (la categoría elegida no tiene subcategorías).');
+      ok = false;
+    } else {
+      markValid(subSel);
+    }
+
+    // Imagen obligatoria en creación o al limpiar en edición
+    if (needImageNow() && (!inputImg || !inputImg.files || !inputImg.files.length)) {
+      imgError?.classList.remove('d-none');
+      dz?.classList.add('border-danger');
+      clientErrors.push('Selecciona una imagen.');
+      ok = false;
+    } else {
+      imgError?.classList.add('d-none');
+      dz?.classList.remove('border-danger');
+    }
+
+    if (!ok) {
+      if (errorsList) errorsList.innerHTML = clientErrors.map(t=>`<li>${t}</li>`).join('');
+      errorsBox?.classList.remove('d-none');
+      e.preventDefault(); e.stopPropagation();
+    } else {
+      errorsBox?.classList.add('d-none');
+    }
+  });
+
+  // ====== Badge segmentado ======
+  const wrapBadge = document.getElementById('original-badge-wrapper');
+  const originalBadge = wrapBadge?.querySelector('select');
+  if (originalBadge) {
+    const seg = document.getElementById('badgeSegmented');
+    const name = 'badgeChoice';
+    [...originalBadge.options].forEach((o, i) => {
+      const id = `badge_${i}`;
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.className = 'btn-check';
+      input.name = name;
+      input.id = id;
+      input.value = o.value;
+      if (originalBadge.value === o.value) input.checked = true;
+
+      const label = document.createElement('label');
+      label.className = 'btn btn-outline-primary';
+      label.htmlFor = id;
+      label.textContent = o.textContent;
+
+      input.addEventListener('change', () => { if (input.checked) originalBadge.value = input.value; });
+      seg.append(input, label);
+    });
+  }
+
+  // ====== Cámara ======
+  (function(){
+    const input = document.getElementById('imagenInput');
+    const btnCam = document.getElementById('btnOpenCameraProd');
+    const btnGal = document.getElementById('btnPickFileProd');
+
+    function openCameraOverlay(onPhoto){
+      let stream = null;
+      const modal = document.createElement('div');
+      Object.assign(modal.style, {
+        position:'fixed', inset:'0', background:'rgba(0,0,0,0.85)', zIndex:'9999',
+        display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'16px'
+      });
+
+      const video = document.createElement('video');
+      Object.assign(video.style, {maxWidth:'92%', maxHeight:'70%', borderRadius:'8px'});
+      video.autoplay = true; video.playsInline = true;
+
+      const row = document.createElement('div');
+      row.className = 'mt-3 d-flex gap-2';
+
+      const btnCap = document.createElement('button');
+      btnCap.className = 'btn btn-primary';
+      btnCap.innerHTML = '<i class="fas fa-camera me-2"></i>Capturar';
+
+      const btnCancel = document.createElement('button');
+      btnCancel.className = 'btn btn-outline-light';
+      btnCancel.textContent = 'Cancelar';
+
+      row.append(btnCap, btnCancel);
+      modal.append(video, row);
+      document.body.appendChild(modal);
+
+      navigator.mediaDevices.getUserMedia({ video: true }).then(s=>{
+        stream = s; video.srcObject = s;
+      }).catch(err=>{
+        alert('No se pudo acceder a la cámara: ' + err.message);
+        cleanup(); if (input) input.click();
+      });
+
+      function cleanup(){
+        if (stream) stream.getTracks().forEach(t=>t.stop());
+        modal.remove();
+      }
+
+      btnCancel.addEventListener('click', cleanup);
+
+      btnCap.addEventListener('click', ()=>{
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 1280;
+        canvas.height = video.videoHeight || 720;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob=>{
+          const ts = new Date().toISOString().replace(/[:.]/g,'-');
+          const file = new File([blob], `foto-producto-${ts}.jpg`, {type:'image/jpeg'});
+          onPhoto(file);
+          cleanup();
+        }, 'image/jpeg', 0.9);
+      });
+    }
+
+    btnCam?.addEventListener('click', ()=>{
+      openCameraOverlay((file)=>{
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change'));
+      });
+    });
+
+    btnGal?.addEventListener('click', ()=> input?.click());
+  })();
+});
+</script>
+{% endblock %}
+{% extends 'panel/base_panel.html' %}
+{% load static %}
+{% load l10n %}
+{% block title %}{{ obj|default_if_none:"Nuevo producto" }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card shadow-sm border-0" style="max-width: 900px; margin: 0 auto;">
+    <div class="card-body p-4">
+      <h2 class="mb-3 d-flex align-items-center gap-2">
+        <i class="fas fa-box"></i>
+        {{ obj|default_if_none:"Nuevo producto" }}
+      </h2>
+      <p class="text-muted mb-4">Completa la información para crear o actualizar un producto.</p>
+
+      {# Solo errores/advertencias; ocultamos success/info en formularios #}
+      {% if messages %}
+        <div class="mb-3">
+          {% for message in messages %}
+            {% if 'error' in message.tags or 'warning' in message.tags %}
+              <div class="alert {% if 'warning' in message.tags %}alert-warning{% else %}alert-danger{% endif %} mb-2">
+                {{ message }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+
+      {# Resumen de errores del servidor (muestra todos) #}
+      {% if form.errors or form.non_field_errors %}
+        <div class="alert alert-danger">
+          <ul class="mb-0">
+            {% for field, errs in form.errors.items %}
+              {% for err in errs %}<li>{{ err }}</li>{% endfor %}
+            {% endfor %}
+            {% for err in form.non_field_errors %}<li>{{ err }}</li>{% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      {# Resumen de errores del cliente (JS) #}
+      <div id="formErrorsSummary" class="alert alert-danger d-none">
+        <ul class="mb-0" id="formErrorsList"></ul>
+      </div>
+
+      <form method="post" enctype="multipart/form-data"
+            id="productoForm"
+            data-has-image="{% if obj and obj.imagen %}1{% else %}0{% endif %}"
+            novalidate>
+        {% csrf_token %}
+
+        <!-- CATEGORÍA -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Categoría</label>
+          <select id="catSelect" class="form-select" required></select>
+          <div class="invalid-feedback">Selecciona una categoría</div>
+          <div class="form-text text-muted">Elige primero una categoría para filtrar subcategorías.</div>
+        </div>
+
+        <!-- SUBCATEGORÍA -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Subcategoría</label>
+          <select id="subSelect" class="form-select" required></select>
+          <div class="invalid-feedback">Selecciona una subcategoría</div>
+
+          <!-- Contenedor oculto, se mostrará solo si no hay subcategorías -->
+          <div id="noSubsWrapper" class="mt-2 d-none">
+            <a id="btnCrearSub" href="#" target="_blank" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-plus"></i> Crear subcategoría
+            </a>
+            <div class="form-text">Se abrirá en una nueva pestaña para añadir una subcategoría a esta categoría.</div>
+          </div>
+        </div>
+
+        <!-- Campo oculto original de Django -->
+        <div id="original-sub-wrapper" class="d-none">
+          {{ form.subcategoria }}
+        </div>
+
+
+        <!-- NOMBRE -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.nombre.id_for_label }}">Nombre</label>
+          {{ form.nombre }}
+          <div class="invalid-feedback">Ingresa un nombre</div>
+        </div>
+
+        <!-- DESCRIPCIÓN -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.descripcion.id_for_label }}">Descripción</label>
+          {{ form.descripcion }}
+          <div class="invalid-feedback">Ingresa una descripción</div>
+        </div>
+
+        <!-- PRECIO -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.precio.id_for_label }}">Precio</label>
+          <div class="input-group">
+            <span class="input-group-text">L.</span>
+            {{ form.precio }}
+          </div>
+          <div class="invalid-feedback">Ingresa un precio</div>
+        </div>
+
+        <!-- IMAGEN -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Imagen (obligatoria)</label>
+
+          {% if obj and obj.imagen %}
+            <div class="ratio ratio-16x9 rounded-3 overflow-hidden border mb-2">
+              <img src="{{ obj.image_url }}" class="w-100 h-100" style="object-fit: cover;" alt="Imagen actual">
+            </div>
+            <div class="form-check mt-2">
+              <input type="checkbox" name="imagen-clear" id="imagen-clear" class="form-check-input">
+              <label for="imagen-clear" class="form-check-label text-danger">Eliminar imagen actual</label>
+            </div>
+          {% endif %}
+
+          <div class="alert alert-warning py-2 small mb-2">
+            Las imágenes no se sobrescriben. Si subes un archivo con el mismo nombre, se usará el que ya existe.
+          </div>
+
+                    <!-- Dropzone -->
+          <label for="imagenInput" id="dropzone" class="w-100 p-4 text-center border rounded-3"
+                style="border-style:dashed; cursor:pointer;">
+            <div class="small text-muted">Haz clic o arrastra una imagen aquí</div>
+            <div class="mt-2"><i class="fas fa-image"></i></div>
+          </label>
+
+          <!-- IMPORTANTE: capture="environment" -->
+          <input type="file" name="imagen" id="imagenInput" class="form-control d-none"
+                accept="image/*" capture="environment">
+
+          <!-- Botones cámara / galería -->
+          <div class="d-flex gap-2 mt-2">
+            <button type="button" class="btn btn-outline-primary btn-sm" id="btnOpenCameraProd">
+              <i class="fas fa-camera me-1"></i> Tomar foto
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnPickFileProd">
+              <i class="fas fa-image me-1"></i> Galería
+            </button>
+          </div>
+
+          <!-- Previsualización (solo si hay archivo) -->
+          <div class="mt-3 d-none" id="previewNuevaWrapper">
+            <div class="ratio ratio-16x9 rounded-3 overflow-hidden border">
+              <img id="imgPreview" class="w-100 h-100" style="object-fit: cover;" alt="Previsualización">
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" id="btnResetImagen">
+              Limpiar selección
+            </button>
+            <div class="invalid-feedback d-block d-none" id="imgError">Selecciona una imagen</div>
+          </div>
+        </div>
+
+        <!-- BADGE -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.badge.id_for_label }}">Etiqueta (medalla)</label>
+          <div id="original-badge-wrapper" class="d-none">
+            {{ form.badge }}
+          </div>
+          <div id="badgeSegmented" class="segmented" role="group"></div>
+        </div>
+
+        <!-- STOCK -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="{{ form.stock.id_for_label }}">Stock</label>
+          {{ form.stock }}
+          <div class="invalid-feedback">Ingresa el stock</div>
+        </div>
+
+        <!-- BOTONES -->
+        <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-4">
+          <a href="{% url 'panel_productos' %}" class="btn btn-outline-secondary">Cancelar</a>
+          <button class="btn btn-primary">Guardar</button>
+        </div>
+
+        <p class="mt-3 text-muted small text-center">
+          El código se generará automáticamente al guardar.
+        </p>
+      </form>
+      {{ cats|json_script:"catsData" }}
+      {{ subs|json_script:"subsData" }}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // ====== Estilos base y required ======
+  document.querySelectorAll('#productoForm input, #productoForm textarea, #productoForm select')
+    .forEach(el => { if (!el.classList.contains('form-check-input')) el.classList.add('form-control'); });
+
+  ['id_nombre','id_descripcion','id_precio','id_stock'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('required','required');
+  });
+
+  // ====== Refs generales ======
+  const form     = document.getElementById('productoForm');
+  const hasExistingImage = form.dataset.hasImage === '1';
+  const clearCb  = document.getElementById('imagen-clear');
+  const dz       = document.getElementById('dropzone');
+
+  const inputImg = document.getElementById('imagenInput');
+  const prevWrap = document.getElementById('previewNuevaWrapper');
+  const prevImg  = document.getElementById('imgPreview');
+  const btnReset = document.getElementById('btnResetImagen');
+  const imgError = document.getElementById('imgError');
+
+  const errorsBox  = document.getElementById('formErrorsSummary');
+  const errorsList = document.getElementById('formErrorsList');
+
+  // Campo real de Django (oculto) y selects visibles
+  const originalSub = document.querySelector('#original-sub-wrapper select');
+  const catSel = document.getElementById('catSelect');
+  const subSel = document.getElementById('subSelect');
+
+  // Controles para "crear subcategoría"
+  const noSubsWrapper = document.getElementById('noSubsWrapper');
+  const btnCrearSub   = document.getElementById('btnCrearSub');
+
+  let blobURL = null;
+
+  // ====== Imagen: previsualización ======
+  if (inputImg) {
+    inputImg.addEventListener('click', () => { inputImg.value = ''; });
+    inputImg.addEventListener('change', () => {
+      const f = inputImg.files && inputImg.files[0];
+      if (!f) {
+        prevWrap?.classList.add('d-none');
+        imgError?.classList.add('d-none');
+        dz?.classList.remove('border-danger');
+        if (prevImg) prevImg.src = '';
+        if (blobURL) { URL.revokeObjectURL(blobURL); blobURL = null; }
+        return;
+      }
+      if (blobURL) { URL.revokeObjectURL(blobURL); blobURL = null; }
+      blobURL = URL.createObjectURL(f);
+      if (prevImg)  prevImg.src = blobURL;
+      prevWrap?.classList.remove('d-none');
+      imgError?.classList.add('d-none');
+      dz?.classList.remove('border-danger');
+    });
+  }
+
+  btnReset?.addEventListener('click', () => {
+    if (blobURL) { URL.revokeObjectURL(blobURL); blobURL = null; }
+    if (inputImg) inputImg.value = '';
+    if (prevImg)  prevImg.src = '';
+    prevWrap?.classList.add('d-none');
+  });
+
+  // ====== Datos de categorías/subcategorías desde el servidor ======
+  const cats = JSON.parse(document.getElementById('catsData')?.textContent || '[]');
+  const subs = JSON.parse(document.getElementById('subsData')?.textContent || '[]');
+
+  // Mapa seccion_id -> lista de subcategorías
+  const subsByCat = {};
+  subs.forEach(s => { (subsByCat[s.seccion_id] ||= []).push({ value: String(s.id), label: s.nombre }); });
+  Object.values(subsByCat).forEach(arr => arr.sort((a,b)=>a.label.localeCompare(b.label,'es')));
+
+  // Función para construir URL de "crear subcategoría" (AJUSTA si tu ruta es distinta)
+  function createSubcatURL(catId) {
+    // Ejemplos posibles:
+    // return `/panel-admin/categorias/${catId}/subcategoria/nueva/`;
+    // o llevar a la pantalla de categorías con ancla:
+    return `/panel-admin/categorias/#cat-${catId}`;
+  }
+
+  // Poblar categorías (siempre, aunque no tengan subcategorías)
+  if (catSel) {
+    catSel.innerHTML = '';
+    cats.forEach(c => {
+      const opt = new Option(c.nombre, String(c.id));
+      catSel.add(opt);
+    });
+  }
+
+  // Render de subcategorías según categoría seleccionada
+  function renderSubs(catId) {
+    if (!subSel) return;
+    subSel.innerHTML = '';
+
+    const list = subsByCat[Number(catId)] || [];
+
+    if (!list.length) {
+      const opt = new Option('— Esta categoría no tiene subcategorías —', '');
+      opt.disabled = true; opt.selected = true;
+      subSel.add(opt);
+      subSel.setAttribute('disabled','disabled');
+      if (originalSub) originalSub.value = '';
+
+      // Mostrar botón para crear subcategoría con la URL adecuada
+      if (noSubsWrapper) {
+        noSubsWrapper.classList.remove('d-none');
+        if (btnCrearSub) btnCrearSub.href = createSubcatURL(catId);
+      }
+    } else {
+      subSel.removeAttribute('disabled');
+      list.forEach(s => subSel.add(new Option(s.label, s.value)));
+      // sincroniza con field real
+      if (originalSub) originalSub.value = subSel.value;
+
+      // Ocultar botón si hay subcategorías
+      if (noSubsWrapper) noSubsWrapper.classList.add('d-none');
+    }
+  }
+
+  // Preselección:
+  //  - Si estamos editando y existe un valor de subcategoría, deducimos la categoría
+  //  - Si es nuevo, seleccionamos la primera categoría; si no tiene subs, se muestra el aviso y el botón
+  (function initCatSub(){
+    if (!catSel || !subSel) return;
+
+    const currentSubId = originalSub?.value || '';
+    if (currentSubId) {
+      // Buscar la sub en 'subs' y tomar su seccion_id
+      const found = subs.find(s => String(s.id) === String(currentSubId));
+      if (found) {
+        catSel.value = String(found.seccion_id);
+        renderSubs(found.seccion_id);
+        // seleccionar la sub actual
+        subSel.value = String(currentSubId);
+        if (originalSub) originalSub.value = subSel.value;
+        return;
+      }
+    }
+
+    // Si no hay sub actual (nuevo producto)
+    if (cats.length) {
+      catSel.value = String(cats[0].id);
+      renderSubs(cats[0].id);
+      // Si hay opciones en sub, tomar la primera
+      if (subSel.options.length && subSel.options[0].value) {
+        subSel.selectedIndex = 0;
+        if (originalSub) originalSub.value = subSel.value;
+      }
+    }
+  })();
+
+  catSel?.addEventListener('change', () => {
+    renderSubs(catSel.value);
+  });
+
+  subSel?.addEventListener('change', () => {
+    if (originalSub) originalSub.value = subSel.value;
+  });
+
+  // ====== Validación de formulario ======
+  function markInvalid(el){ el?.classList.add('is-invalid'); }
+  function markValid(el){ el?.classList.remove('is-invalid'); }
+  function needImageNow(){
+    if (!hasExistingImage) return true;                 // crear
+    if (clearCb && clearCb.checked) return true;        // editar y eliminar
+    return false;
+  }
+
+  form?.addEventListener('submit', function(e){
+    let ok = true;
+    const clientErrors = [];
+
+    const nombre = document.getElementById('id_nombre');
+    const desc   = document.getElementById('id_descripcion');
+    const precio = document.getElementById('id_precio');
+    const stock  = document.getElementById('id_stock');
+
+    if (!nombre?.value.trim()) { markInvalid(nombre); clientErrors.push('Ingresa un nombre.'); ok=false; } else { markValid(nombre); }
+    if (!desc?.value.trim())   { markInvalid(desc);   clientErrors.push('Ingresa una descripción.'); ok=false; } else { markValid(desc); }
+    if (!precio?.value)        { markInvalid(precio); clientErrors.push('Ingresa un precio.'); ok=false; } else { markValid(precio); }
+    if (!stock?.value)         { markInvalid(stock);  clientErrors.push('Ingresa el stock.'); ok=false; } else { markValid(stock); }
+
+    // Validación de subcategoría: debe existir opción seleccionable
+    if (!subSel || subSel.disabled || !subSel.value) {
+      markInvalid(subSel);
+      clientErrors.push('Selecciona una subcategoría (la categoría elegida no tiene subcategorías).');
+      ok = false;
+    } else {
+      markValid(subSel);
+    }
+
+    // Imagen obligatoria en creación o al limpiar en edición
+    if (needImageNow() && (!inputImg || !inputImg.files || !inputImg.files.length)) {
+      imgError?.classList.remove('d-none');
+      dz?.classList.add('border-danger');
+      clientErrors.push('Selecciona una imagen.');
+      ok = false;
+    } else {
+      imgError?.classList.add('d-none');
+      dz?.classList.remove('border-danger');
+    }
+
+    if (!ok) {
+      if (errorsList) errorsList.innerHTML = clientErrors.map(t=>`<li>${t}</li>`).join('');
+      errorsBox?.classList.remove('d-none');
+      e.preventDefault(); e.stopPropagation();
+    } else {
+      errorsBox?.classList.add('d-none');
+    }
+  });
+
+  // ====== Badge segmentado ======
+  const wrapBadge = document.getElementById('original-badge-wrapper');
+  const originalBadge = wrapBadge?.querySelector('select');
+  if (originalBadge) {
+    const seg = document.getElementById('badgeSegmented');
+    const name = 'badgeChoice';
+    [...originalBadge.options].forEach((o, i) => {
+      const id = `badge_${i}`;
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.className = 'btn-check';
+      input.name = name;
+      input.id = id;
+      input.value = o.value;
+      if (originalBadge.value === o.value) input.checked = true;
+
+      const label = document.createElement('label');
+      label.className = 'btn btn-outline-primary';
+      label.htmlFor = id;
+      label.textContent = o.textContent;
+
+      input.addEventListener('change', () => { if (input.checked) originalBadge.value = input.value; });
+      seg.append(input, label);
+    });
+  }
+
+  // ====== Cámara ======
+  (function(){
+    const input = document.getElementById('imagenInput');
+    const btnCam = document.getElementById('btnOpenCameraProd');
+    const btnGal = document.getElementById('btnPickFileProd');
+
+    function openCameraOverlay(onPhoto){
+      let stream = null;
+      const modal = document.createElement('div');
+      Object.assign(modal.style, {
+        position:'fixed', inset:'0', background:'rgba(0,0,0,0.85)', zIndex:'9999',
+        display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'16px'
+      });
+
+      const video = document.createElement('video');
+      Object.assign(video.style, {maxWidth:'92%', maxHeight:'70%', borderRadius:'8px'});
+      video.autoplay = true; video.playsInline = true;
+
+      const row = document.createElement('div');
+      row.className = 'mt-3 d-flex gap-2';
+
+      const btnCap = document.createElement('button');
+      btnCap.className = 'btn btn-primary';
+      btnCap.innerHTML = '<i class="fas fa-camera me-2"></i>Capturar';
+
+      const btnCancel = document.createElement('button');
+      btnCancel.className = 'btn btn-outline-light';
+      btnCancel.textContent = 'Cancelar';
+
+      row.append(btnCap, btnCancel);
+      modal.append(video, row);
+      document.body.appendChild(modal);
+
+      navigator.mediaDevices.getUserMedia({ video: true }).then(s=>{
+        stream = s; video.srcObject = s;
+      }).catch(err=>{
+        alert('No se pudo acceder a la cámara: ' + err.message);
+        cleanup(); if (input) input.click();
+      });
+
+      function cleanup(){
+        if (stream) stream.getTracks().forEach(t=>t.stop());
+        modal.remove();
+      }
+
+      btnCancel.addEventListener('click', cleanup);
+
+      btnCap.addEventListener('click', ()=>{
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth || 1280;
+        canvas.height = video.videoHeight || 720;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob=>{
+          const ts = new Date().toISOString().replace(/[:.]/g,'-');
+          const file = new File([blob], `foto-producto-${ts}.jpg`, {type:'image/jpeg'});
+          onPhoto(file);
+          cleanup();
+        }, 'image/jpeg', 0.9);
+      });
+    }
+
+    btnCam?.addEventListener('click', ()=>{
+      openCameraOverlay((file)=>{
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change'));
+      });
+    });
+
+    btnGal?.addEventListener('click', ()=> input?.click());
+  })();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,113 @@
+:root {
+    --primary-color: #1E3A8A;
+    --secondary-color: #3B82F6;
+    --light-gray: #F8F9FA;
+    --dark-gray: #2D3748;
+    --text-color: #212529;
+}
+  
+
+/* Estructura del contenido */
+.recibo-body {
+    padding: 2rem;
+}
+
+.section-title {
+    font-size: 1.4rem;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.section-title:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 3px;
+    background: var(--secondary-color);
+}
+
+.list-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.total-section {
+    border-top: 2px dashed #ddd;
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+    max-width: 300px;
+}
+
+/* Contador para no imprimir */
+.countdown {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+/* Botones (solo pantalla) */
+.btn-print {
+    border: 1px solid var(--primary-color);
+    transition: all 0.3s ease;
+}
+    
+    /* Asegurar que los elementos se mantengan juntos */
+    .avoid-break {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    
+    /* Mejorar visualización de imágenes */
+    .producto-img {
+        max-height: 50px !important;
+        max-width: 50px !important;
+        border: 1px solid #eee !important;
+    }
+    
+    /* Estilos específicos para el recibo */
+    .recibo-header h2 {
+        font-size: 1.5rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .recibo-header p.lead {
+        font-size: 1rem !important;
+    }
+    
+    .section-title {
+        font-size: 1.2rem !important;
+        color: var(--primary-color) !important;
+        text-align: center !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .section-title:after {
+        display: none !important;
+    }
+    
+    /* Mejorar espaciado */
+    .print-space {
+        margin-bottom: 0.8rem !important;
+    }
+    
+    /* Asegurar que los totales se vean bien */
+    .total-section {
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+    
+    /* Eliminar hipervínculos */
+    a {
+        text-decoration: none !important;
+        color: inherit !important;
+    }
+    
+    /* Ocultar íconos en impresión */
+    .fa, .fas, .fab {
+        display: none !important;
+    }

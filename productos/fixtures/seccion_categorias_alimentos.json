@@ -1,0 +1,13 @@
+[
+  {
+    "model": "productos.SeccionCategoria",
+    "pk": 1,
+    "fields": {
+      "nombre": "Alimentos",
+      "imagen_hero": "alimentos.jpg",
+      "titulo_hero": "Descubre Nuestros Alimentos Premium",
+      "subtitulo_hero": "Calidad excepcional para tu alimentación diaria",
+      "orden": 1
+    }
+  }
+]

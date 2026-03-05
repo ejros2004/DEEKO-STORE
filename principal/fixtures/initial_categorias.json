@@ -1,0 +1,56 @@
+[
+    {
+        "model": "principal.CategoriaPrincipal",
+        "fields": {
+            "nombre": "Libros, Música y Entretenimiento",
+            "imagen_nombre": "libros.png",
+            "url_name": "entretenimiento",
+            "orden": 1
+        }
+    },
+    {
+        "model": "principal.CategoriaPrincipal",
+        "fields": {
+            "nombre": "Deportes y Fitness",
+            "imagen_nombre": "deportes.jpeg",
+            "url_name": "deportes",
+            "orden": 2
+        }
+    },
+    {
+        "model": "principal.CategoriaPrincipal",
+        "fields": {
+            "nombre": "Dispositivos Electrónicos",
+            "imagen_nombre": "electronicos.jpg",
+            "url_name": "tegnologia",
+            "orden": 3
+        }
+    },
+    {
+        "model": "principal.CategoriaPrincipal",
+        "fields": {
+            "nombre": "Alimentos",
+            "imagen_nombre": "alimentos.jpg",
+            "url_name": "alimentos",
+            "orden": 4
+        }
+    },
+    {
+        "model": "principal.CategoriaPrincipal",
+        "fields": {
+            "nombre": "Hogar, Jardín y Herramientas",
+            "imagen_nombre": "hogar.jpg",
+            "url_name": "hogar_herramientas",
+            "orden": 5
+        }
+    },
+    {
+        "model": "principal.CategoriaPrincipal",
+        "fields": {
+            "nombre": "Moda y Ropa",
+            "imagen_nombre": "moda.jpg",
+            "url_name": "moda",
+            "orden": 6
+        }
+    }
+]

@@ -1,0 +1,3440 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil | Deeko Store</title>
+
+  <!-- Bootstrap & Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tus hojas -->
+  <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+  <link rel="stylesheet" href="{% static 'pedidos/css/perfil.css' %}">
+
+  <style>
+    /* ===== Ajustes mínimos y responsivos sin borrar nada ===== */
+
+    body { font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+
+    /* Navbar */
+    .navbar { background-color: #ffffff !important; }
+    .navbar.navbar-light .navbar-toggler { border: 0; }
+    .navbar.navbar-light .navbar-toggler-icon { filter: invert(0.2); }
+    @media (max-width: 991.98px) {
+      .navbar-nav .nav-item { margin-bottom: .25rem; }
+      .navbar-brand img { max-height: 64px !important; }
+    }
+
+    /* Carrito lateral */
+    .cart-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4);
+      opacity: 0; visibility: hidden;
+      transition: opacity .25s ease, visibility .25s ease;
+      z-index: 1049;
+    }
+    .cart-overlay.active { opacity: 1; visibility: visible; }
+
+    .cart-sidebar {
+      position: fixed; top: 0; right: 0;
+      width: 420px; max-width: 100vw; height: 100vh;
+      background: #fff; box-shadow: -6px 0 20px rgba(0,0,0,.12);
+      transform: translateX(100%); transition: transform .3s ease;
+      display: flex; flex-direction: column; z-index: 1050;
+    }
+    .cart-sidebar.active { transform: translateX(0); }
+    .cart-items { flex: 1 1 auto; overflow-y: auto; }
+    .btn-checkout { min-height: 44px; }
+
+    @media (max-width: 576px) {
+      .cart-sidebar { width: 100vw; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+      .cart-header h4 { font-size: 1.1rem; }
+    }
+
+    /* Cards perfil */
+    .card.shadow-sm { border: 0; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06) !important; }
+    .card-header.bg-white { border-bottom: 1px solid #eef2f7; border-top-left-radius: 16px; border-top-right-radius: 16px; }
+
+    /* Tabla pedidos -> stack en móvil usando mobile.css (.table-stack) */
+    .table.table-hover th, .table.table-hover td { vertical-align: middle; }
+    @media (max-width: 576px) {
+      .table.table-stack thead { display: none; }
+      .table.table-stack tbody tr {
+        display: block; padding: 12px; margin-bottom: .75rem;
+        border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      }
+      .table.table-stack tbody td {
+        display: flex; justify-content: space-between; gap: .75rem; padding: .35rem 0; border: 0 !important;
+        text-align: left !important; font-variant-numeric: tabular-nums;
+      }
+      .table.table-stack tbody td::before {
+        content: attr(data-label); color: #6b7280; font-weight: 600;
+      }
+      .table.table-stack .text-end { text-align: right !important; }
+    }
+    /* Botón cerrar del carrito */
+    #closeCart { font-size: 1.25rem; line-height: 1; padding: .25rem .5rem; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar con carrito y usuario -->
+<nav class="navbar navbar-expand-lg" style="background-color: hsl(0, 0%, 100%);">
+  <div class="container">
+    <!-- Logo con enlace a home -->
+    <a class="navbar-brand" href="{% url 'principal' %}">
+      <img src="{% static 'images/logo_deeko.png' %}" alt="Dekko Logo" style="max-height: 100px; object-fit: contain;">
+    </a>
+
+    <!-- Botón responsive -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Contenido del navbar -->
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav align-items-center">
+        <!-- Botón Inicio con enlace a home -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}">Página principal</a>
+        </li>
+
+        <!-- Botón Productos con enlace a categorías -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}#categorias">Categorías</a>
+        </li>
+
+        <!-- Enlace a contacto -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="#contacto">Contacto</a>
+        </li>
+
+        <!-- Login / Username -->
+        {% if user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-dark fw-semibold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="{% url 'perfil' %}"><i class="fas fa-user me-2"></i> Mi Perfil</a></li>
+            <li><a class="dropdown-item" href="{% url 'mis_pedidos' %}"><i class="fas fa-shopping-bag me-2"></i> Mis Pedidos</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'login' %}">Iniciar Sesión</a>
+        </li>
+        {% endif %}
+
+        <!-- Ícono del carrito mejorado -->
+        <li class="nav-item position-relative mobile-hidden">
+          <a href="#" class="nav-link text-dark fw-semibold" id="cartToggle">
+            <i class="fas fa-shopping-cart fa-lg"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCount">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Carrito de compras mejorado -->
+<div class="cart-overlay" id="cartOverlay" aria-hidden="true"></div>
+<div class="cart-sidebar" id="cartSidebar" aria-labelledby="cartToggle" aria-hidden="true">
+  <div class="cart-header d-flex justify-content-between align-items-center p-3 border-bottom">
+    <h4 class="m-0">Tu Carrito</h4>
+    <button id="closeCart" class="btn btn-sm btn-outline-secondary" aria-label="Cerrar carrito">&times;</button>
+  </div>
+  <div class="cart-items p-3" id="cartItems" style="overflow-y: auto; flex-grow: 1;">
+    <!-- Los productos del carrito se agregarán aquí dinámicamente -->
+    <div class="empty-cart-message text-center py-5">
+      <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+      <h5 class="text-muted">Tu carrito está vacío</h5>
+    </div>
+  </div>
+  <div class="cart-footer p-3 border-top">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="fw-bold">Total:</span>
+      <span class="fw-bold fs-5" id="cartTotal">L. 0.00</span>
+    </div>
+    <button class="btn btn-primary w-100 py-2 btn-checkout" id="proceedToCheckout">
+      <i class="fas fa-credit-card me-2"></i> Proceder al Pago
+    </button>
+  </div>
+</div>
+
+<!-- Formulario para enviar datos del carrito -->
+<form id="cartForm" method="POST" action="{% url 'pago' %}" style="display: none;">
+  {% csrf_token %}
+  <input type="hidden" name="cart_data" id="cartFormData">
+</form>
+
+<!-- Contenido principal -->
+<div class="container py-5">
+  <div class="row">
+    <!-- Columna de información del usuario -->
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow-sm profile-card">
+        <div class="card-body text-center">
+          <div class="d-flex justify-content-center mb-3">
+            <div class="rounded-circle bg-primary p-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+              <i class="fas fa-user fa-2x text-white"></i>
+            </div>
+          </div>
+          <h3 class="card-title mb-3">{{ user.username }}</h3>
+          <p class="text-muted mb-1"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+          <p class="text-muted mb-4"><i class="fas fa-calendar-alt me-2"></i>Miembro desde: {{ user.date_joined|date:"d/m/Y" }}</p>
+          <a href="{% url 'editar_perfil' %}" class="btn btn-primary w-100">Editar Perfil</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna de pedidos recientes y contenido principal -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Mis Pedidos Recientes</h4>
+        </div>
+        <div class="card-body">
+          {% if pedidos_recientes %}
+          <div class="table-responsive">
+            <table class="table table-hover table-stack">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Fecha</th>
+                  <th class="text-end">Total</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pedido in pedidos_recientes %}
+                <tr>
+                  <td data-label="Número: ">{{ pedido.codigo }}</td>
+                  <td data-label="Fecha">{{ pedido.fecha_creacion|date:"d/m/Y" }}</td>
+                  <td class="text-end" data-label="Total">L. {{ pedido.total }}</td>
+                  <td data-label="Estado">
+                    <span class="badge bg-{% if pedido.estado.nombre == 'Entregado' %}success{% elif pedido.estado.nombre == 'Cancelado' %}danger{% else %}primary{% endif %}">
+                      {{ pedido.estado.nombre }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="text-end mt-3">
+            <a href="{% url 'mis_pedidos' %}" class="btn btn-outline-primary">Ver todos mis pedidos</a>
+          </div>
+          {% else %}
+          <div class="alert alert-info mb-0">
+            No has realizado ningún pedido aún.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Sección de información adicional -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Configuración de Cuenta</h4>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="me-3">
+              <h5 class="mb-1">Cambiar contraseña</h5>
+              <p class="small text-muted mb-0">Actualiza tu contraseña regularmente para mayor seguridad</p>
+            </div>
+            <a href="{% url 'recuperacion' %}" class="btn btn-outline-primary">Cambiar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer" id="contacto">
+  <div class="container">
+    <div class="row justify-content-center">
+      <!-- Columna 1: Marca + Social -->
+      <div class="col-md-4 mb-4">
+        <a class="navbar-brand d-block mb-3" href="{% url 'principal' %}">
+          <img src="{% static 'images/logo_deeko_blanco.png' %}" alt="Dekko Logo" style="max-height: 80px; object-fit: contain;">
+        </a>
+        <p class="text-white-50">Tu tienda en línea con los mejores productos y servicios.</p>
+        <div class="social-icons mt-3">
+          <a href="https://www.facebook.com/share/1GYMjXYDgt/" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="https://www.instagram.com/deeko_store.hn" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="https://x.com/deekostore" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="X">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Columna 2: Enlaces -->
+      <div class="col-md-4 mb-4 footer-links">
+        <h5 class="text-white mb-4">Enlaces</h5>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a href="{% url 'principal' %}" class="text-white">Inicio</a></li>
+          <li class="mb-2"><a href="{% url 'principal' %}#categorias" class="text-white">Categorías</a></li>
+          <li class="mb-2"><a href="#contacto" class="text-white">Contacto</a></li>
+        </ul>
+      </div>
+
+      <!-- Columna 3: Información Legal -->
+      <div class="col-md-4 mb-4">
+        <h5 class="text-white mb-4">Información Legal</h5>
+        <ul class="list-unstyled legal-links">
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#termsModal">Términos y Condiciones</a>
+          </li>
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#privacyModal">Política de Privacidad</a>
+          </li>
+          <li>
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#faqModal">FAQ</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="my-4 bg-light">
+
+    <div class="row">
+      <div class="col-md-12">
+        <p class="text-white-50 mb-0">© 2025 Dekko Store. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ====== Modales ====== -->
+<!-- TÉRMINOS -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Términos y Condiciones</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <ol class="ps-3 mb-0">
+          <li><strong>Proceso de Compra:</strong> aceptas pagar precio total, impuestos y envío.</li>
+          <li><strong>Pagos:</strong> se procesan de forma segura; no almacenamos datos de tarjeta.</li>
+          <li><strong>Envíos:</strong> 1–2 días hábiles; tiempos varían por ubicación.</li>
+          <li><strong>Devoluciones:</strong> 14 días desde la recepción, producto en estado original.</li>
+          <li><strong>Privacidad:</strong> protegemos tus datos según nuestra Política de Privacidad.</li>
+          <li><strong>Garantías:</strong> según fabricante y detalles por producto.</li>
+          <li><strong>Cambios:</strong> podemos modificar los términos en cualquier momento.</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACIDAD -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Política de Privacidad</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p>Recopilamos datos mínimos para procesar pedidos y mejorar tu experiencia.</p>
+        <p>No vendemos tu información. Puedes solicitar acceso, rectificación o eliminación de tus datos desde <em>Contacto</em>.</p>
+        <p>Aplicamos medidas técnicas y organizativas para proteger tu información.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="modal fade" id="faqModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Preguntas Frecuentes</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>¿Cuánto tarda el envío?</strong><br>Procesamos en 1–2 días hábiles; el tiempo de entrega depende de tu ubicación.</p>
+        <p><strong>¿Puedo devolver un producto?</strong><br>Sí, dentro de 14 días desde la recepción, en su estado original.</p>
+        <p><strong>¿Cómo contacto soporte?</strong><br>Vía <em>Contacto</em> o redes sociales.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'pedidos/js/perfil.js' %}"></script>
+<script src="{% static 'js/carrito_principal.js' %}"></script>
+
+<script>
+  /* Toggle carrito (no reemplaza tu JS, solo asegura comportamiento básico) */
+  (function(){
+    const toggle = document.getElementById('cartToggle');
+    const overlay = document.getElementById('cartOverlay');
+    const sidebar = document.getElementById('cartSidebar');
+    const closeBtn = document.getElementById('closeCart');
+
+    function openCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.add('active');
+      sidebar.classList.add('active');
+      overlay.setAttribute('aria-hidden','false');
+      sidebar.setAttribute('aria-hidden','false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.remove('active');
+      sidebar.classList.remove('active');
+      overlay.setAttribute('aria-hidden','true');
+      sidebar.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+
+    toggle?.addEventListener('click', openCart);
+    overlay?.addEventListener('click', closeCart);
+    closeBtn?.addEventListener('click', closeCart);
+
+    // Cerrar con ESC
+    document.addEventListener('keydown', (ev)=>{ if(ev.key==='Escape') closeCart(); });
+  })();
+</script>
+</body>
+</html>
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil | Deeko Store</title>
+
+  <!-- Bootstrap & Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tus hojas -->
+  <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+  <link rel="stylesheet" href="{% static 'pedidos/css/perfil.css' %}">
+
+  <style>
+    /* ===== Ajustes mínimos y responsivos sin borrar nada ===== */
+
+    body { font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+
+    /* Navbar */
+    .navbar { background-color: #ffffff !important; }
+    .navbar.navbar-light .navbar-toggler { border: 0; }
+    .navbar.navbar-light .navbar-toggler-icon { filter: invert(0.2); }
+    @media (max-width: 991.98px) {
+      .navbar-nav .nav-item { margin-bottom: .25rem; }
+      .navbar-brand img { max-height: 64px !important; }
+    }
+
+    /* Carrito lateral */
+    .cart-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4);
+      opacity: 0; visibility: hidden;
+      transition: opacity .25s ease, visibility .25s ease;
+      z-index: 1049;
+    }
+    .cart-overlay.active { opacity: 1; visibility: visible; }
+
+    .cart-sidebar {
+      position: fixed; top: 0; right: 0;
+      width: 420px; max-width: 100vw; height: 100vh;
+      background: #fff; box-shadow: -6px 0 20px rgba(0,0,0,.12);
+      transform: translateX(100%); transition: transform .3s ease;
+      display: flex; flex-direction: column; z-index: 1050;
+    }
+    .cart-sidebar.active { transform: translateX(0); }
+    .cart-items { flex: 1 1 auto; overflow-y: auto; }
+    .btn-checkout { min-height: 44px; }
+
+    @media (max-width: 576px) {
+      .cart-sidebar { width: 100vw; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+      .cart-header h4 { font-size: 1.1rem; }
+    }
+
+    /* Cards perfil */
+    .card.shadow-sm { border: 0; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06) !important; }
+    .card-header.bg-white { border-bottom: 1px solid #eef2f7; border-top-left-radius: 16px; border-top-right-radius: 16px; }
+
+    /* Tabla pedidos -> stack en móvil usando mobile.css (.table-stack) */
+    .table.table-hover th, .table.table-hover td { vertical-align: middle; }
+    @media (max-width: 576px) {
+      .table.table-stack thead { display: none; }
+      .table.table-stack tbody tr {
+        display: block; padding: 12px; margin-bottom: .75rem;
+        border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      }
+      .table.table-stack tbody td {
+        display: flex; justify-content: space-between; gap: .75rem; padding: .35rem 0; border: 0 !important;
+        text-align: left !important; font-variant-numeric: tabular-nums;
+      }
+      .table.table-stack tbody td::before {
+        content: attr(data-label); color: #6b7280; font-weight: 600;
+      }
+      .table.table-stack .text-end { text-align: right !important; }
+    }
+    /* Botón cerrar del carrito */
+    #closeCart { font-size: 1.25rem; line-height: 1; padding: .25rem .5rem; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar con carrito y usuario -->
+<nav class="navbar navbar-expand-lg" style="background-color: hsl(0, 0%, 100%);">
+  <div class="container">
+    <!-- Logo con enlace a home -->
+    <a class="navbar-brand" href="{% url 'principal' %}">
+      <img src="{% static 'images/logo_deeko.png' %}" alt="Dekko Logo" style="max-height: 100px; object-fit: contain;">
+    </a>
+
+    <!-- Botón responsive -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Contenido del navbar -->
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav align-items-center">
+        <!-- Botón Inicio con enlace a home -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}">Página principal</a>
+        </li>
+
+        <!-- Botón Productos con enlace a categorías -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}#categorias">Categorías</a>
+        </li>
+
+        <!-- Enlace a contacto -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="#contacto">Contacto</a>
+        </li>
+
+        <!-- Login / Username -->
+        {% if user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-dark fw-semibold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="{% url 'perfil' %}"><i class="fas fa-user me-2"></i> Mi Perfil</a></li>
+            <li><a class="dropdown-item" href="{% url 'mis_pedidos' %}"><i class="fas fa-shopping-bag me-2"></i> Mis Pedidos</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'login' %}">Iniciar Sesión</a>
+        </li>
+        {% endif %}
+
+        <!-- Ícono del carrito mejorado -->
+        <li class="nav-item position-relative mobile-hidden">
+          <a href="#" class="nav-link text-dark fw-semibold" id="cartToggle">
+            <i class="fas fa-shopping-cart fa-lg"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCount">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Carrito de compras mejorado -->
+<div class="cart-overlay" id="cartOverlay" aria-hidden="true"></div>
+<div class="cart-sidebar" id="cartSidebar" aria-labelledby="cartToggle" aria-hidden="true">
+  <div class="cart-header d-flex justify-content-between align-items-center p-3 border-bottom">
+    <h4 class="m-0">Tu Carrito</h4>
+    <button id="closeCart" class="btn btn-sm btn-outline-secondary" aria-label="Cerrar carrito">&times;</button>
+  </div>
+  <div class="cart-items p-3" id="cartItems" style="overflow-y: auto; flex-grow: 1;">
+    <!-- Los productos del carrito se agregarán aquí dinámicamente -->
+    <div class="empty-cart-message text-center py-5">
+      <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+      <h5 class="text-muted">Tu carrito está vacío</h5>
+    </div>
+  </div>
+  <div class="cart-footer p-3 border-top">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="fw-bold">Total:</span>
+      <span class="fw-bold fs-5" id="cartTotal">L. 0.00</span>
+    </div>
+    <button class="btn btn-primary w-100 py-2 btn-checkout" id="proceedToCheckout">
+      <i class="fas fa-credit-card me-2"></i> Proceder al Pago
+    </button>
+  </div>
+</div>
+
+<!-- Formulario para enviar datos del carrito -->
+<form id="cartForm" method="POST" action="{% url 'pago' %}" style="display: none;">
+  {% csrf_token %}
+  <input type="hidden" name="cart_data" id="cartFormData">
+</form>
+
+<!-- Contenido principal -->
+<div class="container py-5">
+  <div class="row">
+    <!-- Columna de información del usuario -->
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow-sm profile-card">
+        <div class="card-body text-center">
+          <div class="d-flex justify-content-center mb-3">
+            <div class="rounded-circle bg-primary p-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+              <i class="fas fa-user fa-2x text-white"></i>
+            </div>
+          </div>
+          <h3 class="card-title mb-3">{{ user.username }}</h3>
+          <p class="text-muted mb-1"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+          <p class="text-muted mb-4"><i class="fas fa-calendar-alt me-2"></i>Miembro desde: {{ user.date_joined|date:"d/m/Y" }}</p>
+          <a href="{% url 'editar_perfil' %}" class="btn btn-primary w-100">Editar Perfil</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna de pedidos recientes y contenido principal -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Mis Pedidos Recientes</h4>
+        </div>
+        <div class="card-body">
+          {% if pedidos_recientes %}
+          <div class="table-responsive">
+            <table class="table table-hover table-stack">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Fecha</th>
+                  <th class="text-end">Total</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pedido in pedidos_recientes %}
+                <tr>
+                  <td data-label="Número: ">{{ pedido.codigo }}</td>
+                  <td data-label="Fecha">{{ pedido.fecha_creacion|date:"d/m/Y" }}</td>
+                  <td class="text-end" data-label="Total">L. {{ pedido.total }}</td>
+                  <td data-label="Estado">
+                    <span class="badge bg-{% if pedido.estado.nombre == 'Entregado' %}success{% elif pedido.estado.nombre == 'Cancelado' %}danger{% else %}primary{% endif %}">
+                      {{ pedido.estado.nombre }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="text-end mt-3">
+            <a href="{% url 'mis_pedidos' %}" class="btn btn-outline-primary">Ver todos mis pedidos</a>
+          </div>
+          {% else %}
+          <div class="alert alert-info mb-0">
+            No has realizado ningún pedido aún.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Sección de información adicional -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Configuración de Cuenta</h4>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="me-3">
+              <h5 class="mb-1">Cambiar contraseña</h5>
+              <p class="small text-muted mb-0">Actualiza tu contraseña regularmente para mayor seguridad</p>
+            </div>
+            <a href="{% url 'recuperacion' %}" class="btn btn-outline-primary">Cambiar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer" id="contacto">
+  <div class="container">
+    <div class="row justify-content-center">
+      <!-- Columna 1: Marca + Social -->
+      <div class="col-md-4 mb-4">
+        <a class="navbar-brand d-block mb-3" href="{% url 'principal' %}">
+          <img src="{% static 'images/logo_deeko_blanco.png' %}" alt="Dekko Logo" style="max-height: 80px; object-fit: contain;">
+        </a>
+        <p class="text-white-50">Tu tienda en línea con los mejores productos y servicios.</p>
+        <div class="social-icons mt-3">
+          <a href="https://www.facebook.com/share/1GYMjXYDgt/" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="https://www.instagram.com/deeko_store.hn" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="https://x.com/deekostore" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="X">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Columna 2: Enlaces -->
+      <div class="col-md-4 mb-4 footer-links">
+        <h5 class="text-white mb-4">Enlaces</h5>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a href="{% url 'principal' %}" class="text-white">Inicio</a></li>
+          <li class="mb-2"><a href="{% url 'principal' %}#categorias" class="text-white">Categorías</a></li>
+          <li class="mb-2"><a href="#contacto" class="text-white">Contacto</a></li>
+        </ul>
+      </div>
+
+      <!-- Columna 3: Información Legal -->
+      <div class="col-md-4 mb-4">
+        <h5 class="text-white mb-4">Información Legal</h5>
+        <ul class="list-unstyled legal-links">
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#termsModal">Términos y Condiciones</a>
+          </li>
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#privacyModal">Política de Privacidad</a>
+          </li>
+          <li>
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#faqModal">FAQ</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="my-4 bg-light">
+
+    <div class="row">
+      <div class="col-md-12">
+        <p class="text-white-50 mb-0">© 2025 Dekko Store. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ====== Modales ====== -->
+<!-- TÉRMINOS -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Términos y Condiciones</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <ol class="ps-3 mb-0">
+          <li><strong>Proceso de Compra:</strong> aceptas pagar precio total, impuestos y envío.</li>
+          <li><strong>Pagos:</strong> se procesan de forma segura; no almacenamos datos de tarjeta.</li>
+          <li><strong>Envíos:</strong> 1–2 días hábiles; tiempos varían por ubicación.</li>
+          <li><strong>Devoluciones:</strong> 14 días desde la recepción, producto en estado original.</li>
+          <li><strong>Privacidad:</strong> protegemos tus datos según nuestra Política de Privacidad.</li>
+          <li><strong>Garantías:</strong> según fabricante y detalles por producto.</li>
+          <li><strong>Cambios:</strong> podemos modificar los términos en cualquier momento.</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACIDAD -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Política de Privacidad</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p>Recopilamos datos mínimos para procesar pedidos y mejorar tu experiencia.</p>
+        <p>No vendemos tu información. Puedes solicitar acceso, rectificación o eliminación de tus datos desde <em>Contacto</em>.</p>
+        <p>Aplicamos medidas técnicas y organizativas para proteger tu información.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="modal fade" id="faqModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Preguntas Frecuentes</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>¿Cuánto tarda el envío?</strong><br>Procesamos en 1–2 días hábiles; el tiempo de entrega depende de tu ubicación.</p>
+        <p><strong>¿Puedo devolver un producto?</strong><br>Sí, dentro de 14 días desde la recepción, en su estado original.</p>
+        <p><strong>¿Cómo contacto soporte?</strong><br>Vía <em>Contacto</em> o redes sociales.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'pedidos/js/perfil.js' %}"></script>
+<script src="{% static 'js/carrito_principal.js' %}"></script>
+
+<script>
+  /* Toggle carrito (no reemplaza tu JS, solo asegura comportamiento básico) */
+  (function(){
+    const toggle = document.getElementById('cartToggle');
+    const overlay = document.getElementById('cartOverlay');
+    const sidebar = document.getElementById('cartSidebar');
+    const closeBtn = document.getElementById('closeCart');
+
+    function openCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.add('active');
+      sidebar.classList.add('active');
+      overlay.setAttribute('aria-hidden','false');
+      sidebar.setAttribute('aria-hidden','false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.remove('active');
+      sidebar.classList.remove('active');
+      overlay.setAttribute('aria-hidden','true');
+      sidebar.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+
+    toggle?.addEventListener('click', openCart);
+    overlay?.addEventListener('click', closeCart);
+    closeBtn?.addEventListener('click', closeCart);
+
+    // Cerrar con ESC
+    document.addEventListener('keydown', (ev)=>{ if(ev.key==='Escape') closeCart(); });
+  })();
+</script>
+</body>
+</html>
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil | Deeko Store</title>
+
+  <!-- Bootstrap & Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tus hojas -->
+  <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+  <link rel="stylesheet" href="{% static 'pedidos/css/perfil.css' %}">
+
+  <style>
+    /* ===== Ajustes mínimos y responsivos sin borrar nada ===== */
+
+    body { font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+
+    /* Navbar */
+    .navbar { background-color: #ffffff !important; }
+    .navbar.navbar-light .navbar-toggler { border: 0; }
+    .navbar.navbar-light .navbar-toggler-icon { filter: invert(0.2); }
+    @media (max-width: 991.98px) {
+      .navbar-nav .nav-item { margin-bottom: .25rem; }
+      .navbar-brand img { max-height: 64px !important; }
+    }
+
+    /* Carrito lateral */
+    .cart-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4);
+      opacity: 0; visibility: hidden;
+      transition: opacity .25s ease, visibility .25s ease;
+      z-index: 1049;
+    }
+    .cart-overlay.active { opacity: 1; visibility: visible; }
+
+    .cart-sidebar {
+      position: fixed; top: 0; right: 0;
+      width: 420px; max-width: 100vw; height: 100vh;
+      background: #fff; box-shadow: -6px 0 20px rgba(0,0,0,.12);
+      transform: translateX(100%); transition: transform .3s ease;
+      display: flex; flex-direction: column; z-index: 1050;
+    }
+    .cart-sidebar.active { transform: translateX(0); }
+    .cart-items { flex: 1 1 auto; overflow-y: auto; }
+    .btn-checkout { min-height: 44px; }
+
+    @media (max-width: 576px) {
+      .cart-sidebar { width: 100vw; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+      .cart-header h4 { font-size: 1.1rem; }
+    }
+
+    /* Cards perfil */
+    .card.shadow-sm { border: 0; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06) !important; }
+    .card-header.bg-white { border-bottom: 1px solid #eef2f7; border-top-left-radius: 16px; border-top-right-radius: 16px; }
+
+    /* Tabla pedidos -> stack en móvil usando mobile.css (.table-stack) */
+    .table.table-hover th, .table.table-hover td { vertical-align: middle; }
+    @media (max-width: 576px) {
+      .table.table-stack thead { display: none; }
+      .table.table-stack tbody tr {
+        display: block; padding: 12px; margin-bottom: .75rem;
+        border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      }
+      .table.table-stack tbody td {
+        display: flex; justify-content: space-between; gap: .75rem; padding: .35rem 0; border: 0 !important;
+        text-align: left !important; font-variant-numeric: tabular-nums;
+      }
+      .table.table-stack tbody td::before {
+        content: attr(data-label); color: #6b7280; font-weight: 600;
+      }
+      .table.table-stack .text-end { text-align: right !important; }
+    }
+    /* Botón cerrar del carrito */
+    #closeCart { font-size: 1.25rem; line-height: 1; padding: .25rem .5rem; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar con carrito y usuario -->
+<nav class="navbar navbar-expand-lg" style="background-color: hsl(0, 0%, 100%);">
+  <div class="container">
+    <!-- Logo con enlace a home -->
+    <a class="navbar-brand" href="{% url 'principal' %}">
+      <img src="{% static 'images/logo_deeko.png' %}" alt="Dekko Logo" style="max-height: 100px; object-fit: contain;">
+    </a>
+
+    <!-- Botón responsive -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Contenido del navbar -->
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav align-items-center">
+        <!-- Botón Inicio con enlace a home -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}">Página principal</a>
+        </li>
+
+        <!-- Botón Productos con enlace a categorías -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}#categorias">Categorías</a>
+        </li>
+
+        <!-- Enlace a contacto -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="#contacto">Contacto</a>
+        </li>
+
+        <!-- Login / Username -->
+        {% if user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-dark fw-semibold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="{% url 'perfil' %}"><i class="fas fa-user me-2"></i> Mi Perfil</a></li>
+            <li><a class="dropdown-item" href="{% url 'mis_pedidos' %}"><i class="fas fa-shopping-bag me-2"></i> Mis Pedidos</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'login' %}">Iniciar Sesión</a>
+        </li>
+        {% endif %}
+
+        <!-- Ícono del carrito mejorado -->
+        <li class="nav-item position-relative mobile-hidden">
+          <a href="#" class="nav-link text-dark fw-semibold" id="cartToggle">
+            <i class="fas fa-shopping-cart fa-lg"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCount">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Carrito de compras mejorado -->
+<div class="cart-overlay" id="cartOverlay" aria-hidden="true"></div>
+<div class="cart-sidebar" id="cartSidebar" aria-labelledby="cartToggle" aria-hidden="true">
+  <div class="cart-header d-flex justify-content-between align-items-center p-3 border-bottom">
+    <h4 class="m-0">Tu Carrito</h4>
+    <button id="closeCart" class="btn btn-sm btn-outline-secondary" aria-label="Cerrar carrito">&times;</button>
+  </div>
+  <div class="cart-items p-3" id="cartItems" style="overflow-y: auto; flex-grow: 1;">
+    <!-- Los productos del carrito se agregarán aquí dinámicamente -->
+    <div class="empty-cart-message text-center py-5">
+      <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+      <h5 class="text-muted">Tu carrito está vacío</h5>
+    </div>
+  </div>
+  <div class="cart-footer p-3 border-top">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="fw-bold">Total:</span>
+      <span class="fw-bold fs-5" id="cartTotal">L. 0.00</span>
+    </div>
+    <button class="btn btn-primary w-100 py-2 btn-checkout" id="proceedToCheckout">
+      <i class="fas fa-credit-card me-2"></i> Proceder al Pago
+    </button>
+  </div>
+</div>
+
+<!-- Formulario para enviar datos del carrito -->
+<form id="cartForm" method="POST" action="{% url 'pago' %}" style="display: none;">
+  {% csrf_token %}
+  <input type="hidden" name="cart_data" id="cartFormData">
+</form>
+
+<!-- Contenido principal -->
+<div class="container py-5">
+  <div class="row">
+    <!-- Columna de información del usuario -->
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow-sm profile-card">
+        <div class="card-body text-center">
+          <div class="d-flex justify-content-center mb-3">
+            <div class="rounded-circle bg-primary p-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+              <i class="fas fa-user fa-2x text-white"></i>
+            </div>
+          </div>
+          <h3 class="card-title mb-3">{{ user.username }}</h3>
+          <p class="text-muted mb-1"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+          <p class="text-muted mb-4"><i class="fas fa-calendar-alt me-2"></i>Miembro desde: {{ user.date_joined|date:"d/m/Y" }}</p>
+          <a href="{% url 'editar_perfil' %}" class="btn btn-primary w-100">Editar Perfil</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna de pedidos recientes y contenido principal -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Mis Pedidos Recientes</h4>
+        </div>
+        <div class="card-body">
+          {% if pedidos_recientes %}
+          <div class="table-responsive">
+            <table class="table table-hover table-stack">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Fecha</th>
+                  <th class="text-end">Total</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pedido in pedidos_recientes %}
+                <tr>
+                  <td data-label="Número: ">{{ pedido.codigo }}</td>
+                  <td data-label="Fecha">{{ pedido.fecha_creacion|date:"d/m/Y" }}</td>
+                  <td class="text-end" data-label="Total">L. {{ pedido.total }}</td>
+                  <td data-label="Estado">
+                    <span class="badge bg-{% if pedido.estado.nombre == 'Entregado' %}success{% elif pedido.estado.nombre == 'Cancelado' %}danger{% else %}primary{% endif %}">
+                      {{ pedido.estado.nombre }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="text-end mt-3">
+            <a href="{% url 'mis_pedidos' %}" class="btn btn-outline-primary">Ver todos mis pedidos</a>
+          </div>
+          {% else %}
+          <div class="alert alert-info mb-0">
+            No has realizado ningún pedido aún.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Sección de información adicional -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Configuración de Cuenta</h4>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="me-3">
+              <h5 class="mb-1">Cambiar contraseña</h5>
+              <p class="small text-muted mb-0">Actualiza tu contraseña regularmente para mayor seguridad</p>
+            </div>
+            <a href="{% url 'recuperacion' %}" class="btn btn-outline-primary">Cambiar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer" id="contacto">
+  <div class="container">
+    <div class="row justify-content-center">
+      <!-- Columna 1: Marca + Social -->
+      <div class="col-md-4 mb-4">
+        <a class="navbar-brand d-block mb-3" href="{% url 'principal' %}">
+          <img src="{% static 'images/logo_deeko_blanco.png' %}" alt="Dekko Logo" style="max-height: 80px; object-fit: contain;">
+        </a>
+        <p class="text-white-50">Tu tienda en línea con los mejores productos y servicios.</p>
+        <div class="social-icons mt-3">
+          <a href="https://www.facebook.com/share/1GYMjXYDgt/" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="https://www.instagram.com/deeko_store.hn" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="https://x.com/deekostore" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="X">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Columna 2: Enlaces -->
+      <div class="col-md-4 mb-4 footer-links">
+        <h5 class="text-white mb-4">Enlaces</h5>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a href="{% url 'principal' %}" class="text-white">Inicio</a></li>
+          <li class="mb-2"><a href="{% url 'principal' %}#categorias" class="text-white">Categorías</a></li>
+          <li class="mb-2"><a href="#contacto" class="text-white">Contacto</a></li>
+        </ul>
+      </div>
+
+      <!-- Columna 3: Información Legal -->
+      <div class="col-md-4 mb-4">
+        <h5 class="text-white mb-4">Información Legal</h5>
+        <ul class="list-unstyled legal-links">
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#termsModal">Términos y Condiciones</a>
+          </li>
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#privacyModal">Política de Privacidad</a>
+          </li>
+          <li>
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#faqModal">FAQ</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="my-4 bg-light">
+
+    <div class="row">
+      <div class="col-md-12">
+        <p class="text-white-50 mb-0">© 2025 Dekko Store. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ====== Modales ====== -->
+<!-- TÉRMINOS -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Términos y Condiciones</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <ol class="ps-3 mb-0">
+          <li><strong>Proceso de Compra:</strong> aceptas pagar precio total, impuestos y envío.</li>
+          <li><strong>Pagos:</strong> se procesan de forma segura; no almacenamos datos de tarjeta.</li>
+          <li><strong>Envíos:</strong> 1–2 días hábiles; tiempos varían por ubicación.</li>
+          <li><strong>Devoluciones:</strong> 14 días desde la recepción, producto en estado original.</li>
+          <li><strong>Privacidad:</strong> protegemos tus datos según nuestra Política de Privacidad.</li>
+          <li><strong>Garantías:</strong> según fabricante y detalles por producto.</li>
+          <li><strong>Cambios:</strong> podemos modificar los términos en cualquier momento.</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACIDAD -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Política de Privacidad</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p>Recopilamos datos mínimos para procesar pedidos y mejorar tu experiencia.</p>
+        <p>No vendemos tu información. Puedes solicitar acceso, rectificación o eliminación de tus datos desde <em>Contacto</em>.</p>
+        <p>Aplicamos medidas técnicas y organizativas para proteger tu información.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="modal fade" id="faqModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Preguntas Frecuentes</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>¿Cuánto tarda el envío?</strong><br>Procesamos en 1–2 días hábiles; el tiempo de entrega depende de tu ubicación.</p>
+        <p><strong>¿Puedo devolver un producto?</strong><br>Sí, dentro de 14 días desde la recepción, en su estado original.</p>
+        <p><strong>¿Cómo contacto soporte?</strong><br>Vía <em>Contacto</em> o redes sociales.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'pedidos/js/perfil.js' %}"></script>
+<script src="{% static 'js/carrito_principal.js' %}"></script>
+
+<script>
+  /* Toggle carrito (no reemplaza tu JS, solo asegura comportamiento básico) */
+  (function(){
+    const toggle = document.getElementById('cartToggle');
+    const overlay = document.getElementById('cartOverlay');
+    const sidebar = document.getElementById('cartSidebar');
+    const closeBtn = document.getElementById('closeCart');
+
+    function openCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.add('active');
+      sidebar.classList.add('active');
+      overlay.setAttribute('aria-hidden','false');
+      sidebar.setAttribute('aria-hidden','false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.remove('active');
+      sidebar.classList.remove('active');
+      overlay.setAttribute('aria-hidden','true');
+      sidebar.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+
+    toggle?.addEventListener('click', openCart);
+    overlay?.addEventListener('click', closeCart);
+    closeBtn?.addEventListener('click', closeCart);
+
+    // Cerrar con ESC
+    document.addEventListener('keydown', (ev)=>{ if(ev.key==='Escape') closeCart(); });
+  })();
+</script>
+</body>
+</html>
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil | Deeko Store</title>
+
+  <!-- Bootstrap & Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tus hojas -->
+  <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+  <link rel="stylesheet" href="{% static 'pedidos/css/perfil.css' %}">
+
+  <style>
+    /* ===== Ajustes mínimos y responsivos sin borrar nada ===== */
+
+    body { font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+
+    /* Navbar */
+    .navbar { background-color: #ffffff !important; }
+    .navbar.navbar-light .navbar-toggler { border: 0; }
+    .navbar.navbar-light .navbar-toggler-icon { filter: invert(0.2); }
+    @media (max-width: 991.98px) {
+      .navbar-nav .nav-item { margin-bottom: .25rem; }
+      .navbar-brand img { max-height: 64px !important; }
+    }
+
+    /* Carrito lateral */
+    .cart-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4);
+      opacity: 0; visibility: hidden;
+      transition: opacity .25s ease, visibility .25s ease;
+      z-index: 1049;
+    }
+    .cart-overlay.active { opacity: 1; visibility: visible; }
+
+    .cart-sidebar {
+      position: fixed; top: 0; right: 0;
+      width: 420px; max-width: 100vw; height: 100vh;
+      background: #fff; box-shadow: -6px 0 20px rgba(0,0,0,.12);
+      transform: translateX(100%); transition: transform .3s ease;
+      display: flex; flex-direction: column; z-index: 1050;
+    }
+    .cart-sidebar.active { transform: translateX(0); }
+    .cart-items { flex: 1 1 auto; overflow-y: auto; }
+    .btn-checkout { min-height: 44px; }
+
+    @media (max-width: 576px) {
+      .cart-sidebar { width: 100vw; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+      .cart-header h4 { font-size: 1.1rem; }
+    }
+
+    /* Cards perfil */
+    .card.shadow-sm { border: 0; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06) !important; }
+    .card-header.bg-white { border-bottom: 1px solid #eef2f7; border-top-left-radius: 16px; border-top-right-radius: 16px; }
+
+    /* Tabla pedidos -> stack en móvil usando mobile.css (.table-stack) */
+    .table.table-hover th, .table.table-hover td { vertical-align: middle; }
+    @media (max-width: 576px) {
+      .table.table-stack thead { display: none; }
+      .table.table-stack tbody tr {
+        display: block; padding: 12px; margin-bottom: .75rem;
+        border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      }
+      .table.table-stack tbody td {
+        display: flex; justify-content: space-between; gap: .75rem; padding: .35rem 0; border: 0 !important;
+        text-align: left !important; font-variant-numeric: tabular-nums;
+      }
+      .table.table-stack tbody td::before {
+        content: attr(data-label); color: #6b7280; font-weight: 600;
+      }
+      .table.table-stack .text-end { text-align: right !important; }
+    }
+    /* Botón cerrar del carrito */
+    #closeCart { font-size: 1.25rem; line-height: 1; padding: .25rem .5rem; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar con carrito y usuario -->
+<nav class="navbar navbar-expand-lg" style="background-color: hsl(0, 0%, 100%);">
+  <div class="container">
+    <!-- Logo con enlace a home -->
+    <a class="navbar-brand" href="{% url 'principal' %}">
+      <img src="{% static 'images/logo_deeko.png' %}" alt="Dekko Logo" style="max-height: 100px; object-fit: contain;">
+    </a>
+
+    <!-- Botón responsive -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Contenido del navbar -->
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav align-items-center">
+        <!-- Botón Inicio con enlace a home -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}">Página principal</a>
+        </li>
+
+        <!-- Botón Productos con enlace a categorías -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}#categorias">Categorías</a>
+        </li>
+
+        <!-- Enlace a contacto -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="#contacto">Contacto</a>
+        </li>
+
+        <!-- Login / Username -->
+        {% if user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-dark fw-semibold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="{% url 'perfil' %}"><i class="fas fa-user me-2"></i> Mi Perfil</a></li>
+            <li><a class="dropdown-item" href="{% url 'mis_pedidos' %}"><i class="fas fa-shopping-bag me-2"></i> Mis Pedidos</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'login' %}">Iniciar Sesión</a>
+        </li>
+        {% endif %}
+
+        <!-- Ícono del carrito mejorado -->
+        <li class="nav-item position-relative mobile-hidden">
+          <a href="#" class="nav-link text-dark fw-semibold" id="cartToggle">
+            <i class="fas fa-shopping-cart fa-lg"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCount">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Carrito de compras mejorado -->
+<div class="cart-overlay" id="cartOverlay" aria-hidden="true"></div>
+<div class="cart-sidebar" id="cartSidebar" aria-labelledby="cartToggle" aria-hidden="true">
+  <div class="cart-header d-flex justify-content-between align-items-center p-3 border-bottom">
+    <h4 class="m-0">Tu Carrito</h4>
+    <button id="closeCart" class="btn btn-sm btn-outline-secondary" aria-label="Cerrar carrito">&times;</button>
+  </div>
+  <div class="cart-items p-3" id="cartItems" style="overflow-y: auto; flex-grow: 1;">
+    <!-- Los productos del carrito se agregarán aquí dinámicamente -->
+    <div class="empty-cart-message text-center py-5">
+      <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+      <h5 class="text-muted">Tu carrito está vacío</h5>
+    </div>
+  </div>
+  <div class="cart-footer p-3 border-top">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="fw-bold">Total:</span>
+      <span class="fw-bold fs-5" id="cartTotal">L. 0.00</span>
+    </div>
+    <button class="btn btn-primary w-100 py-2 btn-checkout" id="proceedToCheckout">
+      <i class="fas fa-credit-card me-2"></i> Proceder al Pago
+    </button>
+  </div>
+</div>
+
+<!-- Formulario para enviar datos del carrito -->
+<form id="cartForm" method="POST" action="{% url 'pago' %}" style="display: none;">
+  {% csrf_token %}
+  <input type="hidden" name="cart_data" id="cartFormData">
+</form>
+
+<!-- Contenido principal -->
+<div class="container py-5">
+  <div class="row">
+    <!-- Columna de información del usuario -->
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow-sm profile-card">
+        <div class="card-body text-center">
+          <div class="d-flex justify-content-center mb-3">
+            <div class="rounded-circle bg-primary p-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+              <i class="fas fa-user fa-2x text-white"></i>
+            </div>
+          </div>
+          <h3 class="card-title mb-3">{{ user.username }}</h3>
+          <p class="text-muted mb-1"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+          <p class="text-muted mb-4"><i class="fas fa-calendar-alt me-2"></i>Miembro desde: {{ user.date_joined|date:"d/m/Y" }}</p>
+          <a href="{% url 'editar_perfil' %}" class="btn btn-primary w-100">Editar Perfil</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna de pedidos recientes y contenido principal -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Mis Pedidos Recientes</h4>
+        </div>
+        <div class="card-body">
+          {% if pedidos_recientes %}
+          <div class="table-responsive">
+            <table class="table table-hover table-stack">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Fecha</th>
+                  <th class="text-end">Total</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pedido in pedidos_recientes %}
+                <tr>
+                  <td data-label="Número: ">{{ pedido.codigo }}</td>
+                  <td data-label="Fecha">{{ pedido.fecha_creacion|date:"d/m/Y" }}</td>
+                  <td class="text-end" data-label="Total">L. {{ pedido.total }}</td>
+                  <td data-label="Estado">
+                    <span class="badge bg-{% if pedido.estado.nombre == 'Entregado' %}success{% elif pedido.estado.nombre == 'Cancelado' %}danger{% else %}primary{% endif %}">
+                      {{ pedido.estado.nombre }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="text-end mt-3">
+            <a href="{% url 'mis_pedidos' %}" class="btn btn-outline-primary">Ver todos mis pedidos</a>
+          </div>
+          {% else %}
+          <div class="alert alert-info mb-0">
+            No has realizado ningún pedido aún.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Sección de información adicional -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Configuración de Cuenta</h4>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="me-3">
+              <h5 class="mb-1">Cambiar contraseña</h5>
+              <p class="small text-muted mb-0">Actualiza tu contraseña regularmente para mayor seguridad</p>
+            </div>
+            <a href="{% url 'recuperacion' %}" class="btn btn-outline-primary">Cambiar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer" id="contacto">
+  <div class="container">
+    <div class="row justify-content-center">
+      <!-- Columna 1: Marca + Social -->
+      <div class="col-md-4 mb-4">
+        <a class="navbar-brand d-block mb-3" href="{% url 'principal' %}">
+          <img src="{% static 'images/logo_deeko_blanco.png' %}" alt="Dekko Logo" style="max-height: 80px; object-fit: contain;">
+        </a>
+        <p class="text-white-50">Tu tienda en línea con los mejores productos y servicios.</p>
+        <div class="social-icons mt-3">
+          <a href="https://www.facebook.com/share/1GYMjXYDgt/" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="https://www.instagram.com/deeko_store.hn" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="https://x.com/deekostore" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="X">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Columna 2: Enlaces -->
+      <div class="col-md-4 mb-4 footer-links">
+        <h5 class="text-white mb-4">Enlaces</h5>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a href="{% url 'principal' %}" class="text-white">Inicio</a></li>
+          <li class="mb-2"><a href="{% url 'principal' %}#categorias" class="text-white">Categorías</a></li>
+          <li class="mb-2"><a href="#contacto" class="text-white">Contacto</a></li>
+        </ul>
+      </div>
+
+      <!-- Columna 3: Información Legal -->
+      <div class="col-md-4 mb-4">
+        <h5 class="text-white mb-4">Información Legal</h5>
+        <ul class="list-unstyled legal-links">
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#termsModal">Términos y Condiciones</a>
+          </li>
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#privacyModal">Política de Privacidad</a>
+          </li>
+          <li>
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#faqModal">FAQ</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="my-4 bg-light">
+
+    <div class="row">
+      <div class="col-md-12">
+        <p class="text-white-50 mb-0">© 2025 Dekko Store. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ====== Modales ====== -->
+<!-- TÉRMINOS -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Términos y Condiciones</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <ol class="ps-3 mb-0">
+          <li><strong>Proceso de Compra:</strong> aceptas pagar precio total, impuestos y envío.</li>
+          <li><strong>Pagos:</strong> se procesan de forma segura; no almacenamos datos de tarjeta.</li>
+          <li><strong>Envíos:</strong> 1–2 días hábiles; tiempos varían por ubicación.</li>
+          <li><strong>Devoluciones:</strong> 14 días desde la recepción, producto en estado original.</li>
+          <li><strong>Privacidad:</strong> protegemos tus datos según nuestra Política de Privacidad.</li>
+          <li><strong>Garantías:</strong> según fabricante y detalles por producto.</li>
+          <li><strong>Cambios:</strong> podemos modificar los términos en cualquier momento.</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACIDAD -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Política de Privacidad</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p>Recopilamos datos mínimos para procesar pedidos y mejorar tu experiencia.</p>
+        <p>No vendemos tu información. Puedes solicitar acceso, rectificación o eliminación de tus datos desde <em>Contacto</em>.</p>
+        <p>Aplicamos medidas técnicas y organizativas para proteger tu información.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="modal fade" id="faqModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Preguntas Frecuentes</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>¿Cuánto tarda el envío?</strong><br>Procesamos en 1–2 días hábiles; el tiempo de entrega depende de tu ubicación.</p>
+        <p><strong>¿Puedo devolver un producto?</strong><br>Sí, dentro de 14 días desde la recepción, en su estado original.</p>
+        <p><strong>¿Cómo contacto soporte?</strong><br>Vía <em>Contacto</em> o redes sociales.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'pedidos/js/perfil.js' %}"></script>
+<script src="{% static 'js/carrito_principal.js' %}"></script>
+
+<script>
+  /* Toggle carrito (no reemplaza tu JS, solo asegura comportamiento básico) */
+  (function(){
+    const toggle = document.getElementById('cartToggle');
+    const overlay = document.getElementById('cartOverlay');
+    const sidebar = document.getElementById('cartSidebar');
+    const closeBtn = document.getElementById('closeCart');
+
+    function openCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.add('active');
+      sidebar.classList.add('active');
+      overlay.setAttribute('aria-hidden','false');
+      sidebar.setAttribute('aria-hidden','false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.remove('active');
+      sidebar.classList.remove('active');
+      overlay.setAttribute('aria-hidden','true');
+      sidebar.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+
+    toggle?.addEventListener('click', openCart);
+    overlay?.addEventListener('click', closeCart);
+    closeBtn?.addEventListener('click', closeCart);
+
+    // Cerrar con ESC
+    document.addEventListener('keydown', (ev)=>{ if(ev.key==='Escape') closeCart(); });
+  })();
+</script>
+</body>
+</html>
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil | Deeko Store</title>
+
+  <!-- Bootstrap & Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tus hojas -->
+  <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+  <link rel="stylesheet" href="{% static 'pedidos/css/perfil.css' %}">
+
+  <style>
+    /* ===== Ajustes mínimos y responsivos sin borrar nada ===== */
+
+    body { font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+
+    /* Navbar */
+    .navbar { background-color: #ffffff !important; }
+    .navbar.navbar-light .navbar-toggler { border: 0; }
+    .navbar.navbar-light .navbar-toggler-icon { filter: invert(0.2); }
+    @media (max-width: 991.98px) {
+      .navbar-nav .nav-item { margin-bottom: .25rem; }
+      .navbar-brand img { max-height: 64px !important; }
+    }
+
+    /* Carrito lateral */
+    .cart-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4);
+      opacity: 0; visibility: hidden;
+      transition: opacity .25s ease, visibility .25s ease;
+      z-index: 1049;
+    }
+    .cart-overlay.active { opacity: 1; visibility: visible; }
+
+    .cart-sidebar {
+      position: fixed; top: 0; right: 0;
+      width: 420px; max-width: 100vw; height: 100vh;
+      background: #fff; box-shadow: -6px 0 20px rgba(0,0,0,.12);
+      transform: translateX(100%); transition: transform .3s ease;
+      display: flex; flex-direction: column; z-index: 1050;
+    }
+    .cart-sidebar.active { transform: translateX(0); }
+    .cart-items { flex: 1 1 auto; overflow-y: auto; }
+    .btn-checkout { min-height: 44px; }
+
+    @media (max-width: 576px) {
+      .cart-sidebar { width: 100vw; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+      .cart-header h4 { font-size: 1.1rem; }
+    }
+
+    /* Cards perfil */
+    .card.shadow-sm { border: 0; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06) !important; }
+    .card-header.bg-white { border-bottom: 1px solid #eef2f7; border-top-left-radius: 16px; border-top-right-radius: 16px; }
+
+    /* Tabla pedidos -> stack en móvil usando mobile.css (.table-stack) */
+    .table.table-hover th, .table.table-hover td { vertical-align: middle; }
+    @media (max-width: 576px) {
+      .table.table-stack thead { display: none; }
+      .table.table-stack tbody tr {
+        display: block; padding: 12px; margin-bottom: .75rem;
+        border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      }
+      .table.table-stack tbody td {
+        display: flex; justify-content: space-between; gap: .75rem; padding: .35rem 0; border: 0 !important;
+        text-align: left !important; font-variant-numeric: tabular-nums;
+      }
+      .table.table-stack tbody td::before {
+        content: attr(data-label); color: #6b7280; font-weight: 600;
+      }
+      .table.table-stack .text-end { text-align: right !important; }
+    }
+    /* Botón cerrar del carrito */
+    #closeCart { font-size: 1.25rem; line-height: 1; padding: .25rem .5rem; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar con carrito y usuario -->
+<nav class="navbar navbar-expand-lg" style="background-color: hsl(0, 0%, 100%);">
+  <div class="container">
+    <!-- Logo con enlace a home -->
+    <a class="navbar-brand" href="{% url 'principal' %}">
+      <img src="{% static 'images/logo_deeko.png' %}" alt="Dekko Logo" style="max-height: 100px; object-fit: contain;">
+    </a>
+
+    <!-- Botón responsive -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Contenido del navbar -->
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav align-items-center">
+        <!-- Botón Inicio con enlace a home -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}">Página principal</a>
+        </li>
+
+        <!-- Botón Productos con enlace a categorías -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}#categorias">Categorías</a>
+        </li>
+
+        <!-- Enlace a contacto -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="#contacto">Contacto</a>
+        </li>
+
+        <!-- Login / Username -->
+        {% if user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-dark fw-semibold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="{% url 'perfil' %}"><i class="fas fa-user me-2"></i> Mi Perfil</a></li>
+            <li><a class="dropdown-item" href="{% url 'mis_pedidos' %}"><i class="fas fa-shopping-bag me-2"></i> Mis Pedidos</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'login' %}">Iniciar Sesión</a>
+        </li>
+        {% endif %}
+
+        <!-- Ícono del carrito mejorado -->
+        <li class="nav-item position-relative mobile-hidden">
+          <a href="#" class="nav-link text-dark fw-semibold" id="cartToggle">
+            <i class="fas fa-shopping-cart fa-lg"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCount">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Carrito de compras mejorado -->
+<div class="cart-overlay" id="cartOverlay" aria-hidden="true"></div>
+<div class="cart-sidebar" id="cartSidebar" aria-labelledby="cartToggle" aria-hidden="true">
+  <div class="cart-header d-flex justify-content-between align-items-center p-3 border-bottom">
+    <h4 class="m-0">Tu Carrito</h4>
+    <button id="closeCart" class="btn btn-sm btn-outline-secondary" aria-label="Cerrar carrito">&times;</button>
+  </div>
+  <div class="cart-items p-3" id="cartItems" style="overflow-y: auto; flex-grow: 1;">
+    <!-- Los productos del carrito se agregarán aquí dinámicamente -->
+    <div class="empty-cart-message text-center py-5">
+      <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+      <h5 class="text-muted">Tu carrito está vacío</h5>
+    </div>
+  </div>
+  <div class="cart-footer p-3 border-top">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="fw-bold">Total:</span>
+      <span class="fw-bold fs-5" id="cartTotal">L. 0.00</span>
+    </div>
+    <button class="btn btn-primary w-100 py-2 btn-checkout" id="proceedToCheckout">
+      <i class="fas fa-credit-card me-2"></i> Proceder al Pago
+    </button>
+  </div>
+</div>
+
+<!-- Formulario para enviar datos del carrito -->
+<form id="cartForm" method="POST" action="{% url 'pago' %}" style="display: none;">
+  {% csrf_token %}
+  <input type="hidden" name="cart_data" id="cartFormData">
+</form>
+
+<!-- Contenido principal -->
+<div class="container py-5">
+  <div class="row">
+    <!-- Columna de información del usuario -->
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow-sm profile-card">
+        <div class="card-body text-center">
+          <div class="d-flex justify-content-center mb-3">
+            <div class="rounded-circle bg-primary p-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+              <i class="fas fa-user fa-2x text-white"></i>
+            </div>
+          </div>
+          <h3 class="card-title mb-3">{{ user.username }}</h3>
+          <p class="text-muted mb-1"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+          <p class="text-muted mb-4"><i class="fas fa-calendar-alt me-2"></i>Miembro desde: {{ user.date_joined|date:"d/m/Y" }}</p>
+          <a href="{% url 'editar_perfil' %}" class="btn btn-primary w-100">Editar Perfil</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna de pedidos recientes y contenido principal -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Mis Pedidos Recientes</h4>
+        </div>
+        <div class="card-body">
+          {% if pedidos_recientes %}
+          <div class="table-responsive">
+            <table class="table table-hover table-stack">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Fecha</th>
+                  <th class="text-end">Total</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pedido in pedidos_recientes %}
+                <tr>
+                  <td data-label="Número: ">{{ pedido.codigo }}</td>
+                  <td data-label="Fecha">{{ pedido.fecha_creacion|date:"d/m/Y" }}</td>
+                  <td class="text-end" data-label="Total">L. {{ pedido.total }}</td>
+                  <td data-label="Estado">
+                    <span class="badge bg-{% if pedido.estado.nombre == 'Entregado' %}success{% elif pedido.estado.nombre == 'Cancelado' %}danger{% else %}primary{% endif %}">
+                      {{ pedido.estado.nombre }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="text-end mt-3">
+            <a href="{% url 'mis_pedidos' %}" class="btn btn-outline-primary">Ver todos mis pedidos</a>
+          </div>
+          {% else %}
+          <div class="alert alert-info mb-0">
+            No has realizado ningún pedido aún.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Sección de información adicional -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Configuración de Cuenta</h4>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="me-3">
+              <h5 class="mb-1">Cambiar contraseña</h5>
+              <p class="small text-muted mb-0">Actualiza tu contraseña regularmente para mayor seguridad</p>
+            </div>
+            <a href="{% url 'recuperacion' %}" class="btn btn-outline-primary">Cambiar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer" id="contacto">
+  <div class="container">
+    <div class="row justify-content-center">
+      <!-- Columna 1: Marca + Social -->
+      <div class="col-md-4 mb-4">
+        <a class="navbar-brand d-block mb-3" href="{% url 'principal' %}">
+          <img src="{% static 'images/logo_deeko_blanco.png' %}" alt="Dekko Logo" style="max-height: 80px; object-fit: contain;">
+        </a>
+        <p class="text-white-50">Tu tienda en línea con los mejores productos y servicios.</p>
+        <div class="social-icons mt-3">
+          <a href="https://www.facebook.com/share/1GYMjXYDgt/" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="https://www.instagram.com/deeko_store.hn" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="https://x.com/deekostore" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="X">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Columna 2: Enlaces -->
+      <div class="col-md-4 mb-4 footer-links">
+        <h5 class="text-white mb-4">Enlaces</h5>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a href="{% url 'principal' %}" class="text-white">Inicio</a></li>
+          <li class="mb-2"><a href="{% url 'principal' %}#categorias" class="text-white">Categorías</a></li>
+          <li class="mb-2"><a href="#contacto" class="text-white">Contacto</a></li>
+        </ul>
+      </div>
+
+      <!-- Columna 3: Información Legal -->
+      <div class="col-md-4 mb-4">
+        <h5 class="text-white mb-4">Información Legal</h5>
+        <ul class="list-unstyled legal-links">
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#termsModal">Términos y Condiciones</a>
+          </li>
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#privacyModal">Política de Privacidad</a>
+          </li>
+          <li>
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#faqModal">FAQ</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="my-4 bg-light">
+
+    <div class="row">
+      <div class="col-md-12">
+        <p class="text-white-50 mb-0">© 2025 Dekko Store. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ====== Modales ====== -->
+<!-- TÉRMINOS -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Términos y Condiciones</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <ol class="ps-3 mb-0">
+          <li><strong>Proceso de Compra:</strong> aceptas pagar precio total, impuestos y envío.</li>
+          <li><strong>Pagos:</strong> se procesan de forma segura; no almacenamos datos de tarjeta.</li>
+          <li><strong>Envíos:</strong> 1–2 días hábiles; tiempos varían por ubicación.</li>
+          <li><strong>Devoluciones:</strong> 14 días desde la recepción, producto en estado original.</li>
+          <li><strong>Privacidad:</strong> protegemos tus datos según nuestra Política de Privacidad.</li>
+          <li><strong>Garantías:</strong> según fabricante y detalles por producto.</li>
+          <li><strong>Cambios:</strong> podemos modificar los términos en cualquier momento.</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACIDAD -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Política de Privacidad</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p>Recopilamos datos mínimos para procesar pedidos y mejorar tu experiencia.</p>
+        <p>No vendemos tu información. Puedes solicitar acceso, rectificación o eliminación de tus datos desde <em>Contacto</em>.</p>
+        <p>Aplicamos medidas técnicas y organizativas para proteger tu información.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="modal fade" id="faqModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Preguntas Frecuentes</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>¿Cuánto tarda el envío?</strong><br>Procesamos en 1–2 días hábiles; el tiempo de entrega depende de tu ubicación.</p>
+        <p><strong>¿Puedo devolver un producto?</strong><br>Sí, dentro de 14 días desde la recepción, en su estado original.</p>
+        <p><strong>¿Cómo contacto soporte?</strong><br>Vía <em>Contacto</em> o redes sociales.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'pedidos/js/perfil.js' %}"></script>
+<script src="{% static 'js/carrito_principal.js' %}"></script>
+
+<script>
+  /* Toggle carrito (no reemplaza tu JS, solo asegura comportamiento básico) */
+  (function(){
+    const toggle = document.getElementById('cartToggle');
+    const overlay = document.getElementById('cartOverlay');
+    const sidebar = document.getElementById('cartSidebar');
+    const closeBtn = document.getElementById('closeCart');
+
+    function openCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.add('active');
+      sidebar.classList.add('active');
+      overlay.setAttribute('aria-hidden','false');
+      sidebar.setAttribute('aria-hidden','false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.remove('active');
+      sidebar.classList.remove('active');
+      overlay.setAttribute('aria-hidden','true');
+      sidebar.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+
+    toggle?.addEventListener('click', openCart);
+    overlay?.addEventListener('click', closeCart);
+    closeBtn?.addEventListener('click', closeCart);
+
+    // Cerrar con ESC
+    document.addEventListener('keydown', (ev)=>{ if(ev.key==='Escape') closeCart(); });
+  })();
+</script>
+</body>
+</html>
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil | Deeko Store</title>
+
+  <!-- Bootstrap & Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tus hojas -->
+  <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+  <link rel="stylesheet" href="{% static 'pedidos/css/perfil.css' %}">
+
+  <style>
+    /* ===== Ajustes mínimos y responsivos sin borrar nada ===== */
+
+    body { font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+
+    /* Navbar */
+    .navbar { background-color: #ffffff !important; }
+    .navbar.navbar-light .navbar-toggler { border: 0; }
+    .navbar.navbar-light .navbar-toggler-icon { filter: invert(0.2); }
+    @media (max-width: 991.98px) {
+      .navbar-nav .nav-item { margin-bottom: .25rem; }
+      .navbar-brand img { max-height: 64px !important; }
+    }
+
+    /* Carrito lateral */
+    .cart-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4);
+      opacity: 0; visibility: hidden;
+      transition: opacity .25s ease, visibility .25s ease;
+      z-index: 1049;
+    }
+    .cart-overlay.active { opacity: 1; visibility: visible; }
+
+    .cart-sidebar {
+      position: fixed; top: 0; right: 0;
+      width: 420px; max-width: 100vw; height: 100vh;
+      background: #fff; box-shadow: -6px 0 20px rgba(0,0,0,.12);
+      transform: translateX(100%); transition: transform .3s ease;
+      display: flex; flex-direction: column; z-index: 1050;
+    }
+    .cart-sidebar.active { transform: translateX(0); }
+    .cart-items { flex: 1 1 auto; overflow-y: auto; }
+    .btn-checkout { min-height: 44px; }
+
+    @media (max-width: 576px) {
+      .cart-sidebar { width: 100vw; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+      .cart-header h4 { font-size: 1.1rem; }
+    }
+
+    /* Cards perfil */
+    .card.shadow-sm { border: 0; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06) !important; }
+    .card-header.bg-white { border-bottom: 1px solid #eef2f7; border-top-left-radius: 16px; border-top-right-radius: 16px; }
+
+    /* Tabla pedidos -> stack en móvil usando mobile.css (.table-stack) */
+    .table.table-hover th, .table.table-hover td { vertical-align: middle; }
+    @media (max-width: 576px) {
+      .table.table-stack thead { display: none; }
+      .table.table-stack tbody tr {
+        display: block; padding: 12px; margin-bottom: .75rem;
+        border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      }
+      .table.table-stack tbody td {
+        display: flex; justify-content: space-between; gap: .75rem; padding: .35rem 0; border: 0 !important;
+        text-align: left !important; font-variant-numeric: tabular-nums;
+      }
+      .table.table-stack tbody td::before {
+        content: attr(data-label); color: #6b7280; font-weight: 600;
+      }
+      .table.table-stack .text-end { text-align: right !important; }
+    }
+    /* Botón cerrar del carrito */
+    #closeCart { font-size: 1.25rem; line-height: 1; padding: .25rem .5rem; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar con carrito y usuario -->
+<nav class="navbar navbar-expand-lg" style="background-color: hsl(0, 0%, 100%);">
+  <div class="container">
+    <!-- Logo con enlace a home -->
+    <a class="navbar-brand" href="{% url 'principal' %}">
+      <img src="{% static 'images/logo_deeko.png' %}" alt="Dekko Logo" style="max-height: 100px; object-fit: contain;">
+    </a>
+
+    <!-- Botón responsive -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Contenido del navbar -->
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav align-items-center">
+        <!-- Botón Inicio con enlace a home -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}">Página principal</a>
+        </li>
+
+        <!-- Botón Productos con enlace a categorías -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}#categorias">Categorías</a>
+        </li>
+
+        <!-- Enlace a contacto -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="#contacto">Contacto</a>
+        </li>
+
+        <!-- Login / Username -->
+        {% if user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-dark fw-semibold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="{% url 'perfil' %}"><i class="fas fa-user me-2"></i> Mi Perfil</a></li>
+            <li><a class="dropdown-item" href="{% url 'mis_pedidos' %}"><i class="fas fa-shopping-bag me-2"></i> Mis Pedidos</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'login' %}">Iniciar Sesión</a>
+        </li>
+        {% endif %}
+
+        <!-- Ícono del carrito mejorado -->
+        <li class="nav-item position-relative mobile-hidden">
+          <a href="#" class="nav-link text-dark fw-semibold" id="cartToggle">
+            <i class="fas fa-shopping-cart fa-lg"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCount">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Carrito de compras mejorado -->
+<div class="cart-overlay" id="cartOverlay" aria-hidden="true"></div>
+<div class="cart-sidebar" id="cartSidebar" aria-labelledby="cartToggle" aria-hidden="true">
+  <div class="cart-header d-flex justify-content-between align-items-center p-3 border-bottom">
+    <h4 class="m-0">Tu Carrito</h4>
+    <button id="closeCart" class="btn btn-sm btn-outline-secondary" aria-label="Cerrar carrito">&times;</button>
+  </div>
+  <div class="cart-items p-3" id="cartItems" style="overflow-y: auto; flex-grow: 1;">
+    <!-- Los productos del carrito se agregarán aquí dinámicamente -->
+    <div class="empty-cart-message text-center py-5">
+      <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+      <h5 class="text-muted">Tu carrito está vacío</h5>
+    </div>
+  </div>
+  <div class="cart-footer p-3 border-top">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="fw-bold">Total:</span>
+      <span class="fw-bold fs-5" id="cartTotal">L. 0.00</span>
+    </div>
+    <button class="btn btn-primary w-100 py-2 btn-checkout" id="proceedToCheckout">
+      <i class="fas fa-credit-card me-2"></i> Proceder al Pago
+    </button>
+  </div>
+</div>
+
+<!-- Formulario para enviar datos del carrito -->
+<form id="cartForm" method="POST" action="{% url 'pago' %}" style="display: none;">
+  {% csrf_token %}
+  <input type="hidden" name="cart_data" id="cartFormData">
+</form>
+
+<!-- Contenido principal -->
+<div class="container py-5">
+  <div class="row">
+    <!-- Columna de información del usuario -->
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow-sm profile-card">
+        <div class="card-body text-center">
+          <div class="d-flex justify-content-center mb-3">
+            <div class="rounded-circle bg-primary p-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+              <i class="fas fa-user fa-2x text-white"></i>
+            </div>
+          </div>
+          <h3 class="card-title mb-3">{{ user.username }}</h3>
+          <p class="text-muted mb-1"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+          <p class="text-muted mb-4"><i class="fas fa-calendar-alt me-2"></i>Miembro desde: {{ user.date_joined|date:"d/m/Y" }}</p>
+          <a href="{% url 'editar_perfil' %}" class="btn btn-primary w-100">Editar Perfil</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna de pedidos recientes y contenido principal -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Mis Pedidos Recientes</h4>
+        </div>
+        <div class="card-body">
+          {% if pedidos_recientes %}
+          <div class="table-responsive">
+            <table class="table table-hover table-stack">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Fecha</th>
+                  <th class="text-end">Total</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pedido in pedidos_recientes %}
+                <tr>
+                  <td data-label="Número: ">{{ pedido.codigo }}</td>
+                  <td data-label="Fecha">{{ pedido.fecha_creacion|date:"d/m/Y" }}</td>
+                  <td class="text-end" data-label="Total">L. {{ pedido.total }}</td>
+                  <td data-label="Estado">
+                    <span class="badge bg-{% if pedido.estado.nombre == 'Entregado' %}success{% elif pedido.estado.nombre == 'Cancelado' %}danger{% else %}primary{% endif %}">
+                      {{ pedido.estado.nombre }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="text-end mt-3">
+            <a href="{% url 'mis_pedidos' %}" class="btn btn-outline-primary">Ver todos mis pedidos</a>
+          </div>
+          {% else %}
+          <div class="alert alert-info mb-0">
+            No has realizado ningún pedido aún.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Sección de información adicional -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Configuración de Cuenta</h4>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="me-3">
+              <h5 class="mb-1">Cambiar contraseña</h5>
+              <p class="small text-muted mb-0">Actualiza tu contraseña regularmente para mayor seguridad</p>
+            </div>
+            <a href="{% url 'recuperacion' %}" class="btn btn-outline-primary">Cambiar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer" id="contacto">
+  <div class="container">
+    <div class="row justify-content-center">
+      <!-- Columna 1: Marca + Social -->
+      <div class="col-md-4 mb-4">
+        <a class="navbar-brand d-block mb-3" href="{% url 'principal' %}">
+          <img src="{% static 'images/logo_deeko_blanco.png' %}" alt="Dekko Logo" style="max-height: 80px; object-fit: contain;">
+        </a>
+        <p class="text-white-50">Tu tienda en línea con los mejores productos y servicios.</p>
+        <div class="social-icons mt-3">
+          <a href="https://www.facebook.com/share/1GYMjXYDgt/" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="https://www.instagram.com/deeko_store.hn" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="https://x.com/deekostore" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="X">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Columna 2: Enlaces -->
+      <div class="col-md-4 mb-4 footer-links">
+        <h5 class="text-white mb-4">Enlaces</h5>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a href="{% url 'principal' %}" class="text-white">Inicio</a></li>
+          <li class="mb-2"><a href="{% url 'principal' %}#categorias" class="text-white">Categorías</a></li>
+          <li class="mb-2"><a href="#contacto" class="text-white">Contacto</a></li>
+        </ul>
+      </div>
+
+      <!-- Columna 3: Información Legal -->
+      <div class="col-md-4 mb-4">
+        <h5 class="text-white mb-4">Información Legal</h5>
+        <ul class="list-unstyled legal-links">
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#termsModal">Términos y Condiciones</a>
+          </li>
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#privacyModal">Política de Privacidad</a>
+          </li>
+          <li>
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#faqModal">FAQ</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="my-4 bg-light">
+
+    <div class="row">
+      <div class="col-md-12">
+        <p class="text-white-50 mb-0">© 2025 Dekko Store. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ====== Modales ====== -->
+<!-- TÉRMINOS -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Términos y Condiciones</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <ol class="ps-3 mb-0">
+          <li><strong>Proceso de Compra:</strong> aceptas pagar precio total, impuestos y envío.</li>
+          <li><strong>Pagos:</strong> se procesan de forma segura; no almacenamos datos de tarjeta.</li>
+          <li><strong>Envíos:</strong> 1–2 días hábiles; tiempos varían por ubicación.</li>
+          <li><strong>Devoluciones:</strong> 14 días desde la recepción, producto en estado original.</li>
+          <li><strong>Privacidad:</strong> protegemos tus datos según nuestra Política de Privacidad.</li>
+          <li><strong>Garantías:</strong> según fabricante y detalles por producto.</li>
+          <li><strong>Cambios:</strong> podemos modificar los términos en cualquier momento.</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACIDAD -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Política de Privacidad</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p>Recopilamos datos mínimos para procesar pedidos y mejorar tu experiencia.</p>
+        <p>No vendemos tu información. Puedes solicitar acceso, rectificación o eliminación de tus datos desde <em>Contacto</em>.</p>
+        <p>Aplicamos medidas técnicas y organizativas para proteger tu información.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="modal fade" id="faqModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Preguntas Frecuentes</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>¿Cuánto tarda el envío?</strong><br>Procesamos en 1–2 días hábiles; el tiempo de entrega depende de tu ubicación.</p>
+        <p><strong>¿Puedo devolver un producto?</strong><br>Sí, dentro de 14 días desde la recepción, en su estado original.</p>
+        <p><strong>¿Cómo contacto soporte?</strong><br>Vía <em>Contacto</em> o redes sociales.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'pedidos/js/perfil.js' %}"></script>
+<script src="{% static 'js/carrito_principal.js' %}"></script>
+
+<script>
+  /* Toggle carrito (no reemplaza tu JS, solo asegura comportamiento básico) */
+  (function(){
+    const toggle = document.getElementById('cartToggle');
+    const overlay = document.getElementById('cartOverlay');
+    const sidebar = document.getElementById('cartSidebar');
+    const closeBtn = document.getElementById('closeCart');
+
+    function openCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.add('active');
+      sidebar.classList.add('active');
+      overlay.setAttribute('aria-hidden','false');
+      sidebar.setAttribute('aria-hidden','false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.remove('active');
+      sidebar.classList.remove('active');
+      overlay.setAttribute('aria-hidden','true');
+      sidebar.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+
+    toggle?.addEventListener('click', openCart);
+    overlay?.addEventListener('click', closeCart);
+    closeBtn?.addEventListener('click', closeCart);
+
+    // Cerrar con ESC
+    document.addEventListener('keydown', (ev)=>{ if(ev.key==='Escape') closeCart(); });
+  })();
+</script>
+</body>
+</html>
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil | Deeko Store</title>
+
+  <!-- Bootstrap & Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tus hojas -->
+  <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+  <link rel="stylesheet" href="{% static 'pedidos/css/perfil.css' %}">
+
+  <style>
+    /* ===== Ajustes mínimos y responsivos sin borrar nada ===== */
+
+    body { font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+
+    /* Navbar */
+    .navbar { background-color: #ffffff !important; }
+    .navbar.navbar-light .navbar-toggler { border: 0; }
+    .navbar.navbar-light .navbar-toggler-icon { filter: invert(0.2); }
+    @media (max-width: 991.98px) {
+      .navbar-nav .nav-item { margin-bottom: .25rem; }
+      .navbar-brand img { max-height: 64px !important; }
+    }
+
+    /* Carrito lateral */
+    .cart-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4);
+      opacity: 0; visibility: hidden;
+      transition: opacity .25s ease, visibility .25s ease;
+      z-index: 1049;
+    }
+    .cart-overlay.active { opacity: 1; visibility: visible; }
+
+    .cart-sidebar {
+      position: fixed; top: 0; right: 0;
+      width: 420px; max-width: 100vw; height: 100vh;
+      background: #fff; box-shadow: -6px 0 20px rgba(0,0,0,.12);
+      transform: translateX(100%); transition: transform .3s ease;
+      display: flex; flex-direction: column; z-index: 1050;
+    }
+    .cart-sidebar.active { transform: translateX(0); }
+    .cart-items { flex: 1 1 auto; overflow-y: auto; }
+    .btn-checkout { min-height: 44px; }
+
+    @media (max-width: 576px) {
+      .cart-sidebar { width: 100vw; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+      .cart-header h4 { font-size: 1.1rem; }
+    }
+
+    /* Cards perfil */
+    .card.shadow-sm { border: 0; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06) !important; }
+    .card-header.bg-white { border-bottom: 1px solid #eef2f7; border-top-left-radius: 16px; border-top-right-radius: 16px; }
+
+    /* Tabla pedidos -> stack en móvil usando mobile.css (.table-stack) */
+    .table.table-hover th, .table.table-hover td { vertical-align: middle; }
+    @media (max-width: 576px) {
+      .table.table-stack thead { display: none; }
+      .table.table-stack tbody tr {
+        display: block; padding: 12px; margin-bottom: .75rem;
+        border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      }
+      .table.table-stack tbody td {
+        display: flex; justify-content: space-between; gap: .75rem; padding: .35rem 0; border: 0 !important;
+        text-align: left !important; font-variant-numeric: tabular-nums;
+      }
+      .table.table-stack tbody td::before {
+        content: attr(data-label); color: #6b7280; font-weight: 600;
+      }
+      .table.table-stack .text-end { text-align: right !important; }
+    }
+    /* Botón cerrar del carrito */
+    #closeCart { font-size: 1.25rem; line-height: 1; padding: .25rem .5rem; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar con carrito y usuario -->
+<nav class="navbar navbar-expand-lg" style="background-color: hsl(0, 0%, 100%);">
+  <div class="container">
+    <!-- Logo con enlace a home -->
+    <a class="navbar-brand" href="{% url 'principal' %}">
+      <img src="{% static 'images/logo_deeko.png' %}" alt="Dekko Logo" style="max-height: 100px; object-fit: contain;">
+    </a>
+
+    <!-- Botón responsive -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Contenido del navbar -->
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav align-items-center">
+        <!-- Botón Inicio con enlace a home -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}">Página principal</a>
+        </li>
+
+        <!-- Botón Productos con enlace a categorías -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}#categorias">Categorías</a>
+        </li>
+
+        <!-- Enlace a contacto -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="#contacto">Contacto</a>
+        </li>
+
+        <!-- Login / Username -->
+        {% if user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-dark fw-semibold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="{% url 'perfil' %}"><i class="fas fa-user me-2"></i> Mi Perfil</a></li>
+            <li><a class="dropdown-item" href="{% url 'mis_pedidos' %}"><i class="fas fa-shopping-bag me-2"></i> Mis Pedidos</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'login' %}">Iniciar Sesión</a>
+        </li>
+        {% endif %}
+
+        <!-- Ícono del carrito mejorado -->
+        <li class="nav-item position-relative mobile-hidden">
+          <a href="#" class="nav-link text-dark fw-semibold" id="cartToggle">
+            <i class="fas fa-shopping-cart fa-lg"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCount">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Carrito de compras mejorado -->
+<div class="cart-overlay" id="cartOverlay" aria-hidden="true"></div>
+<div class="cart-sidebar" id="cartSidebar" aria-labelledby="cartToggle" aria-hidden="true">
+  <div class="cart-header d-flex justify-content-between align-items-center p-3 border-bottom">
+    <h4 class="m-0">Tu Carrito</h4>
+    <button id="closeCart" class="btn btn-sm btn-outline-secondary" aria-label="Cerrar carrito">&times;</button>
+  </div>
+  <div class="cart-items p-3" id="cartItems" style="overflow-y: auto; flex-grow: 1;">
+    <!-- Los productos del carrito se agregarán aquí dinámicamente -->
+    <div class="empty-cart-message text-center py-5">
+      <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+      <h5 class="text-muted">Tu carrito está vacío</h5>
+    </div>
+  </div>
+  <div class="cart-footer p-3 border-top">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="fw-bold">Total:</span>
+      <span class="fw-bold fs-5" id="cartTotal">L. 0.00</span>
+    </div>
+    <button class="btn btn-primary w-100 py-2 btn-checkout" id="proceedToCheckout">
+      <i class="fas fa-credit-card me-2"></i> Proceder al Pago
+    </button>
+  </div>
+</div>
+
+<!-- Formulario para enviar datos del carrito -->
+<form id="cartForm" method="POST" action="{% url 'pago' %}" style="display: none;">
+  {% csrf_token %}
+  <input type="hidden" name="cart_data" id="cartFormData">
+</form>
+
+<!-- Contenido principal -->
+<div class="container py-5">
+  <div class="row">
+    <!-- Columna de información del usuario -->
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow-sm profile-card">
+        <div class="card-body text-center">
+          <div class="d-flex justify-content-center mb-3">
+            <div class="rounded-circle bg-primary p-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+              <i class="fas fa-user fa-2x text-white"></i>
+            </div>
+          </div>
+          <h3 class="card-title mb-3">{{ user.username }}</h3>
+          <p class="text-muted mb-1"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+          <p class="text-muted mb-4"><i class="fas fa-calendar-alt me-2"></i>Miembro desde: {{ user.date_joined|date:"d/m/Y" }}</p>
+          <a href="{% url 'editar_perfil' %}" class="btn btn-primary w-100">Editar Perfil</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna de pedidos recientes y contenido principal -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Mis Pedidos Recientes</h4>
+        </div>
+        <div class="card-body">
+          {% if pedidos_recientes %}
+          <div class="table-responsive">
+            <table class="table table-hover table-stack">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Fecha</th>
+                  <th class="text-end">Total</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pedido in pedidos_recientes %}
+                <tr>
+                  <td data-label="Número: ">{{ pedido.codigo }}</td>
+                  <td data-label="Fecha">{{ pedido.fecha_creacion|date:"d/m/Y" }}</td>
+                  <td class="text-end" data-label="Total">L. {{ pedido.total }}</td>
+                  <td data-label="Estado">
+                    <span class="badge bg-{% if pedido.estado.nombre == 'Entregado' %}success{% elif pedido.estado.nombre == 'Cancelado' %}danger{% else %}primary{% endif %}">
+                      {{ pedido.estado.nombre }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="text-end mt-3">
+            <a href="{% url 'mis_pedidos' %}" class="btn btn-outline-primary">Ver todos mis pedidos</a>
+          </div>
+          {% else %}
+          <div class="alert alert-info mb-0">
+            No has realizado ningún pedido aún.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Sección de información adicional -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Configuración de Cuenta</h4>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="me-3">
+              <h5 class="mb-1">Cambiar contraseña</h5>
+              <p class="small text-muted mb-0">Actualiza tu contraseña regularmente para mayor seguridad</p>
+            </div>
+            <a href="{% url 'recuperacion' %}" class="btn btn-outline-primary">Cambiar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer" id="contacto">
+  <div class="container">
+    <div class="row justify-content-center">
+      <!-- Columna 1: Marca + Social -->
+      <div class="col-md-4 mb-4">
+        <a class="navbar-brand d-block mb-3" href="{% url 'principal' %}">
+          <img src="{% static 'images/logo_deeko_blanco.png' %}" alt="Dekko Logo" style="max-height: 80px; object-fit: contain;">
+        </a>
+        <p class="text-white-50">Tu tienda en línea con los mejores productos y servicios.</p>
+        <div class="social-icons mt-3">
+          <a href="https://www.facebook.com/share/1GYMjXYDgt/" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="https://www.instagram.com/deeko_store.hn" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="https://x.com/deekostore" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="X">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Columna 2: Enlaces -->
+      <div class="col-md-4 mb-4 footer-links">
+        <h5 class="text-white mb-4">Enlaces</h5>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a href="{% url 'principal' %}" class="text-white">Inicio</a></li>
+          <li class="mb-2"><a href="{% url 'principal' %}#categorias" class="text-white">Categorías</a></li>
+          <li class="mb-2"><a href="#contacto" class="text-white">Contacto</a></li>
+        </ul>
+      </div>
+
+      <!-- Columna 3: Información Legal -->
+      <div class="col-md-4 mb-4">
+        <h5 class="text-white mb-4">Información Legal</h5>
+        <ul class="list-unstyled legal-links">
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#termsModal">Términos y Condiciones</a>
+          </li>
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#privacyModal">Política de Privacidad</a>
+          </li>
+          <li>
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#faqModal">FAQ</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="my-4 bg-light">
+
+    <div class="row">
+      <div class="col-md-12">
+        <p class="text-white-50 mb-0">© 2025 Dekko Store. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ====== Modales ====== -->
+<!-- TÉRMINOS -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Términos y Condiciones</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <ol class="ps-3 mb-0">
+          <li><strong>Proceso de Compra:</strong> aceptas pagar precio total, impuestos y envío.</li>
+          <li><strong>Pagos:</strong> se procesan de forma segura; no almacenamos datos de tarjeta.</li>
+          <li><strong>Envíos:</strong> 1–2 días hábiles; tiempos varían por ubicación.</li>
+          <li><strong>Devoluciones:</strong> 14 días desde la recepción, producto en estado original.</li>
+          <li><strong>Privacidad:</strong> protegemos tus datos según nuestra Política de Privacidad.</li>
+          <li><strong>Garantías:</strong> según fabricante y detalles por producto.</li>
+          <li><strong>Cambios:</strong> podemos modificar los términos en cualquier momento.</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACIDAD -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Política de Privacidad</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p>Recopilamos datos mínimos para procesar pedidos y mejorar tu experiencia.</p>
+        <p>No vendemos tu información. Puedes solicitar acceso, rectificación o eliminación de tus datos desde <em>Contacto</em>.</p>
+        <p>Aplicamos medidas técnicas y organizativas para proteger tu información.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="modal fade" id="faqModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Preguntas Frecuentes</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>¿Cuánto tarda el envío?</strong><br>Procesamos en 1–2 días hábiles; el tiempo de entrega depende de tu ubicación.</p>
+        <p><strong>¿Puedo devolver un producto?</strong><br>Sí, dentro de 14 días desde la recepción, en su estado original.</p>
+        <p><strong>¿Cómo contacto soporte?</strong><br>Vía <em>Contacto</em> o redes sociales.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'pedidos/js/perfil.js' %}"></script>
+<script src="{% static 'js/carrito_principal.js' %}"></script>
+
+<script>
+  /* Toggle carrito (no reemplaza tu JS, solo asegura comportamiento básico) */
+  (function(){
+    const toggle = document.getElementById('cartToggle');
+    const overlay = document.getElementById('cartOverlay');
+    const sidebar = document.getElementById('cartSidebar');
+    const closeBtn = document.getElementById('closeCart');
+
+    function openCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.add('active');
+      sidebar.classList.add('active');
+      overlay.setAttribute('aria-hidden','false');
+      sidebar.setAttribute('aria-hidden','false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.remove('active');
+      sidebar.classList.remove('active');
+      overlay.setAttribute('aria-hidden','true');
+      sidebar.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+
+    toggle?.addEventListener('click', openCart);
+    overlay?.addEventListener('click', closeCart);
+    closeBtn?.addEventListener('click', closeCart);
+
+    // Cerrar con ESC
+    document.addEventListener('keydown', (ev)=>{ if(ev.key==='Escape') closeCart(); });
+  })();
+</script>
+</body>
+</html>
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Perfil | Deeko Store</title>
+
+  <!-- Bootstrap & Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tus hojas -->
+  <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+  <link rel="stylesheet" href="{% static 'pedidos/css/perfil.css' %}">
+
+  <style>
+    /* ===== Ajustes mínimos y responsivos sin borrar nada ===== */
+
+    body { font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+
+    /* Navbar */
+    .navbar { background-color: #ffffff !important; }
+    .navbar.navbar-light .navbar-toggler { border: 0; }
+    .navbar.navbar-light .navbar-toggler-icon { filter: invert(0.2); }
+    @media (max-width: 991.98px) {
+      .navbar-nav .nav-item { margin-bottom: .25rem; }
+      .navbar-brand img { max-height: 64px !important; }
+    }
+
+    /* Carrito lateral */
+    .cart-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4);
+      opacity: 0; visibility: hidden;
+      transition: opacity .25s ease, visibility .25s ease;
+      z-index: 1049;
+    }
+    .cart-overlay.active { opacity: 1; visibility: visible; }
+
+    .cart-sidebar {
+      position: fixed; top: 0; right: 0;
+      width: 420px; max-width: 100vw; height: 100vh;
+      background: #fff; box-shadow: -6px 0 20px rgba(0,0,0,.12);
+      transform: translateX(100%); transition: transform .3s ease;
+      display: flex; flex-direction: column; z-index: 1050;
+    }
+    .cart-sidebar.active { transform: translateX(0); }
+    .cart-items { flex: 1 1 auto; overflow-y: auto; }
+    .btn-checkout { min-height: 44px; }
+
+    @media (max-width: 576px) {
+      .cart-sidebar { width: 100vw; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+      .cart-header h4 { font-size: 1.1rem; }
+    }
+
+    /* Cards perfil */
+    .card.shadow-sm { border: 0; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06) !important; }
+    .card-header.bg-white { border-bottom: 1px solid #eef2f7; border-top-left-radius: 16px; border-top-right-radius: 16px; }
+
+    /* Tabla pedidos -> stack en móvil usando mobile.css (.table-stack) */
+    .table.table-hover th, .table.table-hover td { vertical-align: middle; }
+    @media (max-width: 576px) {
+      .table.table-stack thead { display: none; }
+      .table.table-stack tbody tr {
+        display: block; padding: 12px; margin-bottom: .75rem;
+        border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      }
+      .table.table-stack tbody td {
+        display: flex; justify-content: space-between; gap: .75rem; padding: .35rem 0; border: 0 !important;
+        text-align: left !important; font-variant-numeric: tabular-nums;
+      }
+      .table.table-stack tbody td::before {
+        content: attr(data-label); color: #6b7280; font-weight: 600;
+      }
+      .table.table-stack .text-end { text-align: right !important; }
+    }
+    /* Botón cerrar del carrito */
+    #closeCart { font-size: 1.25rem; line-height: 1; padding: .25rem .5rem; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar con carrito y usuario -->
+<nav class="navbar navbar-expand-lg" style="background-color: hsl(0, 0%, 100%);">
+  <div class="container">
+    <!-- Logo con enlace a home -->
+    <a class="navbar-brand" href="{% url 'principal' %}">
+      <img src="{% static 'images/logo_deeko.png' %}" alt="Dekko Logo" style="max-height: 100px; object-fit: contain;">
+    </a>
+
+    <!-- Botón responsive -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Contenido del navbar -->
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav align-items-center">
+        <!-- Botón Inicio con enlace a home -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}">Página principal</a>
+        </li>
+
+        <!-- Botón Productos con enlace a categorías -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'principal' %}#categorias">Categorías</a>
+        </li>
+
+        <!-- Enlace a contacto -->
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="#contacto">Contacto</a>
+        </li>
+
+        <!-- Login / Username -->
+        {% if user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-dark fw-semibold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="{% url 'perfil' %}"><i class="fas fa-user me-2"></i> Mi Perfil</a></li>
+            <li><a class="dropdown-item" href="{% url 'mis_pedidos' %}"><i class="fas fa-shopping-bag me-2"></i> Mis Pedidos</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link text-dark fw-semibold" href="{% url 'login' %}">Iniciar Sesión</a>
+        </li>
+        {% endif %}
+
+        <!-- Ícono del carrito mejorado -->
+        <li class="nav-item position-relative mobile-hidden">
+          <a href="#" class="nav-link text-dark fw-semibold" id="cartToggle">
+            <i class="fas fa-shopping-cart fa-lg"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartCount">0</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Carrito de compras mejorado -->
+<div class="cart-overlay" id="cartOverlay" aria-hidden="true"></div>
+<div class="cart-sidebar" id="cartSidebar" aria-labelledby="cartToggle" aria-hidden="true">
+  <div class="cart-header d-flex justify-content-between align-items-center p-3 border-bottom">
+    <h4 class="m-0">Tu Carrito</h4>
+    <button id="closeCart" class="btn btn-sm btn-outline-secondary" aria-label="Cerrar carrito">&times;</button>
+  </div>
+  <div class="cart-items p-3" id="cartItems" style="overflow-y: auto; flex-grow: 1;">
+    <!-- Los productos del carrito se agregarán aquí dinámicamente -->
+    <div class="empty-cart-message text-center py-5">
+      <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+      <h5 class="text-muted">Tu carrito está vacío</h5>
+    </div>
+  </div>
+  <div class="cart-footer p-3 border-top">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="fw-bold">Total:</span>
+      <span class="fw-bold fs-5" id="cartTotal">L. 0.00</span>
+    </div>
+    <button class="btn btn-primary w-100 py-2 btn-checkout" id="proceedToCheckout">
+      <i class="fas fa-credit-card me-2"></i> Proceder al Pago
+    </button>
+  </div>
+</div>
+
+<!-- Formulario para enviar datos del carrito -->
+<form id="cartForm" method="POST" action="{% url 'pago' %}" style="display: none;">
+  {% csrf_token %}
+  <input type="hidden" name="cart_data" id="cartFormData">
+</form>
+
+<!-- Contenido principal -->
+<div class="container py-5">
+  <div class="row">
+    <!-- Columna de información del usuario -->
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow-sm profile-card">
+        <div class="card-body text-center">
+          <div class="d-flex justify-content-center mb-3">
+            <div class="rounded-circle bg-primary p-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+              <i class="fas fa-user fa-2x text-white"></i>
+            </div>
+          </div>
+          <h3 class="card-title mb-3">{{ user.username }}</h3>
+          <p class="text-muted mb-1"><i class="fas fa-envelope me-2"></i>{{ user.email }}</p>
+          <p class="text-muted mb-4"><i class="fas fa-calendar-alt me-2"></i>Miembro desde: {{ user.date_joined|date:"d/m/Y" }}</p>
+          <a href="{% url 'editar_perfil' %}" class="btn btn-primary w-100">Editar Perfil</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna de pedidos recientes y contenido principal -->
+    <div class="col-lg-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Mis Pedidos Recientes</h4>
+        </div>
+        <div class="card-body">
+          {% if pedidos_recientes %}
+          <div class="table-responsive">
+            <table class="table table-hover table-stack">
+              <thead>
+                <tr>
+                  <th>Número</th>
+                  <th>Fecha</th>
+                  <th class="text-end">Total</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pedido in pedidos_recientes %}
+                <tr>
+                  <td data-label="Número: ">{{ pedido.codigo }}</td>
+                  <td data-label="Fecha">{{ pedido.fecha_creacion|date:"d/m/Y" }}</td>
+                  <td class="text-end" data-label="Total">L. {{ pedido.total }}</td>
+                  <td data-label="Estado">
+                    <span class="badge bg-{% if pedido.estado.nombre == 'Entregado' %}success{% elif pedido.estado.nombre == 'Cancelado' %}danger{% else %}primary{% endif %}">
+                      {{ pedido.estado.nombre }}
+                    </span>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="text-end mt-3">
+            <a href="{% url 'mis_pedidos' %}" class="btn btn-outline-primary">Ver todos mis pedidos</a>
+          </div>
+          {% else %}
+          <div class="alert alert-info mb-0">
+            No has realizado ningún pedido aún.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Sección de información adicional -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <h4 class="mb-0">Configuración de Cuenta</h4>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="me-3">
+              <h5 class="mb-1">Cambiar contraseña</h5>
+              <p class="small text-muted mb-0">Actualiza tu contraseña regularmente para mayor seguridad</p>
+            </div>
+            <a href="{% url 'recuperacion' %}" class="btn btn-outline-primary">Cambiar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer" id="contacto">
+  <div class="container">
+    <div class="row justify-content-center">
+      <!-- Columna 1: Marca + Social -->
+      <div class="col-md-4 mb-4">
+        <a class="navbar-brand d-block mb-3" href="{% url 'principal' %}">
+          <img src="{% static 'images/logo_deeko_blanco.png' %}" alt="Dekko Logo" style="max-height: 80px; object-fit: contain;">
+        </a>
+        <p class="text-white-50">Tu tienda en línea con los mejores productos y servicios.</p>
+        <div class="social-icons mt-3">
+          <a href="https://www.facebook.com/share/1GYMjXYDgt/" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="https://www.instagram.com/deeko_store.hn" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="https://x.com/deekostore" class="text-white" target="_blank" rel="noopener noreferrer" aria-label="X">
+            <i class="fab fa-twitter"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Columna 2: Enlaces -->
+      <div class="col-md-4 mb-4 footer-links">
+        <h5 class="text-white mb-4">Enlaces</h5>
+        <ul class="list-unstyled">
+          <li class="mb-2"><a href="{% url 'principal' %}" class="text-white">Inicio</a></li>
+          <li class="mb-2"><a href="{% url 'principal' %}#categorias" class="text-white">Categorías</a></li>
+          <li class="mb-2"><a href="#contacto" class="text-white">Contacto</a></li>
+        </ul>
+      </div>
+
+      <!-- Columna 3: Información Legal -->
+      <div class="col-md-4 mb-4">
+        <h5 class="text-white mb-4">Información Legal</h5>
+        <ul class="list-unstyled legal-links">
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#termsModal">Términos y Condiciones</a>
+          </li>
+          <li class="mb-2">
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#privacyModal">Política de Privacidad</a>
+          </li>
+          <li>
+            <a href="#" class="text-white" data-bs-toggle="modal" data-bs-target="#faqModal">FAQ</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="my-4 bg-light">
+
+    <div class="row">
+      <div class="col-md-12">
+        <p class="text-white-50 mb-0">© 2025 Dekko Store. Todos los derechos reservados.</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ====== Modales ====== -->
+<!-- TÉRMINOS -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Términos y Condiciones</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <ol class="ps-3 mb-0">
+          <li><strong>Proceso de Compra:</strong> aceptas pagar precio total, impuestos y envío.</li>
+          <li><strong>Pagos:</strong> se procesan de forma segura; no almacenamos datos de tarjeta.</li>
+          <li><strong>Envíos:</strong> 1–2 días hábiles; tiempos varían por ubicación.</li>
+          <li><strong>Devoluciones:</strong> 14 días desde la recepción, producto en estado original.</li>
+          <li><strong>Privacidad:</strong> protegemos tus datos según nuestra Política de Privacidad.</li>
+          <li><strong>Garantías:</strong> según fabricante y detalles por producto.</li>
+          <li><strong>Cambios:</strong> podemos modificar los términos en cualquier momento.</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACIDAD -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Política de Privacidad</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p>Recopilamos datos mínimos para procesar pedidos y mejorar tu experiencia.</p>
+        <p>No vendemos tu información. Puedes solicitar acceso, rectificación o eliminación de tus datos desde <em>Contacto</em>.</p>
+        <p>Aplicamos medidas técnicas y organizativas para proteger tu información.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="modal fade" id="faqModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content footer-modal">
+      <div class="modal-header">
+        <h5 class="modal-title">Preguntas Frecuentes</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>¿Cuánto tarda el envío?</strong><br>Procesamos en 1–2 días hábiles; el tiempo de entrega depende de tu ubicación.</p>
+        <p><strong>¿Puedo devolver un producto?</strong><br>Sí, dentro de 14 días desde la recepción, en su estado original.</p>
+        <p><strong>¿Cómo contacto soporte?</strong><br>Vía <em>Contacto</em> o redes sociales.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-light" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'pedidos/js/perfil.js' %}"></script>
+<script src="{% static 'js/carrito_principal.js' %}"></script>
+
+<script>
+  /* Toggle carrito (no reemplaza tu JS, solo asegura comportamiento básico) */
+  (function(){
+    const toggle = document.getElementById('cartToggle');
+    const overlay = document.getElementById('cartOverlay');
+    const sidebar = document.getElementById('cartSidebar');
+    const closeBtn = document.getElementById('closeCart');
+
+    function openCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.add('active');
+      sidebar.classList.add('active');
+      overlay.setAttribute('aria-hidden','false');
+      sidebar.setAttribute('aria-hidden','false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeCart(e){
+      if (e) e.preventDefault();
+      overlay.classList.remove('active');
+      sidebar.classList.remove('active');
+      overlay.setAttribute('aria-hidden','true');
+      sidebar.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+
+    toggle?.addEventListener('click', openCart);
+    overlay?.addEventListener('click', closeCart);
+    closeBtn?.addEventListener('click', closeCart);
+
+    // Cerrar con ESC
+    document.addEventListener('keydown', (ev)=>{ if(ev.key==='Escape') closeCart(); });
+  })();
+</script>
+</body>
+</html>

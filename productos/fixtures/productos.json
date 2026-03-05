@@ -1,0 +1,1217 @@
+[
+  {
+    "model": "productos.Producto",
+    "pk": 1,
+    "fields": {
+      "subcategoria": 1,
+      "nombre": "Manzanas Orgánicas",
+      "descripcion": "Cultivadas sin pesticidas, frescas del campo a tu mesa.",
+      "precio": "95.00",
+      "imagen": "manzanas_organicas.jpeg",
+      "badge": "nuevo",
+      "stock": 50,
+      "orden": 1,
+      "codigo": "P7X9KD2Q"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 2,
+    "fields": {
+      "subcategoria": 1,
+      "nombre": "Pan Integral",
+      "descripcion": "Elaborado con harinas 100% naturales y granos seleccionados.",
+      "precio": "60.00",
+      "imagen": "pan_integral.jpeg",
+      "badge": "ninguno",
+      "stock": 45,
+      "orden": 2,
+      "codigo": "H2Q8LM4A"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 3,
+    "fields": {
+      "subcategoria": 1,
+      "nombre": "Yogurt Natural",
+      "descripcion": "Sin azúcares añadidos, conservantes ni colorantes.",
+      "precio": "45.00",
+      "imagen": "yogurt_natural.jpeg",
+      "badge": "nuevo",
+      "stock": 70,
+      "orden": 3,
+      "codigo": "Z4M7CT9R"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 4,
+    "fields": {
+      "subcategoria": 1,
+      "nombre": "Mermelada de Mora",
+      "descripcion": "Hecha con fruta natural, sin conservantes artificiales.",
+      "precio": "80.00",
+      "imagen": "mermelada_de_mora.jpeg",
+      "badge": "ninguno",
+      "stock": 40,
+      "orden": 4,
+      "codigo": "B6R2JW8K"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 5,
+    "fields": {
+      "subcategoria": 1,
+      "nombre": "Avena Tradicional",
+      "descripcion": "Sin químicos ni conservantes, 100% natural.",
+      "precio": "55.00",
+      "imagen": "avena_tradicional.jpeg",
+      "badge": "ninguno",
+      "stock": 50,
+      "orden": 5,
+      "codigo": "M8K5QP1S"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 6,
+    "fields": {
+      "subcategoria": 1,
+      "nombre": "Huevo de Granja",
+      "descripcion": "Criado en libertad, sin hormonas ni antibióticos.",
+      "precio": "85.00",
+      "imagen": "huevo_de_granja.jpeg",
+      "badge": "oferta",
+      "stock": 60,
+      "orden": 6,
+      "codigo": "Q1V6AZ7N"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 7,
+    "fields": {
+      "subcategoria": 2,
+      "nombre": "Leche Deslactosada",
+      "descripcion": "Ideal para personas con intolerancia a la lactosa.",
+      "precio": "50.00",
+      "imagen": "leche_deslactosada.jpeg",
+      "badge": "ninguno",
+      "stock": 30,
+      "orden": 1,
+      "codigo": "L3T5BX9E"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 8,
+    "fields": {
+      "subcategoria": 2,
+      "nombre": "Café Orgánico",
+      "descripcion": "Cultivado en tierras altas, tostado artesanalmente.",
+      "precio": "150.00",
+      "imagen": "cafe_organico.jpeg",
+      "badge": "popular",
+      "stock": 25,
+      "orden": 2,
+      "codigo": "C9W2HE7P"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 9,
+    "fields": {
+      "subcategoria": 3,
+      "nombre": "Aceite de Coco",
+      "descripcion": "Prensado en frío, 100% puro y natural.",
+      "precio": "180.00",
+      "imagen": "aceite_de_coco.jpeg",
+      "badge": "ninguno",
+      "stock": 20,
+      "orden": 1,
+      "codigo": "R7F1NU3D"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 10,
+    "fields": {
+      "subcategoria": 4,
+      "nombre": "El nombre del viento",
+      "descripcion": "Novela de fantasía épica.",
+      "precio": "350.00",
+      "imagen": "libro1.jpg",
+      "badge": "popular",
+      "stock": 30,
+      "orden": 1,
+      "codigo": "T4S8MK2Y"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 11,
+    "fields": {
+      "subcategoria": 4,
+      "nombre": "Cien años de soledad",
+      "descripcion": "Clásico de la literatura latinoamericana.",
+      "precio": "280.00",
+      "imagen": "libro2.jpg",
+      "badge": "ninguno",
+      "stock": 25,
+      "orden": 2,
+      "codigo": "N6D3PA9L"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 12,
+    "fields": {
+      "subcategoria": 4,
+      "nombre": "Harry-Potter: La piedra filosofal",
+      "descripcion": "Primera entrega de la saga mágica.",
+      "precio": "320.00",
+      "imagen": "libro3.jpeg",
+      "badge": "ninguno",
+      "stock": 40,
+      "orden": 3,
+      "codigo": "J5Q7UR1A"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 13,
+    "fields": {
+      "subcategoria": 4,
+      "nombre": "El código Da Vinci",
+      "descripcion": "Thriller de misterio histórico.",
+      "precio": "300.00",
+      "imagen": "libro4.jpeg",
+      "badge": "nuevo",
+      "stock": 35,
+      "orden": 4,
+      "codigo": "V2Z9CH6Q"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 14,
+    "fields": {
+      "subcategoria": 5,
+      "nombre": "Thriller - Michael Jackson",
+      "descripcion": "Álbum clásico de música pop.",
+      "precio": "450.00",
+      "imagen": "album1.jpeg",
+      "badge": "popular",
+      "stock": 50,
+      "orden": 1,
+      "codigo": "K8R4YE3M"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 15,
+    "fields": {
+      "subcategoria": 5,
+      "nombre": "Abbey Road - The Beatles",
+      "descripcion": "Álbum icónico de la banda británica.",
+      "precio": "420.00",
+      "imagen": "album2.jpeg",
+      "badge": "ninguno",
+      "stock": 30,
+      "orden": 2,
+      "codigo": "A1H6QP8Z"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 16,
+    "fields": {
+      "subcategoria": 5,
+      "nombre": "Back in Black - AC/DC",
+      "descripcion": "Álbum clásico de rock.",
+      "precio": "380.00",
+      "imagen": "album3.jpeg",
+      "badge": "ninguno",
+      "stock": 25,
+      "orden": 3,
+      "codigo": "Y3M2DL7X"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 17,
+    "fields": {
+      "subcategoria": 5,
+      "nombre": "RAM - Daft Punk",
+      "descripcion": "Electrónica moderna.",
+      "precio": "400.00",
+      "imagen": "album4.jpeg",
+      "badge": "nuevo",
+      "stock": 40,
+      "orden": 4,
+      "codigo": "F9B8WT2K"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 18,
+    "fields": {
+      "subcategoria": 6,
+      "nombre": "El Padrino",
+      "descripcion": "Clásico del cine en Blu-ray.",
+      "precio": "550.00",
+      "imagen": "pelicula1.jpg",
+      "badge": "oferta",
+      "stock": 20,
+      "orden": 1,
+      "codigo": "U6C1NR5V"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 19,
+    "fields": {
+      "subcategoria": 6,
+      "nombre": "Titanic",
+      "descripcion": "Edición especial 25 aniversario.",
+      "precio": "500.00",
+      "imagen": "pelicula2.jpg",
+      "badge": "ninguno",
+      "stock": 15,
+      "orden": 2,
+      "codigo": "S5P7GA1H"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 20,
+    "fields": {
+      "subcategoria": 6,
+      "nombre": "Juego de Tronos - Season 1",
+      "descripcion": "Serie completa en Blu-ray.",
+      "precio": "650.00",
+      "imagen": "serie1.jpg",
+      "badge": "ninguno",
+      "stock": 30,
+      "orden": 3,
+      "codigo": "E2L9KJ4R"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 21,
+    "fields": {
+      "subcategoria": 6,
+      "nombre": "Planeta Tierra II",
+      "descripcion": "Documental de naturaleza.",
+      "precio": "480.00",
+      "imagen": "documental.jpg",
+      "badge": "nuevo",
+      "stock": 25,
+      "orden": 4,
+      "codigo": "W7D3XM6T"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 22,
+    "fields": {
+      "subcategoria": 7,
+      "nombre": "Juego de mesa: Catan",
+      "descripcion": "Estrategia para 3-4 jugadores.",
+      "precio": "850.00",
+      "imagen": "juego1.jpg",
+      "badge": "popular",
+      "stock": 40,
+      "orden": 1,
+      "codigo": "G4N1SZ8C"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 23,
+    "fields": {
+      "subcategoria": 7,
+      "nombre": "Consola Nintendo Switch",
+      "descripcion": "Consola de videojuegos portátil.",
+      "precio": "5500.00",
+      "imagen": "juego2.jpg",
+      "badge": "nuevo",
+      "stock": 15,
+      "orden": 2,
+      "codigo": "X9V5PU3B"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 24,
+    "fields": {
+      "subcategoria": 7,
+      "nombre": "Auriculares Bluetooth",
+      "descripcion": "Cancelación de ruido premium.",
+      "precio": "1200.00",
+      "imagen": "accesorio.jpg",
+      "badge": "ninguno",
+      "stock": 30,
+      "orden": 3,
+      "codigo": "R6K8LA2W"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 25,
+    "fields": {
+      "subcategoria": 7,
+      "nombre": "Lego Star Wars",
+      "descripcion": "Set coleccionable de 1,200 piezas.",
+      "precio": "1800.00",
+      "imagen": "juguete.jpg",
+      "badge": "oferta",
+      "stock": 20,
+      "orden": 4,
+      "codigo": "D1M7QZ9E"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 26,
+    "fields": {
+      "subcategoria": 8,
+      "nombre": "Escalera Telescópica",
+      "descripcion": "Altura 3.8m, aluminio.",
+      "precio": "2750.00",
+      "imagen": "Escalera Telescópica.png",
+      "badge": "ninguno",
+      "stock": 15,
+      "orden": 1,
+      "codigo": "P3H6TY7L"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 27,
+    "fields": {
+      "subcategoria": 8,
+      "nombre": "Juego de Llaves",
+      "descripcion": "12 piezas profesionales.",
+      "precio": "650.00",
+      "imagen": "Juego de Llaves.jpg",
+      "badge": "ninguno",
+      "stock": 30,
+      "orden": 2,
+      "codigo": "H8Q2RL5N"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 28,
+    "fields": {
+      "subcategoria": 8,
+      "nombre": "Martillo Profesional",
+      "descripcion": "Mango ergonómico.",
+      "precio": "280.00",
+      "imagen": "martillo profesional.jpg",
+      "badge": "nuevo",
+      "stock": 40,
+      "orden": 3,
+      "codigo": "Z2K9MN1F"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 29,
+    "fields": {
+      "subcategoria": 8,
+      "nombre": "Set Herramientas 32pz",
+      "descripcion": "Completo para reparaciones.",
+      "precio": "1250.00",
+      "imagen": "Set Herramientas 32pz.png",
+      "badge": "oferta",
+      "stock": 20,
+      "orden": 4,
+      "codigo": "B7V4CE6U"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 30,
+    "fields": {
+      "subcategoria": 8,
+      "nombre": "Sierra Eléctrica",
+      "descripcion": "1500W cortes precisos.",
+      "precio": "1800.00",
+      "imagen": "Sierra Eléctrica.jpg",
+      "badge": "nuevo",
+      "stock": 10,
+      "orden": 5,
+      "codigo": "M9S1AJ3K"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 31,
+    "fields": {
+      "subcategoria": 8,
+      "nombre": "Pulidora Rotorbital",
+      "descripcion": "1200W profesional.",
+      "precio": "1950.00",
+      "imagen": "Pulidora Rotorbital.jpg",
+      "badge": "ninguno",
+      "stock": 15,
+      "orden": 6,
+      "codigo": "Q5L8ZX2R"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 32,
+    "fields": {
+      "subcategoria": 8,
+      "nombre": "Taladro Inalámbrico",
+      "descripcion": "20V con 30 accesorios.",
+      "precio": "2150.00",
+      "imagen": "Taladro Inalámbrico.jpg",
+      "badge": "ninguno",
+      "stock": 12,
+      "orden": 7,
+      "codigo": "L2F3WD9P"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 33,
+    "fields": {
+      "subcategoria": 9,
+      "nombre": "Cortadora de Césped",
+      "descripcion": "1400W, 5 posiciones.",
+      "precio": "3200.00",
+      "imagen": "Cortadora de Césped.jpg",
+      "badge": "ninguno",
+      "stock": 8,
+      "orden": 1,
+      "codigo": "C6R1TM7Y"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 34,
+    "fields": {
+      "subcategoria": 9,
+      "nombre": "Kit de Jardinería",
+      "descripcion": "6 herramientas esenciales.",
+      "precio": "550.00",
+      "imagen": "Kit de Jardinería.jpg",
+      "badge": "ninguno",
+      "stock": 25,
+      "orden": 2,
+      "codigo": "R8K5NA4H"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 35,
+    "fields": {
+      "subcategoria": 9,
+      "nombre": "Manguera 15m",
+      "descripcion": "Resistente con boquilla.",
+      "precio": "450.00",
+      "imagen": "Manguera 15m.jpg",
+      "badge": "ninguno",
+      "stock": 30,
+      "orden": 3,
+      "codigo": "D9M3QP6E"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 36,
+    "fields": {
+      "subcategoria": 10,
+      "nombre": "Aspiradora Multiusos",
+      "descripcion": "2000W con filtro HEPA.",
+      "precio": "2300.00",
+      "imagen": "aspiradora.jpg",
+      "badge": "popular",
+      "stock": 15,
+      "orden": 1,
+      "codigo": "T1S7KV9L"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 37,
+    "fields": {
+      "subcategoria": 10,
+      "nombre": "Kit de Pinturas",
+      "descripcion": "4 litros + accesorios.",
+      "precio": "850.00",
+      "imagen": "Kit de Pinturas.jpg",
+      "badge": "ninguno",
+      "stock": 20,
+      "orden": 2,
+      "codigo": "N4D8LA2Z"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 38,
+    "fields": {
+      "subcategoria": 10,
+      "nombre": "Set Cocina Premium",
+      "descripcion": "12 piezas inoxidable.",
+      "precio": "1450.00",
+      "imagen": "Set Cocina Premium.jpg",
+      "badge": "ninguno",
+      "stock": 18,
+      "orden": 3,
+      "codigo": "J6Q1UR5A"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 39,
+    "fields": {
+      "subcategoria": 11,
+      "nombre": "Organizador Herramientas",
+      "descripcion": "Panel con 50 accesorios.",
+      "precio": "1100.00",
+      "imagen": "Organizador Herramientas.jpg",
+      "badge": "oferta",
+      "stock": 15,
+      "orden": 1,
+      "codigo": "V9Z3CH2Q"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 40,
+    "fields": {
+      "subcategoria": 12,
+      "nombre": "Vestido Floral",
+      "descripcion": "Vestido de verano con estampado floral, tirantes y corte ajustado.",
+      "precio": "1250.00",
+      "imagen": "vestido_floral.jpg",
+      "badge": "nuevo",
+      "stock": 25,
+      "orden": 1,
+      "codigo": "K1R5YE8M"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 41,
+    "fields": {
+      "subcategoria": 12,
+      "nombre": "Vestido Elegante",
+      "descripcion": "Vestido de seda con detalles de encaje, ideal para ocasiones especiales.",
+      "precio": "890.00",
+      "imagen": "vestido_elegante.jpg",
+      "badge": "popular",
+      "stock": 30,
+      "orden": 2,
+      "codigo": "A8H2QP6Z"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 42,
+    "fields": {
+      "subcategoria": 12,
+      "nombre": "Jeans Mom Fit",
+      "descripcion": "Jeans ajustados con corte alto y efecto desgastado, tiro alto.",
+      "precio": "1150.00",
+      "imagen": "jeans_mom.jpg",
+      "badge": "ninguno",
+      "stock": 40,
+      "orden": 3,
+      "codigo": "Y7M9DL1X"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 43,
+    "fields": {
+      "subcategoria": 12,
+      "nombre": "Chaleco de Piel",
+      "descripcion": "Chaleco de piel sintética con cierre de botones y bolsillos laterales.",
+      "precio": "1800.00",
+      "imagen": "chaleco_piel.jpg",
+      "badge": "popular",
+      "stock": 15,
+      "orden": 4,
+      "codigo": "F2B6WT3K"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 44,
+    "fields": {
+      "subcategoria": 13,
+      "nombre": "Camisa Casual",
+      "descripcion": "Camisa de algodón con estampado moderno, cuello abotonado.",
+      "precio": "950.00",
+      "imagen": "camisa_casual.jpg",
+      "badge": "ninguno",
+      "stock": 35,
+      "orden": 1,
+      "codigo": "U9C4NR6V"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 45,
+    "fields": {
+      "subcategoria": 13,
+      "nombre": "Pantalón Chino",
+      "descripcion": "Pantalón estilo chino en color beige, corte recto y cómodo.",
+      "precio": "1200.00",
+      "imagen": "pantalon_chino.jpg",
+      "badge": "ninguno",
+      "stock": 30,
+      "orden": 2,
+      "codigo": "S1P8GA5H"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 46,
+    "fields": {
+      "subcategoria": 13,
+      "nombre": "Chaqueta Jean",
+      "descripcion": "Chaqueta de mezclilla clásica con bolsillos y botones metálicos.",
+      "precio": "1750.00",
+      "imagen": "chaqueta_jean.jpg",
+      "badge": "ninguno",
+      "stock": 20,
+      "orden": 3,
+      "codigo": "E6L2KJ9R"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 47,
+    "fields": {
+      "subcategoria": 13,
+      "nombre": "Suéter Básico",
+      "descripcion": "Suéter de algodón en color gris, corte regular y manga larga.",
+      "precio": "850.00",
+      "imagen": "sueter_basico.jpg",
+      "badge": "oferta",
+      "stock": 45,
+      "orden": 4,
+      "codigo": "W3D7XM1T"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 48,
+    "fields": {
+      "subcategoria": 14,
+      "nombre": "Bolso Bandolera",
+      "descripcion": "Bolso de cuero sintético con correa ajustable y múltiples compartimentos.",
+      "precio": "1100.00",
+      "imagen": "bolso_bandolera.jpg",
+      "badge": "ninguno",
+      "stock": 25,
+      "orden": 1,
+      "codigo": "G9N5SZ4C"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 49,
+    "fields": {
+      "subcategoria": 14,
+      "nombre": "Gorra Beisbol",
+      "descripcion": "Gorra estilo béisbol con diseño ajustable y logo bordado.",
+      "precio": "450.00",
+      "imagen": "gorra_beisbol.jpg",
+      "badge": "ninguno",
+      "stock": 50,
+      "orden": 2,
+      "codigo": "X1V8PU6B"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 50,
+    "fields": {
+      "subcategoria": 14,
+      "nombre": "Collar Plata",
+      "descripcion": "Collar de plata con colgante minimalista, ajustable.",
+      "precio": "650.00",
+      "imagen": "collar_plata.jpeg",
+      "badge": "ninguno",
+      "stock": 30,
+      "orden": 3,
+      "codigo": "R4K2LA7W"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 51,
+    "fields": {
+      "subcategoria": 14,
+      "nombre": "Reloj Clásico",
+      "descripcion": "Reloj analógico con correa de cuero, resistente al agua.",
+      "precio": "2200.00",
+      "imagen": "reloj_clasico.jpg",
+      "badge": "oferta",
+      "stock": 15,
+      "orden": 4,
+      "codigo": "D8M6QZ1E"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 52,
+    "fields": {
+      "subcategoria": 15,
+      "nombre": "Zapatillas Urbanas",
+      "descripcion": "Zapatillas deportivas con suela de goma y diseño moderno.",
+      "precio": "1850.00",
+      "imagen": "zapatillas_urbanas.jpg",
+      "badge": "ninguno",
+      "stock": 30,
+      "orden": 1,
+      "codigo": "P6H9TY3L"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 53,
+    "fields": {
+      "subcategoria": 15,
+      "nombre": "Tacones Elegantes",
+      "descripcion": "Tacones de piel sintética con punta cerrada y taco medio.",
+      "precio": "1500.00",
+      "imagen": "tacones_elegantes.jpg",
+      "badge": "oferta",
+      "stock": 20,
+      "orden": 2,
+      "codigo": "H3Q1RL8N"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 54,
+    "fields": {
+      "subcategoria": 15,
+      "nombre": "Botines Cuero",
+      "descripcion": "Botines de cuero sintético con cremallera lateral y suela antideslizante.",
+      "precio": "1650.00",
+      "imagen": "botines_cuero.jpg",
+      "badge": "oferta",
+      "stock": 25,
+      "orden": 3,
+      "codigo": "Z9K7MN2F"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 55,
+    "fields": {
+      "subcategoria": 15,
+      "nombre": "Sandalias Verano",
+      "descripcion": "Sandalias cómodas con tiras ajustables y suela flexible.",
+      "precio": "950.00",
+      "imagen": "sandalias_verano.jpg",
+      "badge": "ninguno",
+      "stock": 35,
+      "orden": 4,
+      "codigo": "B5V1CE7U"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 56,
+    "fields": {
+      "subcategoria": 16,
+      "nombre": "Samsung A55",
+      "descripcion": "Celular Samsung A55 6.7 256GB-12GB Negro.",
+      "precio": "12765.00",
+      "imagen": "A55.jpg",
+      "badge": "nuevo",
+      "stock": 25,
+      "orden": 1,
+      "codigo": "M1S3AJ8K"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 57,
+    "fields": {
+      "subcategoria": 16,
+      "nombre": "Samsung A36",
+      "descripcion": "Celular Samsung A36 6.7 256GB-8GB Negro.",
+      "precio": "10711.00",
+      "imagen": "A36.jpg",
+      "badge": "ninguno",
+      "stock": 30,
+      "orden": 2,
+      "codigo": "Q4L6ZX5R"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 58,
+    "fields": {
+      "subcategoria": 16,
+      "nombre": "Honor X8B",
+      "descripcion": "Celular Honor X8B 6.7 8GB-256GB Azul.",
+      "precio": "5795.00",
+      "imagen": "Honor-X8BA-1.jpg",
+      "badge": "oferta",
+      "stock": 20,
+      "orden": 3,
+      "codigo": "L7F9WD2P"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 59,
+    "fields": {
+      "subcategoria": 16,
+      "nombre": "Honor Magic 7",
+      "descripcion": "Celular Honor Magic 7 Lite 512GB Negro.",
+      "precio": "11442.00",
+      "imagen": "Honor Magic 7.jpg",
+      "badge": "popular",
+      "stock": 15,
+      "orden": 4,
+      "codigo": "C2R4TM8Y"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 60,
+    "fields": {
+      "subcategoria": 17,
+      "nombre": "Laptop Lenovo",
+      "descripcion": "Lenovo LOQ 15\"/ AMD Ryzen 5/ 16GB RAM/ 512GB SSD + 6GB.",
+      "precio": "29995.00",
+      "imagen": "Levono.jpg",
+      "badge": "nuevo",
+      "stock": 10,
+      "orden": 1,
+      "codigo": "R5K1NA3H"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 61,
+    "fields": {
+      "subcategoria": 17,
+      "nombre": "Laptop HP",
+      "descripcion": "HP 14\"/ Intel Core Ultra 5/ 16GB RAM/ 512GB SSD.",
+      "precio": "22995.00",
+      "imagen": "HP.jpg",
+      "badge": "ninguno",
+      "stock": 15,
+      "orden": 2,
+      "codigo": "D7M8QP9E"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 62,
+    "fields": {
+      "subcategoria": 17,
+      "nombre": "All in One HP",
+      "descripcion": "HP 24\"/ AMD Ryzen 5/ 8GB RAM/ 512GB SSD.",
+      "precio": "23995.00",
+      "imagen": "All in One HP.jpg",
+      "badge": "oferta",
+      "stock": 8,
+      "orden": 3,
+      "codigo": "T9S2KV1L"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 63,
+    "fields": {
+      "subcategoria": 17,
+      "nombre": "Computadora de Escritorio iMac",
+      "descripcion": "iMac 24\"/ Chip M3/ 8GB RAM/ 512GB SSD.",
+      "precio": "40995.00",
+      "imagen": "Computadora de Escritorio iMac.jpg",
+      "badge": "oferta",
+      "stock": 5,
+      "orden": 4,
+      "codigo": "N1D6LA4Z"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 64,
+    "fields": {
+      "subcategoria": 18,
+      "nombre": "TV Hisense",
+      "descripcion": "Smart TV Hisense 58\" UHD VIDAA 4K/ HIS-58A6NV.",
+      "precio": "12995.00",
+      "imagen": "HISENSE MINI.jpg",
+      "badge": "ninguno",
+      "stock": 12,
+      "orden": 1,
+      "codigo": "J3Q9UR6A"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 65,
+    "fields": {
+      "subcategoria": 18,
+      "nombre": "Samsung TV",
+      "descripcion": "Smart TV Samsung 43\" FHD/ UN43-T5300.",
+      "precio": "7595.00",
+      "imagen": "Smart TV Samsung 43.jpg",
+      "badge": "popular",
+      "stock": 18,
+      "orden": 2,
+      "codigo": "V6Z1CH8Q"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 66,
+    "fields": {
+      "subcategoria": 18,
+      "nombre": "Smart TV LG",
+      "descripcion": "Smart TV LG 70\" UHD ThinQ AI 4k/ 70-UR780.",
+      "precio": "23995.00",
+      "imagen": "Smart TV LG 70.jpg",
+      "badge": "nuevo",
+      "stock": 10,
+      "orden": 3,
+      "codigo": "K4R7YE2M"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 67,
+    "fields": {
+      "subcategoria": 18,
+      "nombre": "Smart TV Sony",
+      "descripcion": "Smart TV Sony 75\" UHD 4K.",
+      "precio": "33995.00",
+      "imagen": "Smart TV Sony.jpg",
+      "badge": "oferta",
+      "stock": 7,
+      "orden": 4,
+      "codigo": "A2H5QP7Z"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 68,
+    "fields": {
+      "subcategoria": 19,
+      "nombre": "Impresora Epson",
+      "descripcion": "Eco Tank L4260/ Inalámbrica/.",
+      "precio": "8495.00",
+      "imagen": "impresora.jpg",
+      "badge": "ninguno",
+      "stock": 20,
+      "orden": 1,
+      "codigo": "Y8M1DL3X"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 69,
+    "fields": {
+      "subcategoria": 19,
+      "nombre": "Combo Multilaser",
+      "descripcion": "Teclado Multilaser Combo/ Teclado + Mouse Inalámbrico.",
+      "precio": "500.00",
+      "imagen": "Multilase.jpg",
+      "badge": "oferta",
+      "stock": 35,
+      "orden": 2,
+      "codigo": "F6B9WT4K"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 70,
+    "fields": {
+      "subcategoria": 19,
+      "nombre": "Memoria Kingston",
+      "descripcion": "Memoria Kingston microSDHC 32GB.",
+      "precio": "190.00",
+      "imagen": "Memoria Kingston.jpg",
+      "badge": "oferta",
+      "stock": 50,
+      "orden": 3,
+      "codigo": "U3C2NR7V"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 71,
+    "fields": {
+      "subcategoria": 19,
+      "nombre": "Proyector Epson",
+      "descripcion": "Proyector Epson Powerlite E20.",
+      "precio": "16995.00",
+      "imagen": "proyector.jpg",
+      "badge": "popular",
+      "stock": 8,
+      "orden": 4,
+      "codigo": "S7P6GA9H"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 72,
+    "fields": {
+      "subcategoria": 20,
+      "nombre": "Balon medico",
+      "descripcion": "Balon medico color verde para aliviar dolores musculares.",
+      "precio": "790.00",
+      "imagen": "balon.jpg",
+      "badge": "nuevo",
+      "stock": 25,
+      "orden": 1,
+      "codigo": "E1L4KJ2R"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 73,
+    "fields": {
+      "subcategoria": 21,
+      "nombre": "Barra z",
+      "descripcion": "Barra z 25 kl.",
+      "precio": "1800.00",
+      "imagen": "barra z.jpg",
+      "badge": "popular",
+      "stock": 20,
+      "orden": 1,
+      "codigo": "W6D8XM5T"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 74,
+    "fields": {
+      "subcategoria": 21,
+      "nombre": "Mancuernas",
+      "descripcion": "Set de mancuernas de 10-40 kg.",
+      "precio": "2435.00",
+      "imagen": "mancuernas.jpg",
+      "badge": "oferta",
+      "stock": 15,
+      "orden": 2,
+      "codigo": "G2N3SZ1C"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 75,
+    "fields": {
+      "subcategoria": 22,
+      "nombre": "Faja",
+      "descripcion": "Faja lumbar color negro a presión.",
+      "precio": "350.00",
+      "imagen": "faja.jpg",
+      "badge": "ninguno",
+      "stock": 30,
+      "orden": 1,
+      "codigo": "X8V7PU9B"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 76,
+    "fields": {
+      "subcategoria": 23,
+      "nombre": "Banco",
+      "descripcion": "Banco para realizar diversas actividades con peso libre.",
+      "precio": "2450.00",
+      "imagen": "Banco.jpg",
+      "badge": "ninguno",
+      "stock": 15,
+      "orden": 1,
+      "codigo": "R1K6LA8W"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 77,
+    "fields": {
+      "subcategoria": 23,
+      "nombre": "Banda de correr",
+      "descripcion": "Banda de correr color negro 20 velocidades.",
+      "precio": "8990.00",
+      "imagen": "banda.jpg",
+      "badge": "ninguno",
+      "stock": 10,
+      "orden": 2,
+      "codigo": "D4M2QZ3E"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 78,
+    "fields": {
+      "subcategoria": 23,
+      "nombre": "Saco de Box",
+      "descripcion": "Saco de Box de 69 kl color negro.",
+      "precio": "12890.00",
+      "imagen": "Boxeo.jpg",
+      "badge": "ninguno",
+      "stock": 8,
+      "orden": 3,
+      "codigo": "P9H1TY6L"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 79,
+    "fields": {
+      "subcategoria": 23,
+      "nombre": "Lazo",
+      "descripcion": "Lazo de saltar color negro y azul.",
+      "precio": "180.00",
+      "imagen": "lazo.jpg",
+      "badge": "ninguno",
+      "stock": 40,
+      "orden": 4,
+      "codigo": "H5Q9RL2N"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 80,
+    "fields": {
+      "subcategoria": 23,
+      "nombre": "Soporte",
+      "descripcion": "Soporte multiuso.",
+      "precio": "5500.00",
+      "imagen": "Soport.jpg",
+      "badge": "ninguno",
+      "stock": 12,
+      "orden": 5,
+      "codigo": "Z6K4MN7F"
+    }
+  },
+  {
+    "model": "productos.Producto",
+    "pk": 81,
+    "fields": {
+      "subcategoria": 23,
+      "nombre": "Termo",
+      "descripcion": "Termo color azul y anaranjado de 160 ml.",
+      "precio": "90.00",
+      "imagen": "termo.jpg",
+      "badge": "ninguno",
+      "stock": 50,
+      "orden": 6,
+      "codigo": "B3V8CE5U"
+    }
+  }
+]

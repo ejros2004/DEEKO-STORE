@@ -1,0 +1,96 @@
+/* ========== VARIABLES COHERENTES ========== */
+:root {
+  --primary-color: #1E3A8A;
+  --secondary-color: #3B82F6;
+  --light-color: #F8F9FA;
+  --gray-color: #A0AEC0;
+  --dark-color: #2D3748;
+  --danger-color: #EF4444;
+  --success-color: #10B981;
+}
+
+/* ========== BASE ========== */
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--light-color);
+  color: var(--dark-color);
+  overflow-x: hidden;
+}
+
+/* ========== NAVBAR (mismo look) ========== */
+.navbar {
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  padding: 15px 0;
+  position: relative;
+  z-index: 100;
+}
+
+.navbar-brand img {
+  max-height: 80px;
+  transition: transform 0.3s;
+}
+
+.navbar-brand:hover img {
+  transform: scale(1.05);
+}
+
+.nav-link {
+  font-weight: 600;
+  color: var(--dark-color) !important;
+  padding: 8px 15px !important;
+  transition: all 0.3s;
+}
+
+/* ========== TIMELINE (igual que detalle_pedido.css) ========== */
+.timeline { position:relative; padding-left:1.5rem; }
+.timeline::before { content:''; position:absolute; left:.5rem; top:0; bottom:0; width:2px; background:#e9ecef; }
+.timeline-item { position:relative; padding-bottom:1.25rem; }
+.timeline-item::before {
+  content:''; position:absolute; left:-1.5rem; top:0; width:1rem; height:1rem; border-radius:50%;
+  background:#dee2e6; border:2px solid #fff;
+}
+.timeline-item.active::before { background: var(--primary-color); }
+.timeline-content { padding:.5rem 1rem; background:#f8f9fa; border-radius:.5rem; }
+
+/* ========== PROGRESS STEPS ========== */
+.progress-steps { display:flex; justify-content:space-between; gap:12px; position:relative; }
+.progress-steps .step { flex:1; text-align:center; position:relative; }
+.progress-steps .step::after {
+  content:''; position:absolute; top:20px; left:50%; width:100%; height:4px; background:#e9ecef; transform:translateX(0); z-index:0;
+}
+.progress-steps .step:last-child::after { display:none; }
+.progress-steps .bubble {
+  width:40px; height:40px; border-radius:50%; background:#e9ecef; display:flex; align-items:center; justify-content:center;
+  margin:0 auto 8px; position:relative; z-index:1; font-size:1rem;
+}
+
+.footer .row { align-items: center; }
+.footer .col-md-4 { display:flex; flex-direction:column; align-items:center; }
+.footer h5 { font-weight:700; }
+.footer a { color:white; text-decoration:none; transition: color .3s; }
+.footer a:hover { color: var(--light-color) !important; text-decoration: underline; }
+.footer .social-icons { display:flex; justify-content:center; gap:15px; margin-top:20px; }
+.footer .social-icons a {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:36px; height:36px; background:rgba(255,255,255,.1); border-radius:50%; transition:.3s;
+}
+.footer .social-icons a:hover { background:rgba(255,255,255,.2); transform:translateY(-3px); }
+.footer hr.bg-light { opacity:.25; }
+
+/* Modales del footer */
+.footer-modal { border-radius:16px; overflow:hidden; border:0; box-shadow:0 20px 60px rgba(0,0,0,.35); }
+.footer-modal .modal-header { background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color:#fff; border-bottom:0; }
+.footer-modal .btn-close.btn-close-white { filter: invert(1) brightness(2); }
+.footer-modal .modal-body { background:#fff; text-align:justify; line-height:1.6; font-size:.95rem; }
+.footer-modal .modal-footer { background:#f8f9fa; border-top:0; }
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .d-flex.justify-content-between.align-items-center {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 1rem;
+  }
+  .progress-steps .label { font-size:.85rem; }
+}

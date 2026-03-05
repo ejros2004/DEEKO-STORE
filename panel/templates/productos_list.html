@@ -1,0 +1,2010 @@
+{% extends 'panel/base_panel.html' %}
+{% load l10n %}
+{% block title %}Productos{% endblock %}
+{% block content %}
+<style>
+  .btn-same { min-width: 92px }
+  .table-sm td { padding-top: .5rem; padding-bottom: .5rem }
+  .cell-wide { min-width: 280px }
+  .w-num { width: 110px }
+  .actions { white-space: nowrap; position: relative; }
+  .muted-prefix { color: #6b7280 }
+  .select-disabled { background-color: #f8f9fa; color: #6c757d; cursor: not-allowed }
+  .select-disabled option { color: #6c757d }
+  
+  .dropdown-menu { min-width: 160px; position: absolute; z-index: 1000; }
+  .dropdown-toggle::after { display: none; }
+
+  .image-edit-container { position: relative; width: 50px; height: 50px; cursor: pointer; }
+  .image-preview { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; transition: transform .2s, opacity .2s; }
+  .image-preview:hover { transform: scale(1.05); opacity: .9; }
+  .no-image { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa; border-radius: 4px; border: 1px dashed #dee2e6; cursor: pointer; transition: background-color .2s; }
+  .no-image:hover { background-color: #e9ecef; }
+  .no-image i { color: #6c757d; font-size: 1.2rem; }
+  
+  .table-responsive { overflow: visible; }
+  .table-container { position: relative; }
+  
+  @media (max-width: 768px) {
+    .dropdown-menu { position: fixed !important; top: auto !important; left: 50% !important; transform: translateX(-50%); width: 90vw; }
+    .cell-wide { min-width: 180px; }
+  }
+
+  
+  .camera-modal .modal-dialog { max-width: 320px; margin: 1rem auto; }
+  .camera-modal .modal-content { border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 5px 20px rgba(0,0,0,.15); }
+  .camera-modal .modal-header { background-color: #f8f9fa; border-bottom: none; padding: 18px 20px; }
+  .camera-modal .modal-title { font-size: 1.1rem; font-weight: 600; color: #333; }
+  .camera-modal .modal-body { display: flex; flex-direction: column; gap: 12px; padding: 20px; }
+  .camera-modal .btn-option { display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding: 12px 16px; border-radius: 8px; font-weight: 500; transition: all .2s; border: 1px solid #e0e0e0; text-align: left; }
+  .camera-modal .btn-option:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,.1); }
+  .camera-modal .btn-option i { font-size: 1.3rem; width: 24px; text-align: center; }
+  .camera-modal .modal-footer { border-top: none; padding: 15px 20px; justify-content: center; }
+  .camera-modal .btn-cancel { padding: 8px 20px; border-radius: 6px; font-weight: 500; }
+
+  .editing-row { background-color: #f8fafc; box-shadow: inset 0 0 0 1px #dbeafe; }
+  .editing-row .image-preview { opacity: .7; filter: brightness(0.9); }
+  .editing-row .image-edit-container::after {
+    content: '\f304';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: #fff; background: rgba(0,0,0,.6); width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 14px; pointer-events: none;
+  }
+  .editing-row .no-image { opacity: .7; border-color: #0d6efd; }
+  
+  /* ==== Ajustes para pantallas pequeñas ==== */
+  @media (max-width: 768px) {
+    /* Formularios y filtros en columna */
+    #filtro .col-sm-3,
+    #filtro .col-xl-6,
+    #filtro .col-lg-5 {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+    #filtro input,
+    #filtro select {
+      font-size: 14px;
+    }
+
+    /* Tabla scrollable con mejor espaciado */
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .table thead {
+      font-size: 13px;
+    }
+    .table td, .table th {
+      padding: .4rem;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .cell-wide {
+      min-width: 160px;
+      white-space: normal;
+    }
+    .w-num {
+      width: 80px;
+    }
+
+    /* Botones más compactos */
+    .btn-same {
+      min-width: unset;
+      padding: .25rem .5rem;
+      font-size: 13px;
+    }
+
+    /* Acciones: dropdown centrado */
+    .dropdown-menu {
+      position: fixed !important;
+      bottom: 10px;
+      left: 50% !important;
+      transform: translateX(-50%);
+      width: 94vw;
+      max-width: 400px;
+      z-index: 1050;
+    }
+
+    /* Imagen del producto más grande en mobile */
+    .image-edit-container {
+      width: 42px;
+      height: 42px;
+    }
+
+    /* Modal cámara adaptado */
+    .camera-modal .modal-dialog {
+      max-width: 95%;
+      margin: .5rem auto;
+    }
+    .camera-modal .btn-option {
+      font-size: 14px;
+      padding: 10px 14px;
+    }
+  }
+</style>
+
+<div class="d-flex align-items-center mb-3">
+  <h2 class="me-auto">Productos</h2>
+  <a href="{% url 'panel_producto_create' %}" class="btn btn-primary"><i class="fa fa-plus me-2"></i>Nuevo</a>
+</div>
+
+<form id="filtro" class="row g-2 mb-3">
+  <div class="col-xl-6 col-lg-5">
+    <input class="form-control" name="q" placeholder="Buscar por nombre, código, categoría o subcategoría" value="{{ q }}">
+  </div>
+
+  <div class="col-sm-3">
+    <select id="catFilter" class="form-select" name="cat">
+      <option value="">Todas las categorías</option>
+      {% for c in categorias %}
+        <option value="{{ c.id }}" {% if cat == c.id|stringformat:'s' %}selected{% endif %}>{{ c.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-sm-3">
+    <select id="subFilter" class="form-select {% if not cat %}select-disabled{% endif %}"
+            name="sub" {% if not cat %}disabled{% endif %}>
+      <option value="">{% if not cat %}Selecciona una categoría{% else %}Todas las subcategorías{% endif %}</option>
+      {% for s in subcategorias %}
+        <option value="{{ s.id }}" data-cat="{{ s.seccion.id }}"
+          {% if sub == s.id|stringformat:'s' %}selected{% endif %}>{{ s.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</form>
+
+<div class="card p-2">
+  <div class="table-responsive">
+    <div class="table-container">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+        <tr>
+          <th style="width:60px"></th>
+          <th>Producto</th>
+          <th>Cat / Subcat</th>
+          <th class="text-end">Precio</th>
+          <th class="text-end">Stock</th>
+          <th class="text-end">Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for p in productos %}
+          <tr data-id="{{ p.id }}">
+            <td>
+              <div class="image-edit-container" title="Click para cambiar imagen (solo en edición)">
+                {% if p.image_url %}
+                  <img class="image-preview thumb" src="{{ p.image_url }}" alt="">
+                {% else %}
+                  <div class="no-image">
+                    <i class="fas fa-box"></i>
+                  </div>
+                {% endif %}
+                <input type="file" id="fileInput_{{ p.id }}" class="image-edit-input d-none" accept="image/*">
+              </div>
+            </td>
+            <td class="fw-semibold">
+              {{ p.nombre }}
+              <div class="small text-muted mt-1"><span class="badge rounded-pill text-bg-light">{{ p.codigo }}</span></div>
+            </td>
+
+            <td class="cell-wide">
+              <div class="view-mode">
+                <div class="small text-muted">{{ p.subcategoria.seccion.nombre }}</div>
+                <div>{{ p.subcategoria.nombre }}</div>
+              </div>
+              <div class="edit-mode d-none">
+                <div class="row g-2">
+                  <div class="col-6">
+                    <select class="form-select form-select-sm cat-select">
+                      {% for c in categorias %}
+                        <option value="{{ c.id }}" {% if p.subcategoria.seccion_id == c.id %}selected{% endif %}>{{ c.nombre }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <select class="form-select form-select-sm sub-select">
+                      {% for s in subcategorias %}
+                        <option value="{{ s.id }}" data-cat="{{ s.seccion.id }}"
+                                {% if p.subcategoria_id == s.id %}selected{% endif %}>{{ s.nombre }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <td class="text-end">
+              <div class="input-group input-group-sm justify-content-end">
+                <span class="input-group-text muted-prefix">L.</span>
+                <input type="number" step="0.01" class="form-control w-num input-precio"
+                       value="{{ p.precio|unlocalize }}" disabled>
+              </div>
+            </td>
+
+            <td class="text-end">
+              <input type="number" class="form-control form-control-sm d-inline-block w-num input-stock"
+                     value="{{ p.stock }}" disabled>
+            </td>
+
+            <td class="text-end actions">
+              <div class="view-mode">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false" 
+                        title="Acciones">
+                  <i class="fa fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item act-editar" href="#"><i class="fas fa-edit me-2"></i>Editar</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item text-danger act-borrar" href="#"><i class="fas fa-trash me-2"></i>Borrar producto</a></li>
+                </ul>
+              </div>
+              <div class="edit-mode d-none btn-group">
+                <button class="btn btn-sm btn-primary btn-same btn-guardar"><i class="fas fa-save me-1"></i>Guardar</button>
+                <button class="btn btn-sm btn-outline-secondary btn-same btn-cancelar">Cancelar</button>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-muted">No hay productos</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade camera-modal" id="cameraModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cambiar imagen del producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <button type="button" class="btn btn-outline-primary btn-option" id="btnTakePhoto">
+          <i class="fas fa-camera"></i> Tomar foto con la cámara
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-option" id="btnUploadPhoto">
+          <i class="fas fa-image"></i> Seleccionar de la galería
+        </button>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-light btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalDelProduct" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formDelProduct">
+      <div class="modal-header"><h5 class="modal-title">Borrar producto</h5></div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <i class="fa fa-triangle-exclamation me-1"></i>
+          Esta acción <strong>no podrá ser restaurada</strong>.
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="ackProduct">
+          <label class="form-check-label" for="ackProduct">
+            Acepto las consecuencias y asumo totalmente mi responsabilidad.
+          </label>
+        </div>
+        <label class="form-label">Contraseña de superusuario</label>
+        <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
+        <input type="hidden" name="id">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="btnDelProduct" disabled>Eliminar definitivamente</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* =============== CSRF =============== */
+/* =============== FILTROS =============== */
+(function(){
+  const form   = document.getElementById('filtro');
+  if (!form) return;
+
+  const qInput = form.querySelector('input[name="q"]');
+  const catSel = document.getElementById('catFilter');
+  const subSel = document.getElementById('subFilter');
+  if (!qInput || !catSel || !subSel) return;
+
+  const allSubs = [...subSel.querySelectorAll('option[value]')].map(o => ({ id: o.value, cat: o.dataset.cat, text: o.textContent }));
+
+  let ready = false;
+  let prev  = { q:(qInput.value||'').trim(), cat:catSel.value, sub:subSel.value };
+
+  function buildSubs(catId){
+    const old = subSel.value;
+    subSel.innerHTML = '<option value="">Todas</option>';
+    const list = allSubs.filter(x => !catId || x.cat === String(catId));
+    list.forEach(x=>{
+      const op = document.createElement('option');
+      op.value = x.id;
+      op.dataset.cat = x.cat;
+      op.textContent = x.text;
+      subSel.add(op);
+    });
+    if (list.find(x=>x.id===old)) subSel.value = old;
+    if (!subSel.value) subSel.selectedIndex = 0;
+  }
+
+  function submitIfChanged(){
+    const now = { q:(qInput.value||'').trim(), cat:catSel.value, sub:subSel.value };
+    if (now.q===prev.q && now.cat===prev.cat && now.sub===prev.sub) return;
+    prev = now;
+    form.requestSubmit();
+  }
+
+  catSel.addEventListener('change', ()=>{ buildSubs(catSel.value); if (ready) submitIfChanged(); });
+  subSel.addEventListener('change', ()=>{ if (ready) submitIfChanged(); });
+
+  let t;
+  qInput.addEventListener('input', ()=>{ clearTimeout(t); t = setTimeout(()=> { if (ready) submitIfChanged(); }, 400); });
+
+  buildSubs(catSel.value);
+  ready = true;
+})();
+
+/* =============== MODAL CÁMARA / GALERÍA =============== */
+const cameraModalEl = document.getElementById('cameraModal');
+const cameraModal = cameraModalEl ? new bootstrap.Modal(cameraModalEl) : null;
+
+let _rowInputFile = null;
+let _rowPreviewEl = null;
+let _rowTr = null;
+
+// Abrir modal solo en modo edición  // <<< cambio
+document.querySelectorAll('.image-edit-container').forEach(box=>{
+  box.addEventListener('click', function(){
+    const tr = this.closest('tr');
+    if (!tr) return;
+
+    if (!tr.classList.contains('editing-row')) {
+      // Aviso sutil sin bloquear la UI:
+      const t = document.createElement('div');
+      t.textContent = 'Primero haz clic en “Editar”.';
+      Object.assign(t.style,{position:'fixed',bottom:'16px',left:'50%',transform:'translateX(-50%)',background:'#111',color:'#fff',padding:'10px 14px',borderRadius:'8px',zIndex:9999,opacity:.95});
+      document.body.appendChild(t);
+      setTimeout(()=>t.remove(),1800);
+      return;
+    }
+
+    _rowInputFile = this.querySelector('.image-edit-input') || null;
+    _rowPreviewEl = this.querySelector('img.image-preview') || this.querySelector('.no-image') || null;
+    _rowTr = tr;
+
+    if (cameraModal) cameraModal.show();
+  });
+});
+
+// TOMAR FOTO
+document.getElementById('btnTakePhoto')?.addEventListener('click', async function(){
+  if (cameraModal) cameraModal.hide();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    let stopped = false;
+
+    const overlay = document.createElement('div');
+    Object.assign(overlay.style, { position:'fixed', inset:'0', background:'rgba(0,0,0,0.85)', zIndex:'9999', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'16px' });
+
+    const video = document.createElement('video');
+    video.autoplay = true; video.playsInline = true;
+    Object.assign(video.style, { maxWidth:'92%', maxHeight:'70%', borderRadius:'8px' });
+
+    const btns = document.createElement('div');
+    btns.className = 'mt-3 d-flex gap-2';
+
+    const btnCap = document.createElement('button');
+    btnCap.className = 'btn btn-primary';
+    btnCap.innerHTML = '<i class="fas fa-camera me-2"></i>Capturar';
+
+    const btnCancel = document.createElement('button');
+    btnCancel.className = 'btn btn-outline-light';
+    btnCancel.textContent = 'Cancelar';
+
+    btns.append(btnCap, btnCancel);
+    overlay.append(video, btns);
+    document.body.appendChild(overlay);
+
+    video.srcObject = stream;
+
+    function cleanup(){
+      if (stopped) return;
+      stopped = true;
+      stream.getTracks().forEach(t => t.stop());
+      overlay.remove();
+    }
+
+    btnCancel.addEventListener('click', cleanup);
+
+    btnCap.addEventListener('click', ()=>{
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob=>{
+        if (!blob) { cleanup(); return; }
+        const ts = new Date().toISOString().replace(/[:.]/g,'-');
+        const file = new File([blob], `foto-producto-${ts}.jpg`, { type:'image/jpeg' });
+
+        if (_rowInputFile) {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          _rowInputFile.files = dt.files;
+          _rowInputFile.dispatchEvent(new Event('change'));
+        }
+        cleanup();
+      }, 'image/jpeg', 0.9);
+    });
+  } catch (err) {
+    alert('No se pudo acceder a la cámara: ' + (err?.message || err));
+    _rowInputFile?.click();
+  }
+});
+
+// SELECCIONAR DE GALERÍA
+document.getElementById('btnUploadPhoto')?.addEventListener('click', function(){
+  if (cameraModal) cameraModal.hide();
+
+  const picker = document.createElement('input');
+  picker.type = 'file';
+  picker.accept = 'image/*';
+  Object.assign(picker.style, { position:'fixed', left:'-9999px', top:'0', opacity:'0' });
+  document.body.appendChild(picker);
+
+  picker.addEventListener('change', ()=>{
+    const f = picker.files && picker.files[0];
+    if (f && _rowInputFile) {
+      const dt = new DataTransfer();
+      dt.items.add(f);
+      _rowInputFile.files = dt.files;
+      _rowInputFile.dispatchEvent(new Event('change'));
+    }
+    picker.remove();
+  }, { once:true });
+
+  picker.click();
+});
+
+/* =============== LÓGICA POR FILA: EDITAR / GUARDAR / BORRAR =============== */
+(function(){
+  const delProductModalEl = document.getElementById('modalDelProduct');
+  const delProductModal = delProductModalEl ? new bootstrap.Modal(delProductModalEl) : null;
+  const formDelProduct  = document.getElementById('formDelProduct');
+  const ackProduct      = document.getElementById('ackProduct');
+  const btnDelProduct   = document.getElementById('btnDelProduct');
+
+  ackProduct?.addEventListener('change', ()=> { if (btnDelProduct) btnDelProduct.disabled = !ackProduct.checked; });
+
+  document.querySelectorAll('tr[data-id]').forEach(tr=>{
+    const viewBoxes=[...tr.querySelectorAll('.view-mode')];
+    const editBoxes=[...tr.querySelectorAll('.edit-mode')];
+
+    const precioI = tr.querySelector('.input-precio');
+    const stockI  = tr.querySelector('.input-stock');
+    const catSel  = tr.querySelector('.cat-select');
+    const subSel  = tr.querySelector('.sub-select');
+
+    const imgInput = tr.querySelector('.image-edit-input');
+    const imgBox   = tr.querySelector('.image-edit-container');
+    let   imgPrev  = tr.querySelector('img.image-preview') || tr.querySelector('.no-image');
+
+    // Estado original para restaurar en "Cancelar"  // <<< cambio
+    let original = {
+      precio: precioI?.value ?? '',
+      stock:  stockI?.value ?? '',
+      cat:    catSel?.value ?? '',
+      sub:    subSel?.value ?? '',
+      hadImage: !!tr.querySelector('img.image-preview'),
+      imgSrc: (tr.querySelector('img.image-preview')?.src) || null
+    };
+
+    // Reconstrucción de subcategorías por fila
+    const allRowSubs=[...subSel.querySelectorAll('option')].map(o=>({ id:o.value, cat:String(o.dataset.cat), text:o.textContent }));
+    function rebuildSubsFor(catId, keepValue){
+      subSel.innerHTML='';
+      const list = allRowSubs.filter(s => s.cat === String(catId));
+      list.forEach(s=>{
+        const o=document.createElement('option');
+        o.value=s.id; o.dataset.cat=s.cat; o.textContent=s.text;
+        subSel.add(o);
+      });
+      if (keepValue && list.find(x=>x.id===keepValue)) subSel.value=keepValue;
+    }
+
+    // Previsualización local (sin enviar al backend)
+    imgInput?.addEventListener('change', function(){
+      const file = this.files && this.files[0];
+      if (!file) return;
+
+      // Si era "no-image", lo cambiamos visualmente a <img> para la vista previa
+      if (imgPrev && imgPrev.classList.contains('no-image')) {
+        const newImg = document.createElement('img');
+        newImg.className = 'image-preview thumb';
+        imgPrev.parentNode.replaceChild(newImg, imgPrev);
+        imgPrev = newImg;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e)=> { if (imgPrev) imgPrev.src = e.target.result; };
+      reader.readAsDataURL(file);
+    });
+
+    // Borrar (abre modal)
+    tr.addEventListener('click', (e)=>{
+      if (e.target.closest('.act-borrar')) {
+        e.preventDefault();
+        if (formDelProduct) formDelProduct.dataset.id = tr.dataset.id;
+        delProductModal?.show();
+      }
+    });
+
+    // Entrar en edición
+    tr.addEventListener('click', (e)=>{
+      if (!e.target.closest('.act-editar')) return;
+      e.preventDefault();
+
+      // Capturar estado original en el momento de editar  // <<< cambio
+      original = {
+        precio: precioI?.value ?? '',
+        stock:  stockI?.value ?? '',
+        cat:    catSel?.value ?? '',
+        sub:    subSel?.value ?? '',
+        hadImage: !!tr.querySelector('img.image-preview'),
+        imgSrc: (tr.querySelector('img.image-preview')?.src) || null
+      };
+
+      tr.classList.add('editing-row');
+      viewBoxes.forEach(b=>b.classList.add('d-none'));
+      editBoxes.forEach(b=>b.classList.remove('d-none'));
+      if (precioI) precioI.disabled = false;
+      if (stockI)  stockI.disabled  = false;
+      rebuildSubsFor(catSel.value, subSel.value);
+    });
+
+    // Cancelar edición -> restaurar TODO  // <<< cambio
+    tr.addEventListener('click', (e)=>{
+      if (!e.target.closest('.btn-cancelar')) return;
+      e.preventDefault();
+
+      // Restaurar valores
+      if (precioI) { precioI.value = original.precio; precioI.disabled = true; }
+      if (stockI)  { stockI.value  = original.stock;  stockI.disabled  = true; }
+      if (catSel)  catSel.value = original.cat;
+      if (subSel)  { rebuildSubsFor(original.cat, original.sub); }
+
+      // Restaurar imagen
+      if (original.hadImage) {
+        // Asegurar que haya <img> y poner src original
+        if (!imgBox.querySelector('img.image-preview')) {
+          const newImg = document.createElement('img');
+          newImg.className = 'image-preview thumb';
+          imgBox.innerHTML = '';
+          imgBox.appendChild(newImg);
+          imgPrev = newImg;
+        }
+        if (imgPrev) imgPrev.src = original.imgSrc;
+      } else {
+        // Volver a placeholder si antes no había imagen
+        if (!imgBox.querySelector('.no-image')) {
+          imgBox.innerHTML = '<div class="no-image"><i class="fas fa-box"></i></div>';
+          imgPrev = imgBox.querySelector('.no-image');
+        }
+      }
+
+      // Vaciar archivo temporal para que no se envíe nada
+      if (imgInput) imgInput.value = '';
+
+      tr.classList.remove('editing-row');
+      viewBoxes.forEach(b=>b.classList.remove('d-none'));
+      editBoxes.forEach(b=>b.classList.add('d-none'));
+    });
+
+    // Guardar (AJAX) -> recién aquí se envía al backend  // <<< cambio
+    tr.addEventListener('click', (e)=>{
+      if (!e.target.closest('.btn-guardar')) return;
+      e.preventDefault();
+
+      (async function(){
+        const id = tr.dataset.id;
+        const fd = new FormData();
+        fd.append('subcategoria', subSel.value);
+        fd.append('precio', precioI.value);
+        fd.append('stock',  stockI.value);
+        if (imgInput.files && imgInput.files[0]) {
+          fd.append('imagen', imgInput.files[0]);
+        }
+
+        const url = `{% url 'panel_api_producto_actualizar' 0 %}`.replace('/0/','/'+id+'/');
+        const res = await fetch(url, { method:'POST', headers:{'X-CSRFToken': csrf}, body: fd });
+        const j = await res.json();
+
+        if (j.ok){
+          // Salir de edición
+          tr.classList.remove('editing-row');
+          viewBoxes.forEach(b=>b.classList.remove('d-none'));
+          editBoxes.forEach(b=>b.classList.add('d-none'));
+          if (precioI) precioI.disabled = true;
+          if (stockI)  stockI.disabled  = true;
+
+          // Limpiar input file ya enviado
+          if (imgInput) imgInput.value = '';
+        } else {
+          alert(j.error || 'No se pudo guardar los cambios.');
+        }
+      })();
+    });
+
+    // Cambiar categoría reconstruye subcategorías
+    catSel?.addEventListener('change', ()=> rebuildSubsFor(catSel.value, null));
+  });
+
+  // Envío del borrado (con contraseña)
+  formDelProduct?.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const id = e.currentTarget.dataset.id;
+    if (!id) return;
+
+    const password = e.target.elements['password'].value.trim();
+    const fd = new FormData(); 
+    fd.append('password', password);
+    fd.append('delete_image', 'true');
+
+    const url = `{% url 'panel_api_producto_borrar' 0 %}`.replace('/0/','/'+id+'/');
+    const res = await fetch(url, { method:'POST', headers:{'X-CSRFToken': csrf}, body: fd });
+    const j = await res.json();
+    if (j.ok) location.reload();
+    else alert(j.error || 'No se pudo borrar');
+  });
+})();
+</script>
+{% endblock %}
+{% extends 'panel/base_panel.html' %}
+{% load l10n %}
+{% block title %}Productos{% endblock %}
+{% block content %}
+<style>
+  .btn-same { min-width: 92px }
+  .table-sm td { padding-top: .5rem; padding-bottom: .5rem }
+  .cell-wide { min-width: 280px }
+  .w-num { width: 110px }
+  .actions { white-space: nowrap; position: relative; }
+  .muted-prefix { color: #6b7280 }
+  .select-disabled { background-color: #f8f9fa; color: #6c757d; cursor: not-allowed }
+  .select-disabled option { color: #6c757d }
+  
+  .dropdown-menu { min-width: 160px; position: absolute; z-index: 1000; }
+  .dropdown-toggle::after { display: none; }
+
+  .image-edit-container { position: relative; width: 50px; height: 50px; cursor: pointer; }
+  .image-preview { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; transition: transform .2s, opacity .2s; }
+  .image-preview:hover { transform: scale(1.05); opacity: .9; }
+  .no-image { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa; border-radius: 4px; border: 1px dashed #dee2e6; cursor: pointer; transition: background-color .2s; }
+  .no-image:hover { background-color: #e9ecef; }
+  .no-image i { color: #6c757d; font-size: 1.2rem; }
+  
+  .table-responsive { overflow: visible; }
+  .table-container { position: relative; }
+  
+  @media (max-width: 768px) {
+    .dropdown-menu { position: fixed !important; top: auto !important; left: 50% !important; transform: translateX(-50%); width: 90vw; }
+    .cell-wide { min-width: 180px; }
+  }
+
+  .camera-modal .modal-dialog { max-width: 320px; margin: 1rem auto; }
+  .camera-modal .modal-content { border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 5px 20px rgba(0,0,0,.15); }
+  .camera-modal .modal-header { background-color: #f8f9fa; border-bottom: none; padding: 18px 20px; }
+  .camera-modal .modal-title { font-size: 1.1rem; font-weight: 600; color: #333; }
+  .camera-modal .modal-body { display: flex; flex-direction: column; gap: 12px; padding: 20px; }
+  .camera-modal .btn-option { display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding: 12px 16px; border-radius: 8px; font-weight: 500; transition: all .2s; border: 1px solid #e0e0e0; text-align: left; }
+  .camera-modal .btn-option:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,.1); }
+  .camera-modal .btn-option i { font-size: 1.3rem; width: 24px; text-align: center; }
+  .camera-modal .modal-footer { border-top: none; padding: 15px 20px; justify-content: center; }
+  .camera-modal .btn-cancel { padding: 8px 20px; border-radius: 6px; font-weight: 500; }
+
+  .editing-row { background-color: #f8fafc; box-shadow: inset 0 0 0 1px #dbeafe; }
+  .editing-row .image-preview { opacity: .7; filter: brightness(0.9); }
+  .editing-row .image-edit-container::after {
+    content: '\f304';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: #fff; background: rgba(0,0,0,.6); width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 14px; pointer-events: none;
+  }
+  .editing-row .no-image { opacity: .7; border-color: #0d6efd; }
+  
+  /* ==== Ajustes para pantallas pequeñas ==== */
+  @media (max-width: 768px) {
+    /* Formularios y filtros en columna */
+    #filtro .col-sm-3,
+    #filtro .col-xl-6,
+    #filtro .col-lg-5 {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+    #filtro input,
+    #filtro select {
+      font-size: 14px;
+    }
+
+    /* Tabla scrollable con mejor espaciado */
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .table thead {
+      font-size: 13px;
+    }
+    .table td, .table th {
+      padding: .4rem;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .cell-wide {
+      min-width: 160px;
+      white-space: normal;
+    }
+    .w-num {
+      width: 80px;
+    }
+
+    /* Botones más compactos */
+    .btn-same {
+      min-width: unset;
+      padding: .25rem .5rem;
+      font-size: 13px;
+    }
+
+    /* Acciones: dropdown centrado */
+    .dropdown-menu {
+      position: fixed !important;
+      bottom: 10px;
+      left: 50% !important;
+      transform: translateX(-50%);
+      width: 94vw;
+      max-width: 400px;
+      z-index: 1050;
+    }
+
+    /* Imagen del producto más grande en mobile */
+    .image-edit-container {
+      width: 42px;
+      height: 42px;
+    }
+
+    /* Modal cámara adaptado */
+    .camera-modal .modal-dialog {
+      max-width: 95%;
+      margin: .5rem auto;
+    }
+    .camera-modal .btn-option {
+      font-size: 14px;
+      padding: 10px 14px;
+    }
+  }
+</style>
+
+<div class="d-flex align-items-center mb-3">
+  <h2 class="me-auto">Productos</h2>
+  <a href="{% url 'panel_producto_create' %}" class="btn btn-primary"><i class="fa fa-plus me-2"></i>Nuevo</a>
+</div>
+
+<form id="filtro" class="row g-2 mb-3">
+  <div class="col-xl-6 col-lg-5">
+    <input class="form-control" name="q" placeholder="Buscar por nombre, código, categoría o subcategoría" value="{{ q }}">
+  </div>
+
+  <div class="col-sm-3">
+    <select id="catFilter" class="form-select" name="cat">
+      <option value="">Todas las categorías</option>
+      {% for c in categorias %}
+        <option value="{{ c.id }}" {% if cat == c.id|stringformat:'s' %}selected{% endif %}>{{ c.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-sm-3">
+    <select id="subFilter" class="form-select {% if not cat %}select-disabled{% endif %}"
+            name="sub" {% if not cat %}disabled{% endif %}>
+      <option value="">{% if not cat %}Selecciona una categoría{% else %}Todas las subcategorías{% endif %}</option>
+      {% for s in subcategorias %}
+        <option value="{{ s.id }}" data-cat="{{ s.seccion.id }}"
+          {% if sub == s.id|stringformat:'s' %}selected{% endif %}>{{ s.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</form>
+
+<div class="card p-2">
+  <div class="table-responsive">
+    <div class="table-container">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+        <tr>
+          <th style="width:60px"></th>
+          <th>Producto</th>
+          <th>Cat / Subcat</th>
+          <th class="text-end">Precio</th>
+          <th class="text-end">Stock</th>
+          <th class="text-end">Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for p in productos %}
+          <tr data-id="{{ p.id }}">
+            <td>
+              <div class="image-edit-container" title="Click para cambiar imagen (solo en edición)">
+                {% if p.image_url %}
+                  <img class="image-preview thumb" src="{{ p.image_url }}" alt="">
+                {% else %}
+                  <div class="no-image">
+                    <i class="fas fa-box"></i>
+                  </div>
+                {% endif %}
+                <input type="file" id="fileInput_{{ p.id }}" class="image-edit-input d-none" accept="image/*">
+              </div>
+            </td>
+            <td class="fw-semibold">
+              {{ p.nombre }}
+              <div class="small text-muted mt-1"><span class="badge rounded-pill text-bg-light">{{ p.codigo }}</span></div>
+            </td>
+
+            <td class="cell-wide">
+              <div class="view-mode">
+                <div class="small text-muted">{{ p.subcategoria.seccion.nombre }}</div>
+                <div>{{ p.subcategoria.nombre }}</div>
+              </div>
+              <div class="edit-mode d-none">
+                <div class="row g-2">
+                  <div class="col-6">
+                    <select class="form-select form-select-sm cat-select">
+                      {% for c in categorias %}
+                        <option value="{{ c.id }}" {% if p.subcategoria.seccion_id == c.id %}selected{% endif %}>{{ c.nombre }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <select class="form-select form-select-sm sub-select">
+                      {% for s in subcategorias %}
+                        <option value="{{ s.id }}" data-cat="{{ s.seccion.id }}"
+                                {% if p.subcategoria_id == s.id %}selected{% endif %}>{{ s.nombre }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <td class="text-end">
+              <div class="input-group input-group-sm justify-content-end">
+                <span class="input-group-text muted-prefix">L.</span>
+                <input type="number" step="0.01" class="form-control w-num input-precio"
+                       value="{{ p.precio|unlocalize }}" disabled>
+              </div>
+            </td>
+
+            <td class="text-end">
+              <input type="number" class="form-control form-control-sm d-inline-block w-num input-stock"
+                     value="{{ p.stock }}" disabled>
+            </td>
+
+            <td class="text-end actions">
+              <div class="view-mode">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false" 
+                        title="Acciones">
+                  <i class="fa fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item act-editar" href="#"><i class="fas fa-edit me-2"></i>Editar</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item text-danger act-borrar" href="#"><i class="fas fa-trash me-2"></i>Borrar producto</a></li>
+                </ul>
+              </div>
+              <div class="edit-mode d-none btn-group">
+                <button class="btn btn-sm btn-primary btn-same btn-guardar"><i class="fas fa-save me-1"></i>Guardar</button>
+                <button class="btn btn-sm btn-outline-secondary btn-same btn-cancelar">Cancelar</button>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-muted">No hay productos</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade camera-modal" id="cameraModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cambiar imagen del producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <button type="button" class="btn btn-outline-primary btn-option" id="btnTakePhoto">
+          <i class="fas fa-camera"></i> Tomar foto con la cámara
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-option" id="btnUploadPhoto">
+          <i class="fas fa-image"></i> Seleccionar de la galería
+        </button>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-light btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalDelProduct" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formDelProduct">
+      <div class="modal-header"><h5 class="modal-title">Borrar producto</h5></div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <i class="fa fa-triangle-exclamation me-1"></i>
+          Esta acción <strong>no podrá ser restaurada</strong>.
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="ackProduct">
+          <label class="form-check-label" for="ackProduct">
+            Acepto las consecuencias y asumo totalmente mi responsabilidad.
+          </label>
+        </div>
+        <label class="form-label">Contraseña de superusuario</label>
+        <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
+        <input type="hidden" name="id">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="btnDelProduct" disabled>Eliminar definitivamente</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* =============== CSRF =============== */
+/* =============== FILTROS =============== */
+(function(){
+  const form   = document.getElementById('filtro');
+  if (!form) return;
+
+  const qInput = form.querySelector('input[name="q"]');
+  const catSel = document.getElementById('catFilter');
+  const subSel = document.getElementById('subFilter');
+  if (!qInput || !catSel || !subSel) return;
+
+  const allSubs = [...subSel.querySelectorAll('option[value]')].map(o => ({ id: o.value, cat: o.dataset.cat, text: o.textContent }));
+
+  let ready = false;
+  let prev  = { q:(qInput.value||'').trim(), cat:catSel.value, sub:subSel.value };
+
+  function buildSubs(catId){
+    const old = subSel.value;
+    subSel.innerHTML = '<option value="">Todas</option>';
+    const list = allSubs.filter(x => !catId || x.cat === String(catId));
+    list.forEach(x=>{
+      const op = document.createElement('option');
+      op.value = x.id;
+      op.dataset.cat = x.cat;
+      op.textContent = x.text;
+      subSel.add(op);
+    });
+    if (list.find(x=>x.id===old)) subSel.value = old;
+    if (!subSel.value) subSel.selectedIndex = 0;
+  }
+
+  function submitIfChanged(){
+    const now = { q:(qInput.value||'').trim(), cat:catSel.value, sub:subSel.value };
+    if (now.q===prev.q && now.cat===prev.cat && now.sub===prev.sub) return;
+    prev = now;
+    form.requestSubmit();
+  }
+
+  catSel.addEventListener('change', ()=>{ buildSubs(catSel.value); if (ready) submitIfChanged(); });
+  subSel.addEventListener('change', ()=>{ if (ready) submitIfChanged(); });
+
+  let t;
+  qInput.addEventListener('input', ()=>{ clearTimeout(t); t = setTimeout(()=> { if (ready) submitIfChanged(); }, 400); });
+
+  buildSubs(catSel.value);
+  ready = true;
+})();
+
+// Abrir modal solo en modo edición  // <<< cambio
+document.querySelectorAll('.image-edit-container').forEach(box=>{
+  box.addEventListener('click', function(){
+    const tr = this.closest('tr');
+    if (!tr) return;
+
+    if (!tr.classList.contains('editing-row')) {
+      // Aviso sutil sin bloquear la UI:
+      const t = document.createElement('div');
+      t.textContent = 'Primero haz clic en “Editar”.';
+      Object.assign(t.style,{position:'fixed',bottom:'16px',left:'50%',transform:'translateX(-50%)',background:'#111',color:'#fff',padding:'10px 14px',borderRadius:'8px',zIndex:9999,opacity:.95});
+      document.body.appendChild(t);
+      setTimeout(()=>t.remove(),1800);
+      return;
+    }
+
+    _rowInputFile = this.querySelector('.image-edit-input') || null;
+    _rowPreviewEl = this.querySelector('img.image-preview') || this.querySelector('.no-image') || null;
+    _rowTr = tr;
+
+    if (cameraModal) cameraModal.show();
+  });
+});
+
+// TOMAR FOTO
+document.getElementById('btnTakePhoto')?.addEventListener('click', async function(){
+  if (cameraModal) cameraModal.hide();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    let stopped = false;
+
+    const overlay = document.createElement('div');
+    Object.assign(overlay.style, { position:'fixed', inset:'0', background:'rgba(0,0,0,0.85)', zIndex:'9999', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'16px' });
+
+    const video = document.createElement('video');
+    video.autoplay = true; video.playsInline = true;
+    Object.assign(video.style, { maxWidth:'92%', maxHeight:'70%', borderRadius:'8px' });
+
+    const btns = document.createElement('div');
+    btns.className = 'mt-3 d-flex gap-2';
+
+    const btnCap = document.createElement('button');
+    btnCap.className = 'btn btn-primary';
+    btnCap.innerHTML = '<i class="fas fa-camera me-2"></i>Capturar';
+
+    const btnCancel = document.createElement('button');
+    btnCancel.className = 'btn btn-outline-light';
+    btnCancel.textContent = 'Cancelar';
+
+    btns.append(btnCap, btnCancel);
+    overlay.append(video, btns);
+    document.body.appendChild(overlay);
+
+    video.srcObject = stream;
+
+    function cleanup(){
+      if (stopped) return;
+      stopped = true;
+      stream.getTracks().forEach(t => t.stop());
+      overlay.remove();
+    }
+
+    btnCancel.addEventListener('click', cleanup);
+
+    btnCap.addEventListener('click', ()=>{
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob=>{
+        if (!blob) { cleanup(); return; }
+        const ts = new Date().toISOString().replace(/[:.]/g,'-');
+        const file = new File([blob], `foto-producto-${ts}.jpg`, { type:'image/jpeg' });
+
+        if (_rowInputFile) {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          _rowInputFile.files = dt.files;
+          _rowInputFile.dispatchEvent(new Event('change'));
+        }
+        cleanup();
+      }, 'image/jpeg', 0.9);
+    });
+  } catch (err) {
+    alert('No se pudo acceder a la cámara: ' + (err?.message || err));
+    _rowInputFile?.click();
+  }
+});
+
+// SELECCIONAR DE GALERÍA
+document.getElementById('btnUploadPhoto')?.addEventListener('click', function(){
+  if (cameraModal) cameraModal.hide();
+
+  const picker = document.createElement('input');
+  picker.type = 'file';
+  picker.accept = 'image/*';
+  Object.assign(picker.style, { position:'fixed', left:'-9999px', top:'0', opacity:'0' });
+  document.body.appendChild(picker);
+
+  picker.addEventListener('change', ()=>{
+    const f = picker.files && picker.files[0];
+    if (f && _rowInputFile) {
+      const dt = new DataTransfer();
+      dt.items.add(f);
+      _rowInputFile.files = dt.files;
+      _rowInputFile.dispatchEvent(new Event('change'));
+    }
+    picker.remove();
+  }, { once:true });
+
+  picker.click();
+});
+
+/* =============== LÓGICA POR FILA: EDITAR / GUARDAR / BORRAR =============== */
+(function(){
+  const delProductModalEl = document.getElementById('modalDelProduct');
+  const delProductModal = delProductModalEl ? new bootstrap.Modal(delProductModalEl) : null;
+  const formDelProduct  = document.getElementById('formDelProduct');
+  const ackProduct      = document.getElementById('ackProduct');
+  const btnDelProduct   = document.getElementById('btnDelProduct');
+
+  ackProduct?.addEventListener('change', ()=> { if (btnDelProduct) btnDelProduct.disabled = !ackProduct.checked; });
+
+  document.querySelectorAll('tr[data-id]').forEach(tr=>{
+    const viewBoxes=[...tr.querySelectorAll('.view-mode')];
+    const editBoxes=[...tr.querySelectorAll('.edit-mode')];
+
+    const precioI = tr.querySelector('.input-precio');
+    const stockI  = tr.querySelector('.input-stock');
+    const catSel  = tr.querySelector('.cat-select');
+    const subSel  = tr.querySelector('.sub-select');
+
+    const imgInput = tr.querySelector('.image-edit-input');
+    const imgBox   = tr.querySelector('.image-edit-container');
+    let   imgPrev  = tr.querySelector('img.image-preview') || tr.querySelector('.no-image');
+
+    // Estado original para restaurar en "Cancelar"  // <<< cambio
+    let original = {
+      precio: precioI?.value ?? '',
+      stock:  stockI?.value ?? '',
+      cat:    catSel?.value ?? '',
+      sub:    subSel?.value ?? '',
+      hadImage: !!tr.querySelector('img.image-preview'),
+      imgSrc: (tr.querySelector('img.image-preview')?.src) || null
+    };
+
+    // Reconstrucción de subcategorías por fila
+    const allRowSubs=[...subSel.querySelectorAll('option')].map(o=>({ id:o.value, cat:String(o.dataset.cat), text:o.textContent }));
+    function rebuildSubsFor(catId, keepValue){
+      subSel.innerHTML='';
+      const list = allRowSubs.filter(s => s.cat === String(catId));
+      list.forEach(s=>{
+        const o=document.createElement('option');
+        o.value=s.id; o.dataset.cat=s.cat; o.textContent=s.text;
+        subSel.add(o);
+      });
+      if (keepValue && list.find(x=>x.id===keepValue)) subSel.value=keepValue;
+    }
+
+    // Previsualización local (sin enviar al backend)
+    imgInput?.addEventListener('change', function(){
+      const file = this.files && this.files[0];
+      if (!file) return;
+
+      // Si era "no-image", lo cambiamos visualmente a <img> para la vista previa
+      if (imgPrev && imgPrev.classList.contains('no-image')) {
+        const newImg = document.createElement('img');
+        newImg.className = 'image-preview thumb';
+        imgPrev.parentNode.replaceChild(newImg, imgPrev);
+        imgPrev = newImg;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e)=> { if (imgPrev) imgPrev.src = e.target.result; };
+      reader.readAsDataURL(file);
+    });
+
+    // Borrar (abre modal)
+    tr.addEventListener('click', (e)=>{
+      if (e.target.closest('.act-borrar')) {
+        e.preventDefault();
+        if (formDelProduct) formDelProduct.dataset.id = tr.dataset.id;
+        delProductModal?.show();
+      }
+    });
+
+    // Entrar en edición
+    tr.addEventListener('click', (e)=>{
+      if (!e.target.closest('.act-editar')) return;
+      e.preventDefault();
+
+      // Capturar estado original en el momento de editar  // <<< cambio
+      original = {
+        precio: precioI?.value ?? '',
+        stock:  stockI?.value ?? '',
+        cat:    catSel?.value ?? '',
+        sub:    subSel?.value ?? '',
+        hadImage: !!tr.querySelector('img.image-preview'),
+        imgSrc: (tr.querySelector('img.image-preview')?.src) || null
+      };
+
+      tr.classList.add('editing-row');
+      viewBoxes.forEach(b=>b.classList.add('d-none'));
+      editBoxes.forEach(b=>b.classList.remove('d-none'));
+      if (precioI) precioI.disabled = false;
+      if (stockI)  stockI.disabled  = false;
+      rebuildSubsFor(catSel.value, subSel.value);
+    });
+
+    // Cancelar edición -> restaurar TODO  // <<< cambio
+    tr.addEventListener('click', (e)=>{
+      if (!e.target.closest('.btn-cancelar')) return;
+      e.preventDefault();
+
+      // Restaurar valores
+      if (precioI) { precioI.value = original.precio; precioI.disabled = true; }
+      if (stockI)  { stockI.value  = original.stock;  stockI.disabled  = true; }
+      if (catSel)  catSel.value = original.cat;
+      if (subSel)  { rebuildSubsFor(original.cat, original.sub); }
+
+      // Restaurar imagen
+      if (original.hadImage) {
+        // Asegurar que haya <img> y poner src original
+        if (!imgBox.querySelector('img.image-preview')) {
+          const newImg = document.createElement('img');
+          newImg.className = 'image-preview thumb';
+          imgBox.innerHTML = '';
+          imgBox.appendChild(newImg);
+          imgPrev = newImg;
+        }
+        if (imgPrev) imgPrev.src = original.imgSrc;
+      } else {
+        // Volver a placeholder si antes no había imagen
+        if (!imgBox.querySelector('.no-image')) {
+          imgBox.innerHTML = '<div class="no-image"><i class="fas fa-box"></i></div>';
+          imgPrev = imgBox.querySelector('.no-image');
+        }
+      }
+
+      // Vaciar archivo temporal para que no se envíe nada
+      if (imgInput) imgInput.value = '';
+
+      tr.classList.remove('editing-row');
+      viewBoxes.forEach(b=>b.classList.remove('d-none'));
+      editBoxes.forEach(b=>b.classList.add('d-none'));
+    });
+
+    // Guardar (AJAX) -> recién aquí se envía al backend  // <<< cambio
+    tr.addEventListener('click', (e)=>{
+      if (!e.target.closest('.btn-guardar')) return;
+      e.preventDefault();
+
+      (async function(){
+        const id = tr.dataset.id;
+        const fd = new FormData();
+        fd.append('subcategoria', subSel.value);
+        fd.append('precio', precioI.value);
+        fd.append('stock',  stockI.value);
+        if (imgInput.files && imgInput.files[0]) {
+          fd.append('imagen', imgInput.files[0]);
+        }
+
+        const url = `{% url 'panel_api_producto_actualizar' 0 %}`.replace('/0/','/'+id+'/');
+        const res = await fetch(url, { method:'POST', headers:{'X-CSRFToken': csrf}, body: fd });
+        const j = await res.json();
+
+        if (j.ok){
+          // Salir de edición
+          tr.classList.remove('editing-row');
+          viewBoxes.forEach(b=>b.classList.remove('d-none'));
+          editBoxes.forEach(b=>b.classList.add('d-none'));
+          if (precioI) precioI.disabled = true;
+          if (stockI)  stockI.disabled  = true;
+
+          // Limpiar input file ya enviado
+          if (imgInput) imgInput.value = '';
+        } else {
+          alert(j.error || 'No se pudo guardar los cambios.');
+        }
+      })();
+    });
+
+    // Cambiar categoría reconstruye subcategorías
+    catSel?.addEventListener('change', ()=> rebuildSubsFor(catSel.value, null));
+  });
+
+  // Envío del borrado (con contraseña)
+  formDelProduct?.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const id = e.currentTarget.dataset.id;
+    if (!id) return;
+
+    const password = e.target.elements['password'].value.trim();
+    const fd = new FormData(); 
+    fd.append('password', password);
+    fd.append('delete_image', 'true');
+
+    const url = `{% url 'panel_api_producto_borrar' 0 %}`.replace('/0/','/'+id+'/');
+    const res = await fetch(url, { method:'POST', headers:{'X-CSRFToken': csrf}, body: fd });
+    const j = await res.json();
+    if (j.ok) location.reload();
+    else alert(j.error || 'No se pudo borrar');
+  });
+})();
+</script>
+{% endblock %}
+{% extends 'panel/base_panel.html' %}
+{% load l10n %}
+{% block title %}Productos{% endblock %}
+{% block content %}
+<style>
+  .btn-same { min-width: 92px }
+  .table-sm td { padding-top: .5rem; padding-bottom: .5rem }
+  .cell-wide { min-width: 280px }
+  .w-num { width: 110px }
+  .actions { white-space: nowrap; position: relative; }
+  .muted-prefix { color: #6b7280 }
+  .select-disabled { background-color: #f8f9fa; color: #6c757d; cursor: not-allowed }
+  .select-disabled option { color: #6c757d }
+  
+  .dropdown-menu { min-width: 160px; position: absolute; z-index: 1000; }
+  .dropdown-toggle::after { display: none; }
+
+  .image-edit-container { position: relative; width: 50px; height: 50px; cursor: pointer; }
+  .image-preview { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; transition: transform .2s, opacity .2s; }
+  .image-preview:hover { transform: scale(1.05); opacity: .9; }
+  .no-image { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa; border-radius: 4px; border: 1px dashed #dee2e6; cursor: pointer; transition: background-color .2s; }
+  .no-image:hover { background-color: #e9ecef; }
+  .no-image i { color: #6c757d; font-size: 1.2rem; }
+  
+  .table-responsive { overflow: visible; }
+  .table-container { position: relative; }
+  
+  @media (max-width: 768px) {
+    .dropdown-menu { position: fixed !important; top: auto !important; left: 50% !important; transform: translateX(-50%); width: 90vw; }
+    .cell-wide { min-width: 180px; }
+  }
+
+  .camera-modal .modal-dialog { max-width: 320px; margin: 1rem auto; }
+  .camera-modal .modal-content { border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 5px 20px rgba(0,0,0,.15); }
+  .camera-modal .modal-header { background-color: #f8f9fa; border-bottom: none; padding: 18px 20px; }
+  .camera-modal .modal-title { font-size: 1.1rem; font-weight: 600; color: #333; }
+  .camera-modal .modal-body { display: flex; flex-direction: column; gap: 12px; padding: 20px; }
+  .camera-modal .btn-option { display: flex; align-items: center; justify-content: flex-start; gap: 12px; padding: 12px 16px; border-radius: 8px; font-weight: 500; transition: all .2s; border: 1px solid #e0e0e0; text-align: left; }
+  .camera-modal .btn-option:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,.1); }
+  .camera-modal .btn-option i { font-size: 1.3rem; width: 24px; text-align: center; }
+  .camera-modal .modal-footer { border-top: none; padding: 15px 20px; justify-content: center; }
+  .camera-modal .btn-cancel { padding: 8px 20px; border-radius: 6px; font-weight: 500; }
+
+  .editing-row { background-color: #f8fafc; box-shadow: inset 0 0 0 1px #dbeafe; }
+  .editing-row .image-preview { opacity: .7; filter: brightness(0.9); }
+  .editing-row .image-edit-container::after {
+    content: '\f304';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    color: #fff; background: rgba(0,0,0,.6); width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 14px; pointer-events: none;
+  }
+  .editing-row .no-image { opacity: .7; border-color: #0d6efd; }
+  
+  /* ==== Ajustes para pantallas pequeñas ==== */
+  @media (max-width: 768px) {
+    /* Formularios y filtros en columna */
+    #filtro .col-sm-3,
+    #filtro .col-xl-6,
+    #filtro .col-lg-5 {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+    #filtro input,
+    #filtro select {
+      font-size: 14px;
+    }
+
+    /* Tabla scrollable con mejor espaciado */
+    .table-responsive {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .table thead {
+      font-size: 13px;
+    }
+    .table td, .table th {
+      padding: .4rem;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .cell-wide {
+      min-width: 160px;
+      white-space: normal;
+    }
+    .w-num {
+      width: 80px;
+    }
+
+    /* Botones más compactos */
+    .btn-same {
+      min-width: unset;
+      padding: .25rem .5rem;
+      font-size: 13px;
+    }
+
+    /* Acciones: dropdown centrado */
+    .dropdown-menu {
+      position: fixed !important;
+      bottom: 10px;
+      left: 50% !important;
+      transform: translateX(-50%);
+      width: 94vw;
+      max-width: 400px;
+      z-index: 1050;
+    }
+
+    /* Imagen del producto más grande en mobile */
+    .image-edit-container {
+      width: 42px;
+      height: 42px;
+    }
+
+    /* Modal cámara adaptado */
+    .camera-modal .modal-dialog {
+      max-width: 95%;
+      margin: .5rem auto;
+    }
+    .camera-modal .btn-option {
+      font-size: 14px;
+      padding: 10px 14px;
+    }
+  }
+</style>
+
+<div class="d-flex align-items-center mb-3">
+  <h2 class="me-auto">Productos</h2>
+  <a href="{% url 'panel_producto_create' %}" class="btn btn-primary"><i class="fa fa-plus me-2"></i>Nuevo</a>
+</div>
+
+<form id="filtro" class="row g-2 mb-3">
+  <div class="col-xl-6 col-lg-5">
+    <input class="form-control" name="q" placeholder="Buscar por nombre, código, categoría o subcategoría" value="{{ q }}">
+  </div>
+
+  <div class="col-sm-3">
+    <select id="catFilter" class="form-select" name="cat">
+      <option value="">Todas las categorías</option>
+      {% for c in categorias %}
+        <option value="{{ c.id }}" {% if cat == c.id|stringformat:'s' %}selected{% endif %}>{{ c.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="col-sm-3">
+    <select id="subFilter" class="form-select {% if not cat %}select-disabled{% endif %}"
+            name="sub" {% if not cat %}disabled{% endif %}>
+      <option value="">{% if not cat %}Selecciona una categoría{% else %}Todas las subcategorías{% endif %}</option>
+      {% for s in subcategorias %}
+        <option value="{{ s.id }}" data-cat="{{ s.seccion.id }}"
+          {% if sub == s.id|stringformat:'s' %}selected{% endif %}>{{ s.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</form>
+
+<div class="card p-2">
+  <div class="table-responsive">
+    <div class="table-container">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+        <tr>
+          <th style="width:60px"></th>
+          <th>Producto</th>
+          <th>Cat / Subcat</th>
+          <th class="text-end">Precio</th>
+          <th class="text-end">Stock</th>
+          <th class="text-end">Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for p in productos %}
+          <tr data-id="{{ p.id }}">
+            <td>
+              <div class="image-edit-container" title="Click para cambiar imagen (solo en edición)">
+                {% if p.image_url %}
+                  <img class="image-preview thumb" src="{{ p.image_url }}" alt="">
+                {% else %}
+                  <div class="no-image">
+                    <i class="fas fa-box"></i>
+                  </div>
+                {% endif %}
+                <input type="file" id="fileInput_{{ p.id }}" class="image-edit-input d-none" accept="image/*">
+              </div>
+            </td>
+            <td class="fw-semibold">
+              {{ p.nombre }}
+              <div class="small text-muted mt-1"><span class="badge rounded-pill text-bg-light">{{ p.codigo }}</span></div>
+            </td>
+
+            <td class="cell-wide">
+              <div class="view-mode">
+                <div class="small text-muted">{{ p.subcategoria.seccion.nombre }}</div>
+                <div>{{ p.subcategoria.nombre }}</div>
+              </div>
+              <div class="edit-mode d-none">
+                <div class="row g-2">
+                  <div class="col-6">
+                    <select class="form-select form-select-sm cat-select">
+                      {% for c in categorias %}
+                        <option value="{{ c.id }}" {% if p.subcategoria.seccion_id == c.id %}selected{% endif %}>{{ c.nombre }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <select class="form-select form-select-sm sub-select">
+                      {% for s in subcategorias %}
+                        <option value="{{ s.id }}" data-cat="{{ s.seccion.id }}"
+                                {% if p.subcategoria_id == s.id %}selected{% endif %}>{{ s.nombre }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </td>
+
+            <td class="text-end">
+              <div class="input-group input-group-sm justify-content-end">
+                <span class="input-group-text muted-prefix">L.</span>
+                <input type="number" step="0.01" class="form-control w-num input-precio"
+                       value="{{ p.precio|unlocalize }}" disabled>
+              </div>
+            </td>
+
+            <td class="text-end">
+              <input type="number" class="form-control form-control-sm d-inline-block w-num input-stock"
+                     value="{{ p.stock }}" disabled>
+            </td>
+
+            <td class="text-end actions">
+              <div class="view-mode">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false" 
+                        title="Acciones">
+                  <i class="fa fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item act-editar" href="#"><i class="fas fa-edit me-2"></i>Editar</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item text-danger act-borrar" href="#"><i class="fas fa-trash me-2"></i>Borrar producto</a></li>
+                </ul>
+              </div>
+              <div class="edit-mode d-none btn-group">
+                <button class="btn btn-sm btn-primary btn-same btn-guardar"><i class="fas fa-save me-1"></i>Guardar</button>
+                <button class="btn btn-sm btn-outline-secondary btn-same btn-cancelar">Cancelar</button>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" class="text-muted">No hay productos</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade camera-modal" id="cameraModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cambiar imagen del producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <button type="button" class="btn btn-outline-primary btn-option" id="btnTakePhoto">
+          <i class="fas fa-camera"></i> Tomar foto con la cámara
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-option" id="btnUploadPhoto">
+          <i class="fas fa-image"></i> Seleccionar de la galería
+        </button>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-light btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalDelProduct" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" id="formDelProduct">
+      <div class="modal-header"><h5 class="modal-title">Borrar producto</h5></div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <i class="fa fa-triangle-exclamation me-1"></i>
+          Esta acción <strong>no podrá ser restaurada</strong>.
+        </div>
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="ackProduct">
+          <label class="form-check-label" for="ackProduct">
+            Acepto las consecuencias y asumo totalmente mi responsabilidad.
+          </label>
+        </div>
+        <label class="form-label">Contraseña de superusuario</label>
+        <input type="password" class="form-control" name="password" placeholder="Contraseña" required>
+        <input type="hidden" name="id">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" id="btnDelProduct" disabled>Eliminar definitivamente</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* =============== CSRF =============== */
+const csrf = document.cookie.split('; ').find(r=>r.startsWith('csrftoken='))?.split('=')[1] || '{{ csrf_token }}';
+
+/* =============== FILTROS =============== */
+(function(){
+  const form   = document.getElementById('filtro');
+  if (!form) return;
+
+  const qInput = form.querySelector('input[name="q"]');
+  const catSel = document.getElementById('catFilter');
+  const subSel = document.getElementById('subFilter');
+  if (!qInput || !catSel || !subSel) return;
+
+  const allSubs = [...subSel.querySelectorAll('option[value]')].map(o => ({ id: o.value, cat: o.dataset.cat, text: o.textContent }));
+
+  let ready = false;
+  let prev  = { q:(qInput.value||'').trim(), cat:catSel.value, sub:subSel.value };
+
+  function buildSubs(catId){
+    const old = subSel.value;
+    subSel.innerHTML = '<option value="">Todas</option>';
+    const list = allSubs.filter(x => !catId || x.cat === String(catId));
+    list.forEach(x=>{
+      const op = document.createElement('option');
+      op.value = x.id;
+      op.dataset.cat = x.cat;
+      op.textContent = x.text;
+      subSel.add(op);
+    });
+    if (list.find(x=>x.id===old)) subSel.value = old;
+    if (!subSel.value) subSel.selectedIndex = 0;
+  }
+
+  function submitIfChanged(){
+    const now = { q:(qInput.value||'').trim(), cat:catSel.value, sub:subSel.value };
+    if (now.q===prev.q && now.cat===prev.cat && now.sub===prev.sub) return;
+    prev = now;
+    form.requestSubmit();
+  }
+
+  catSel.addEventListener('change', ()=>{ buildSubs(catSel.value); if (ready) submitIfChanged(); });
+  subSel.addEventListener('change', ()=>{ if (ready) submitIfChanged(); });
+
+  let t;
+  qInput.addEventListener('input', ()=>{ clearTimeout(t); t = setTimeout(()=> { if (ready) submitIfChanged(); }, 400); });
+
+  buildSubs(catSel.value);
+  ready = true;
+})();
+
+/* =============== MODAL CÁMARA / GALERÍA =============== */
+// Abrir modal solo en modo edición  // <<< cambio
+document.querySelectorAll('.image-edit-container').forEach(box=>{
+  box.addEventListener('click', function(){
+    const tr = this.closest('tr');
+    if (!tr) return;
+
+    if (!tr.classList.contains('editing-row')) {
+      // Aviso sutil sin bloquear la UI:
+      const t = document.createElement('div');
+      t.textContent = 'Primero haz clic en “Editar”.';
+      Object.assign(t.style,{position:'fixed',bottom:'16px',left:'50%',transform:'translateX(-50%)',background:'#111',color:'#fff',padding:'10px 14px',borderRadius:'8px',zIndex:9999,opacity:.95});
+      document.body.appendChild(t);
+      setTimeout(()=>t.remove(),1800);
+      return;
+    }
+
+    _rowInputFile = this.querySelector('.image-edit-input') || null;
+    _rowPreviewEl = this.querySelector('img.image-preview') || this.querySelector('.no-image') || null;
+    _rowTr = tr;
+
+    if (cameraModal) cameraModal.show();
+  });
+});
+
+// TOMAR FOTO
+document.getElementById('btnTakePhoto')?.addEventListener('click', async function(){
+  if (cameraModal) cameraModal.hide();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    let stopped = false;
+
+    const overlay = document.createElement('div');
+    Object.assign(overlay.style, { position:'fixed', inset:'0', background:'rgba(0,0,0,0.85)', zIndex:'9999', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'16px' });
+
+    const video = document.createElement('video');
+    video.autoplay = true; video.playsInline = true;
+    Object.assign(video.style, { maxWidth:'92%', maxHeight:'70%', borderRadius:'8px' });
+
+    const btns = document.createElement('div');
+    btns.className = 'mt-3 d-flex gap-2';
+
+    const btnCap = document.createElement('button');
+    btnCap.className = 'btn btn-primary';
+    btnCap.innerHTML = '<i class="fas fa-camera me-2"></i>Capturar';
+
+    const btnCancel = document.createElement('button');
+    btnCancel.className = 'btn btn-outline-light';
+    btnCancel.textContent = 'Cancelar';
+
+    btns.append(btnCap, btnCancel);
+    overlay.append(video, btns);
+    document.body.appendChild(overlay);
+
+    video.srcObject = stream;
+
+    function cleanup(){
+      if (stopped) return;
+      stopped = true;
+      stream.getTracks().forEach(t => t.stop());
+      overlay.remove();
+    }
+
+    btnCancel.addEventListener('click', cleanup);
+
+    btnCap.addEventListener('click', ()=>{
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(blob=>{
+        if (!blob) { cleanup(); return; }
+        const ts = new Date().toISOString().replace(/[:.]/g,'-');
+        const file = new File([blob], `foto-producto-${ts}.jpg`, { type:'image/jpeg' });
+
+        if (_rowInputFile) {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          _rowInputFile.files = dt.files;
+          _rowInputFile.dispatchEvent(new Event('change'));
+        }
+        cleanup();
+      }, 'image/jpeg', 0.9);
+    });
+  } catch (err) {
+    alert('No se pudo acceder a la cámara: ' + (err?.message || err));
+    _rowInputFile?.click();
+  }
+});
+
+// SELECCIONAR DE GALERÍA
+document.getElementById('btnUploadPhoto')?.addEventListener('click', function(){
+  if (cameraModal) cameraModal.hide();
+
+  const picker = document.createElement('input');
+  picker.type = 'file';
+  picker.accept = 'image/*';
+  Object.assign(picker.style, { position:'fixed', left:'-9999px', top:'0', opacity:'0' });
+  document.body.appendChild(picker);
+
+  picker.addEventListener('change', ()=>{
+    const f = picker.files && picker.files[0];
+    if (f && _rowInputFile) {
+      const dt = new DataTransfer();
+      dt.items.add(f);
+      _rowInputFile.files = dt.files;
+      _rowInputFile.dispatchEvent(new Event('change'));
+    }
+    picker.remove();
+  }, { once:true });
+
+  picker.click();
+});
+
+/* =============== LÓGICA POR FILA: EDITAR / GUARDAR / BORRAR =============== */
+(function(){
+  const delProductModalEl = document.getElementById('modalDelProduct');
+  const delProductModal = delProductModalEl ? new bootstrap.Modal(delProductModalEl) : null;
+  const formDelProduct  = document.getElementById('formDelProduct');
+  const ackProduct      = document.getElementById('ackProduct');
+  const btnDelProduct   = document.getElementById('btnDelProduct');
+
+  ackProduct?.addEventListener('change', ()=> { if (btnDelProduct) btnDelProduct.disabled = !ackProduct.checked; });
+
+  document.querySelectorAll('tr[data-id]').forEach(tr=>{
+    const viewBoxes=[...tr.querySelectorAll('.view-mode')];
+    const editBoxes=[...tr.querySelectorAll('.edit-mode')];
+
+    const precioI = tr.querySelector('.input-precio');
+    const stockI  = tr.querySelector('.input-stock');
+    const catSel  = tr.querySelector('.cat-select');
+    const subSel  = tr.querySelector('.sub-select');
+
+    const imgInput = tr.querySelector('.image-edit-input');
+    const imgBox   = tr.querySelector('.image-edit-container');
+    let   imgPrev  = tr.querySelector('img.image-preview') || tr.querySelector('.no-image');
+
+    // Estado original para restaurar en "Cancelar"  // <<< cambio
+    let original = {
+      precio: precioI?.value ?? '',
+      stock:  stockI?.value ?? '',
+      cat:    catSel?.value ?? '',
+      sub:    subSel?.value ?? '',
+      hadImage: !!tr.querySelector('img.image-preview'),
+      imgSrc: (tr.querySelector('img.image-preview')?.src) || null
+    };
+
+    // Reconstrucción de subcategorías por fila
+    const allRowSubs=[...subSel.querySelectorAll('option')].map(o=>({ id:o.value, cat:String(o.dataset.cat), text:o.textContent }));
+    function rebuildSubsFor(catId, keepValue){
+      subSel.innerHTML='';
+      const list = allRowSubs.filter(s => s.cat === String(catId));
+      list.forEach(s=>{
+        const o=document.createElement('option');
+        o.value=s.id; o.dataset.cat=s.cat; o.textContent=s.text;
+        subSel.add(o);
+      });
+      if (keepValue && list.find(x=>x.id===keepValue)) subSel.value=keepValue;
+    }
+
+    // Previsualización local (sin enviar al backend)
+    imgInput?.addEventListener('change', function(){
+      const file = this.files && this.files[0];
+      if (!file) return;
+
+      // Si era "no-image", lo cambiamos visualmente a <img> para la vista previa
+      if (imgPrev && imgPrev.classList.contains('no-image')) {
+        const newImg = document.createElement('img');
+        newImg.className = 'image-preview thumb';
+        imgPrev.parentNode.replaceChild(newImg, imgPrev);
+        imgPrev = newImg;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e)=> { if (imgPrev) imgPrev.src = e.target.result; };
+      reader.readAsDataURL(file);
+    });
+
+    // Borrar (abre modal)
+    tr.addEventListener('click', (e)=>{
+      if (e.target.closest('.act-borrar')) {
+        e.preventDefault();
+        if (formDelProduct) formDelProduct.dataset.id = tr.dataset.id;
+        delProductModal?.show();
+      }
+    });
+
+    // Entrar en edición
+    tr.addEventListener('click', (e)=>{
+      if (!e.target.closest('.act-editar')) return;
+      e.preventDefault();
+
+      // Capturar estado original en el momento de editar  // <<< cambio
+      original = {
+        precio: precioI?.value ?? '',
+        stock:  stockI?.value ?? '',
+        cat:    catSel?.value ?? '',
+        sub:    subSel?.value ?? '',
+        hadImage: !!tr.querySelector('img.image-preview'),
+        imgSrc: (tr.querySelector('img.image-preview')?.src) || null
+      };
+
+      tr.classList.add('editing-row');
+      viewBoxes.forEach(b=>b.classList.add('d-none'));
+      editBoxes.forEach(b=>b.classList.remove('d-none'));
+      if (precioI) precioI.disabled = false;
+      if (stockI)  stockI.disabled  = false;
+      rebuildSubsFor(catSel.value, subSel.value);
+    });
+
+    // Cancelar edición -> restaurar TODO  // <<< cambio
+    tr.addEventListener('click', (e)=>{
+      if (!e.target.closest('.btn-cancelar')) return;
+      e.preventDefault();
+
+      // Restaurar valores
+      if (precioI) { precioI.value = original.precio; precioI.disabled = true; }
+      if (stockI)  { stockI.value  = original.stock;  stockI.disabled  = true; }
+      if (catSel)  catSel.value = original.cat;
+      if (subSel)  { rebuildSubsFor(original.cat, original.sub); }
+
+      // Restaurar imagen
+      if (original.hadImage) {
+        // Asegurar que haya <img> y poner src original
+        if (!imgBox.querySelector('img.image-preview')) {
+          const newImg = document.createElement('img');
+          newImg.className = 'image-preview thumb';
+          imgBox.innerHTML = '';
+          imgBox.appendChild(newImg);
+          imgPrev = newImg;
+        }
+        if (imgPrev) imgPrev.src = original.imgSrc;
+      } else {
+        // Volver a placeholder si antes no había imagen
+        if (!imgBox.querySelector('.no-image')) {
+          imgBox.innerHTML = '<div class="no-image"><i class="fas fa-box"></i></div>';
+          imgPrev = imgBox.querySelector('.no-image');
+        }
+      }
+
+      // Vaciar archivo temporal para que no se envíe nada
+      if (imgInput) imgInput.value = '';
+
+      tr.classList.remove('editing-row');
+      viewBoxes.forEach(b=>b.classList.remove('d-none'));
+      editBoxes.forEach(b=>b.classList.add('d-none'));
+    });
+
+    // Guardar (AJAX) -> recién aquí se envía al backend  // <<< cambio
+    tr.addEventListener('click', (e)=>{
+      if (!e.target.closest('.btn-guardar')) return;
+      e.preventDefault();
+
+      (async function(){
+        const id = tr.dataset.id;
+        const fd = new FormData();
+        fd.append('subcategoria', subSel.value);
+        fd.append('precio', precioI.value);
+        fd.append('stock',  stockI.value);
+        if (imgInput.files && imgInput.files[0]) {
+          fd.append('imagen', imgInput.files[0]);
+        }
+
+        const url = `{% url 'panel_api_producto_actualizar' 0 %}`.replace('/0/','/'+id+'/');
+        const res = await fetch(url, { method:'POST', headers:{'X-CSRFToken': csrf}, body: fd });
+        const j = await res.json();
+
+        if (j.ok){
+          // Salir de edición
+          tr.classList.remove('editing-row');
+          viewBoxes.forEach(b=>b.classList.remove('d-none'));
+          editBoxes.forEach(b=>b.classList.add('d-none'));
+          if (precioI) precioI.disabled = true;
+          if (stockI)  stockI.disabled  = true;
+
+          // Limpiar input file ya enviado
+          if (imgInput) imgInput.value = '';
+        } else {
+          alert(j.error || 'No se pudo guardar los cambios.');
+        }
+      })();
+    });
+
+    // Cambiar categoría reconstruye subcategorías
+    catSel?.addEventListener('change', ()=> rebuildSubsFor(catSel.value, null));
+  });
+
+  // Envío del borrado (con contraseña)
+  formDelProduct?.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const id = e.currentTarget.dataset.id;
+    if (!id) return;
+
+    const password = e.target.elements['password'].value.trim();
+    const fd = new FormData(); 
+    fd.append('password', password);
+    fd.append('delete_image', 'true');
+
+    const url = `{% url 'panel_api_producto_borrar' 0 %}`.replace('/0/','/'+id+'/');
+    const res = await fetch(url, { method:'POST', headers:{'X-CSRFToken': csrf}, body: fd });
+    const j = await res.json();
+    if (j.ok) location.reload();
+    else alert(j.error || 'No se pudo borrar');
+  });
+})();
+</script>
+{% endblock %}

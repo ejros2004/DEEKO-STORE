@@ -1,0 +1,68 @@
+[
+  {
+    "model": "productos.SeccionCategoria",
+    "pk": 1,
+    "fields": {
+      "nombre": "Alimentos",
+      "imagen_hero": "alimentos.jpg",
+      "titulo_hero": "Descubre Nuestros Alimentos Premium",
+      "subtitulo_hero": "Calidad excepcional para tu alimentación diaria",
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.SeccionCategoria",
+    "pk": 2,
+    "fields": {
+      "nombre": "Entretenimiento",
+      "imagen_hero": "entretenimiento.jpg",
+      "titulo_hero": "Explora el Mundo del Entretenimiento",
+      "subtitulo_hero": "Libros, música, películas y más para disfrutar",
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.SeccionCategoria",
+    "pk": 3,
+    "fields": {
+      "nombre": "Hogar y Herramientas",
+      "imagen_hero": "hogar_herramientas.jpg",
+      "titulo_hero": "Herramientas Profesionales",
+      "subtitulo_hero": "Calidad industrial para tu hogar y taller",
+      "orden": 3
+    }
+  },
+  {
+    "model": "productos.SeccionCategoria",
+    "pk": 4,
+    "fields": {
+      "nombre": "Moda",
+      "imagen_hero": "moda.jpg",
+      "titulo_hero": "Tu Estilo, Tu Identidad",
+      "subtitulo_hero": "Descubre las últimas tendencias en moda y ropa",
+      "orden": 4
+    }
+  },
+  {
+    "model": "productos.SeccionCategoria",
+    "pk": 5,
+    "fields": {
+      "nombre": "Tecnología",
+      "imagen_hero": "tecnologia.jpg",
+      "titulo_hero": "Tecnología de Vanguardia",
+      "subtitulo_hero": "Los mejores productos tecnológicos al alcance de tu mano",
+      "orden": 5
+    }
+  },
+  {
+    "model": "productos.SeccionCategoria",
+    "pk": 6,
+    "fields": {
+      "nombre": "Deportes",
+      "imagen_hero": "deportes.jpg",
+      "titulo_hero": "Explora el Mundo del Fitness",
+      "subtitulo_hero": "Equipamiento y accesorios para tu entrenamiento",
+      "orden": 6
+    }
+  }
+]

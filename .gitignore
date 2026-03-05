@@ -1,0 +1,22 @@
+# Entorno virtual
+venv/
+env/
+ENV/
+*.pyc
+__pycache__/
+
+# Archivos de configuración del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de entorno
+*.env
+
+# Archivos de base de datos (si es local y no se quiere versionar)
+*.sqlite3
+
+# Archivos de VSCode
+.vscode/
+
+# Archivos de compilación/temporales
+*.log

@@ -1,0 +1,42 @@
+[
+  {
+    "model": "productos.Subcategoria",
+    "pk": 1,
+    "fields": {
+      "seccion": 1,
+      "nombre": "Frutas y Verduras",
+      "imagen": "frutas_verduras.jpg",
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 2,
+    "fields": {
+      "seccion": 1,
+      "nombre": "Lácteos",
+      "imagen": "lacteos.jpg",
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 3,
+    "fields": {
+      "seccion": 1,
+      "nombre": "Panadería",
+      "imagen": "panaderia.jpg",
+      "orden": 3
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 4,
+    "fields": {
+      "seccion": 1,
+      "nombre": "Granos y Cereales",
+      "imagen": "granos_cereales.jpg",
+      "orden": 4
+    }
+  }
+]

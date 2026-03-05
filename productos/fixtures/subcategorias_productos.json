@@ -1,0 +1,232 @@
+[
+  {
+    "model": "productos.Subcategoria",
+    "pk": 1,
+    "fields": {
+      "seccion": 1,
+      "nombre": "Alimentos",
+      "imagen": "alimentos_sub.jpg",
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 2,
+    "fields": {
+      "seccion": 1,
+      "nombre": "Bebidas",
+      "imagen": "bebidas_sub.jpg",
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 3,
+    "fields": {
+      "seccion": 1,
+      "nombre": "Hogar",
+      "imagen": "hogar_sub.jpg",
+      "orden": 3
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 4,
+    "fields": {
+      "seccion": 2,
+      "nombre": "Libros",
+      "imagen": "libros.jpg",
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 5,
+    "fields": {
+      "seccion": 2,
+      "nombre": "Música",
+      "imagen": "musica.jpg",
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 6,
+    "fields": {
+      "seccion": 2,
+      "nombre": "Video",
+      "imagen": "video.jpg",
+      "orden": 3
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 7,
+    "fields": {
+      "seccion": 2,
+      "nombre": "Entretenimiento",
+      "imagen": "entretenimiento_sub.jpg",
+      "orden": 4
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 8,
+    "fields": {
+      "seccion": 3,
+      "nombre": "Herramientas",
+      "imagen": "herramientas.jpg",
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 9,
+    "fields": {
+      "seccion": 3,
+      "nombre": "Jardinería",
+      "imagen": "jardineria.jpg",
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 10,
+    "fields": {
+      "seccion": 3,
+      "nombre": "Hogar",
+      "imagen": "hogar.jpg",
+      "orden": 3
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 11,
+    "fields": {
+      "seccion": 3,
+      "nombre": "Organización",
+      "imagen": "organizacion.jpg",
+      "orden": 4
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 12,
+    "fields": {
+      "seccion": 4,
+      "nombre": "Mujer",
+      "imagen": "mujer.jpg",
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 13,
+    "fields": {
+      "seccion": 4,
+      "nombre": "Hombre",
+      "imagen": "hombre.jpg",
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 14,
+    "fields": {
+      "seccion": 4,
+      "nombre": "Accesorios",
+      "imagen": "accesorios.jpg",
+      "orden": 3
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 15,
+    "fields": {
+      "seccion": 4,
+      "nombre": "Zapatos",
+      "imagen": "zapatos.jpg",
+      "orden": 4
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 16,
+    "fields": {
+      "seccion": 5,
+      "nombre": "Teléfonos",
+      "imagen": "telefonos.jpg",
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 17,
+    "fields": {
+      "seccion": 5,
+      "nombre": "Computadoras",
+      "imagen": "computadoras.jpg",
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 18,
+    "fields": {
+      "seccion": 5,
+      "nombre": "Televisores",
+      "imagen": "televisores.jpg",
+      "orden": 3
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 19,
+    "fields": {
+      "seccion": 5,
+      "nombre": "Oficina",
+      "imagen": "oficina.jpg",
+      "orden": 4
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 20,
+    "fields": {
+      "seccion": 6,
+      "nombre": "Balones",
+      "imagen": "balones.jpg",
+      "orden": 1
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 21,
+    "fields": {
+      "seccion": 6,
+      "nombre": "Mancuernas",
+      "imagen": "mancuernas.jpg",
+      "orden": 2
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 22,
+    "fields": {
+      "seccion": 6,
+      "nombre": "Ropa",
+      "imagen": "ropa_deportiva.jpg",
+      "orden": 3
+    }
+  },
+  {
+    "model": "productos.Subcategoria",
+    "pk": 23,
+    "fields": {
+      "seccion": 6,
+      "nombre": "Accesorios",
+      "imagen": "accesorios_deportivos.jpg",
+      "orden": 4
+    }
+  }
+]
